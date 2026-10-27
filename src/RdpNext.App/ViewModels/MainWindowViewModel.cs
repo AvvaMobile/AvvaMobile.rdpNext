@@ -43,6 +43,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Sessions.Find<ServerEditorViewModel>(e => e.Existing == node.Server)
         ?? new ServerEditorViewModel(this, node.Server, null));
 
+    public void EditFolder(GroupNodeViewModel node) => Sessions.OpenTab(
+        Sessions.Find<FolderEditorViewModel>(e => e.Existing == node.Group)
+        ?? new FolderEditorViewModel(this, node.Group, null));
+
+    [RelayCommand]
+    public void NewFolder() => Sessions.OpenTab(new FolderEditorViewModel(this, null, SelectedFolder()));
+
     [RelayCommand]
     public void NewServer() => Sessions.OpenTab(new ServerEditorViewModel(this, null, SelectedFolder()));
 

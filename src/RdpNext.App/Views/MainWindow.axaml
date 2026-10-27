@@ -23,6 +23,9 @@
         <DataTemplate DataType="vm:ServerEditorViewModel">
           <v:ServerEditorView />
         </DataTemplate>
+        <DataTemplate DataType="vm:FolderEditorViewModel">
+          <v:FolderEditorView />
+        </DataTemplate>
       </ContentControl.DataTemplates>
     </ContentControl>
   </DockPanel>
