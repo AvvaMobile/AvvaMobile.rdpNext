@@ -72,6 +72,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void NewServer() => Sessions.OpenTab(new ServerEditorViewModel(this, null, SelectedFolder()));
 
+    // Ağaçta sürükle-bırak; kurala uymayan bırakışta false döner, hiçbir şey değişmez.
+    public bool Drop(TreeNodeViewModel dragged, TreeNodeViewModel target, DropPlace place)
+    {
+        if (Tree.ResolveDrop(dragged, target, place) is not { } drop)
+            return false;
+        Tree.MoveTo(dragged, drop.Parent, drop.Before);
+        Persist();
+        return true;
+    }
+
     [RelayCommand]
     private void Connect(ServerNodeViewModel server) => Sessions.Open(server);
 

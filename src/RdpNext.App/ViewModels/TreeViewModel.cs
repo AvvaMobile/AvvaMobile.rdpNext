@@ -57,15 +57,50 @@ public sealed partial class TreeViewModel : ObservableObject
 
     public GroupNodeViewModel AddGroup(Group group, Group? parent) => (GroupNodeViewModel)AddNode(group, parent);
 
-    public void Move(TreeNodeViewModel node, Group? newParent)
+    public void Move(TreeNodeViewModel node, Group? newParent) => MoveTo(node, newParent, null);
+
+    // Öğeyi klasöre taşır, verilen kardeşin önüne (null: sona) koyar.
+    public void MoveTo(TreeNodeViewModel node, Group? newParent, TreeNodeViewModel? before)
     {
+        if (before == node)
+            return;
         var oldParent = node.Model.Parent;
+        var selected = Selected;
         // Önce model: klasör kendi içine taşınmak istenirse burada durur, ekran bozulmaz.
-        (newParent ?? Root).Add(node.Model);
+        (newParent ?? Root).Insert(node.Model, before?.Model);
         ChildrenOf(oldParent).Remove(node);
-        ChildrenOf(newParent).Add(node);
+        var siblings = ChildrenOf(newParent);
+        siblings.Insert(before is null ? siblings.Count : siblings.IndexOf(before), node);
+        Selected = selected;
         OnQueryChanged(Query);
         StructureChanged?.Invoke();
+    }
+
+    // Sürükle-bırak kuralları: klasörler yalnız en üstte sıralanır, sunucular her yere gider.
+    public DropTarget? ResolveDrop(TreeNodeViewModel dragged, TreeNodeViewModel target, DropPlace place)
+    {
+        if (dragged == target)
+            return null;
+        var targetParent = target.Model.Parent == Root ? null : target.Model.Parent;
+        if (dragged is GroupNodeViewModel && (targetParent is not null || place == DropPlace.Into))
+            return null;
+        if (dragged is ServerNodeViewModel && target is GroupNodeViewModel group)
+        {
+            // Klasörün üstüne bırakılan sunucu klasörün en üstüne girer.
+            if (place == DropPlace.Into)
+                return new(group.Group, group.Children.FirstOrDefault(), true);
+            // Açık klasörün alt kenarı, ilk sunucusunun hemen üstüdür.
+            if (place == DropPlace.Below && group.IsExpanded && group.Children.Count > 0)
+                return new(group.Group, group.Children[0], false);
+        }
+        return new(targetParent, place == DropPlace.Above ? target : NextSibling(target), false);
+    }
+
+    private TreeNodeViewModel? NextSibling(TreeNodeViewModel node)
+    {
+        var siblings = ChildrenOf(node.Model.Parent);
+        var index = siblings.IndexOf(node) + 1;
+        return index < siblings.Count ? siblings[index] : null;
     }
 
     public void Remove(TreeNodeViewModel node)
