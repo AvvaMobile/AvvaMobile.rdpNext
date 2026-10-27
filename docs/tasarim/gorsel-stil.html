@@ -1,0 +1,92 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  .tw { --r:12px; font-family:Inter,-apple-system,"Segoe UI",sans-serif; font-size:15px; color:var(--tx); background:var(--win); border-radius:16px; overflow:hidden; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,.25); margin:12px 0 36px; border:1px solid var(--line); }
+  .tw.light { --win:#eef0f5; --side:#f7f8fb; --card:#ffffff; --hover:#e6e9f1; --tx:#1b1e2b; --tx2:#6b7085; --line:#dfe2ea; --acc:#3d6dfd; --tabon:#ffffff; }
+  .tw.dark  { --win:#151827; --side:#1a1d2e; --card:#252839; --hover:#2b2f43; --tx:#e8eaf2; --tx2:#8d92a8; --line:#262a3c; --acc:#4c7dff; --tabon:#2b2f43; }
+  .tw .bar { display:flex; align-items:center; gap:8px; padding:10px 14px; }
+  .tw .lights { display:flex; gap:8px; margin-right:14px; }
+  .tw .lights i { width:12px; height:12px; border-radius:50%; background:#ff5f57; }
+  .tw .lights i:nth-child(2) { background:#febc2e; } .tw .lights i:nth-child(3) { background:#28c840; }
+  .tw .stab { display:flex; align-items:center; gap:10px; padding:7px 12px 7px 8px; border-radius:10px; color:var(--tx2); font-weight:500; }
+  .tw .stab.on { background:var(--tabon); color:var(--tx); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .tw .stab .x { margin-left:6px; opacity:.45; font-size:17px; line-height:1; }
+  .tw .stab.plus { padding:7px 12px; font-size:19px; }
+  .tw .body { display:flex; height:540px; }
+  .tw aside { width:310px; background:var(--side); border-right:1px solid var(--line); border-top:1px solid var(--line); padding:14px 12px; display:flex; flex-direction:column; gap:4px; }
+  .tw .new { background:var(--acc); color:#fff; border-radius:var(--r); padding:11px; text-align:center; font-weight:600; margin-bottom:8px; }
+  .tw .search { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; color:var(--tx2); margin-bottom:10px; }
+  .tw .search svg { width:17px; height:17px; stroke:var(--tx2); fill:none; stroke-width:2; }
+  .tw .grp { display:flex; align-items:center; gap:12px; padding:8px 10px; border-radius:var(--r); font-weight:600; }
+  .tw .grp .chev { width:10px; color:var(--tx2); font-size:12px; }
+  .tw .grp .n { margin-left:auto; color:var(--tx2); font-weight:500; font-size:14px; }
+  .tw .row { display:flex; align-items:center; gap:12px; padding:8px 10px 8px 32px; border-radius:var(--r); }
+  .tw .row.sel { background:var(--hover); }
+  .tw .row .t2 { color:var(--tx2); font-size:14px; margin-top:1px; }
+  .tw .row .dot { margin-left:auto; width:8px; height:8px; border-radius:50%; background:#2fbf71; }
+  .tw .tile { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .tw .tile.sm { width:26px; height:26px; border-radius:8px; }
+  .tw .tile svg { width:15px; height:15px; fill:#fff; }
+  .tw .tile.sm svg { width:12px; height:12px; }
+  .tw .blue { background:#2d6cdf; } .tw .navy { background:#1f4f7a; } .tw .teal { background:#12a594; } .tw .orange { background:#e5673a; } .tw .violet { background:#7b5cf0; }
+  .tw main { flex:1; padding:0 12px 12px; border-top:1px solid var(--line); padding-top:12px; }
+  .tw .desk { height:100%; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; background:radial-gradient(120% 90% at 30% 20%,#2a6fc9 0%,#123d78 45%,#0a2147 100%); }
+  .tw .desk .sp { flex:1; }
+  .tw .desk .task { height:40px; background:rgba(20,24,40,.85); display:flex; align-items:center; justify-content:center; gap:10px; }
+  .tw .desk .task i { width:22px; height:22px; border-radius:5px; background:rgba(255,255,255,.18); }
+  .tw .desk .task i:first-child { background:#4aa3ff; }
+  .tw.dark .stab.on, .tw.dark .new { box-shadow:none; }
+</style>
+
+<h2>Termius tadı, bizim düzen</h2>
+<p class="subtitle">Sol ağaç, üstte sekmeler, sağda oturum. Aynı ekran açık ve koyu temada.</p>
+
+<!-- Windows logo -->
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="win" viewBox="0 0 16 16"><rect x="0" y="0" width="7.4" height="7.4"/><rect x="8.6" y="0" width="7.4" height="7.4"/><rect x="0" y="8.6" width="7.4" height="7.4"/><rect x="8.6" y="8.6" width="7.4" height="7.4"/></symbol>
+  <symbol id="fold" viewBox="0 0 16 16"><path d="M1 3.5C1 2.7 1.7 2 2.5 2h3.6l1.6 1.8h5.8c.8 0 1.5.7 1.5 1.5v7.2c0 .8-.7 1.5-1.5 1.5h-11C1.7 14 1 13.3 1 12.5z"/></symbol>
+</defs></svg>
+
+<div class="tw light">
+  <div class="bar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="stab on"><span class="tile sm blue"><svg><use href="#win"/></svg></span>web-01<span class="x">×</span></div>
+    <div class="stab"><span class="tile sm teal"><svg><use href="#win"/></svg></span>sql-01<span class="x">×</span></div>
+    <div class="stab plus">+</div>
+  </div>
+  <div class="body">
+    <aside>
+      <div class="new">+ Sunucu ekle</div>
+      <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Ara</div>
+      <div class="grp"><span class="chev">▾</span><span class="tile sm navy"><svg><use href="#fold"/></svg></span>Üretim<span class="n">4</span></div>
+      <div class="row sel"><span class="tile blue"><svg><use href="#win"/></svg></span><div><div>web-01</div><div class="t2">10.0.1.11</div></div><span class="dot"></span></div>
+      <div class="row"><span class="tile teal"><svg><use href="#win"/></svg></span><div><div>sql-01</div><div class="t2">10.0.1.20</div></div><span class="dot"></span></div>
+      <div class="row"><span class="tile orange"><svg><use href="#win"/></svg></span><div><div>api-01</div><div class="t2">10.0.1.31</div></div></div>
+      <div class="grp"><span class="chev">▸</span><span class="tile sm navy"><svg><use href="#fold"/></svg></span>Test<span class="n">7</span></div>
+      <div class="grp"><span class="chev">▸</span><span class="tile sm navy"><svg><use href="#fold"/></svg></span>Müşteriler<span class="n">23</span></div>
+    </aside>
+    <main><div class="desk"><div class="sp"></div><div class="task"><i></i><i></i><i></i><i></i></div></div></main>
+  </div>
+</div>
+
+<div class="tw dark">
+  <div class="bar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="stab on"><span class="tile sm blue"><svg><use href="#win"/></svg></span>web-01<span class="x">×</span></div>
+    <div class="stab"><span class="tile sm teal"><svg><use href="#win"/></svg></span>sql-01<span class="x">×</span></div>
+    <div class="stab plus">+</div>
+  </div>
+  <div class="body">
+    <aside>
+      <div class="new">+ Sunucu ekle</div>
+      <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Ara</div>
+      <div class="grp"><span class="chev">▾</span><span class="tile sm navy"><svg><use href="#fold"/></svg></span>Üretim<span class="n">4</span></div>
+      <div class="row sel"><span class="tile blue"><svg><use href="#win"/></svg></span><div><div>web-01</div><div class="t2">10.0.1.11</div></div><span class="dot"></span></div>
+      <div class="row"><span class="tile teal"><svg><use href="#win"/></svg></span><div><div>sql-01</div><div class="t2">10.0.1.20</div></div><span class="dot"></span></div>
+      <div class="row"><span class="tile orange"><svg><use href="#win"/></svg></span><div><div>api-01</div><div class="t2">10.0.1.31</div></div></div>
+      <div class="grp"><span class="chev">▸</span><span class="tile sm navy"><svg><use href="#fold"/></svg></span>Test<span class="n">7</span></div>
+      <div class="grp"><span class="chev">▸</span><span class="tile sm navy"><svg><use href="#fold"/></svg></span>Müşteriler<span class="n">23</span></div>
+    </aside>
+    <main><div class="desk"><div class="sp"></div><div class="task"><i></i><i></i><i></i><i></i></div></div></main>
+  </div>
+</div>
