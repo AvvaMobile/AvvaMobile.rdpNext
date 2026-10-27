@@ -23,7 +23,7 @@ public partial class MainWindow : Window
         }
     }
 
-    // macOS üst menü çubuğundaki Dosya menüsü; diğer sistemlerde görünmez.
+    // macOS üst menü çubuğundaki File menüsü; diğer sistemlerde görünmez.
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);

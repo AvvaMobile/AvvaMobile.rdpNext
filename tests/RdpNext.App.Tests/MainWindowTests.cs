@@ -28,7 +28,7 @@ public class MainWindowTests
         var (window, vm) = TestWindows.Open();
 
         var file = Assert.Single(NativeMenu.GetMenu(window)!.Items.OfType<NativeMenuItem>());
-        Assert.Equal("Dosya", file.Header);
+        Assert.Equal("File", file.Header);
         var items = file.Menu!.Items.OfType<NativeMenuItem>().Where(i => i is not NativeMenuItemSeparator).ToList();
         Assert.Equal(["Sunucu ekle", "Klasör ekle", "Ayarlar"], items.Select(i => i.Header));
         Assert.Equal([vm.NewServerCommand, vm.NewFolderCommand, vm.OpenSettingsCommand], items.Select(i => i.Command));
