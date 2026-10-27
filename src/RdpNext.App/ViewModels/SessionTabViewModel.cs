@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using RdpNext.Core.Credentials;
 using RdpNext.Core.Model;
 using RdpNext.Rdp;
@@ -57,6 +58,18 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     partial void OnStateChanged(SessionState value) => Server.State = value;
 
+    // Sekme kendini kapatmak istiyor (sertifika reddedildi gibi).
+    public event Action? CloseRequested;
+
+    // Sunucu kaydı değişti (güvenilen sertifika gibi); diske yazılmalı.
+    public event Action? ServerChanged;
+
+    // Doğrulanamayan sertifika soruluyor; cevap gelene kadar bağlanma bekler.
+    [ObservableProperty]
+    private RdpCertificate? _certificatePrompt;
+
+    private TaskCompletionSource<bool>? _certificateAnswer;
+
     // Sunucuda kopyalanan metin; görünüm bunu bu bilgisayarın panosuna yazar.
     public event Action<string>? RemoteClipboardText;
 
@@ -75,13 +88,62 @@ public sealed partial class SessionTabViewModel : TabViewModel
             State = SessionState.Disconnected;
             return;
         }
+        session.VerifyCertificate = certificate => AskCertificate(session, certificate);
         session.Connected += () => OnUi(session, () => State = SessionState.Connected);
-        session.Ended += (_, _) => OnUi(session, () => State = SessionState.Disconnected);
+        session.Ended += (reason, _) => OnUi(session, () => Ended(reason));
         session.Frame += Screen.CopyFrame;
         session.PointerChanged += pointer => OnUi(session, () => Pointer = pointer);
         session.RemoteClipboardText += text => OnUi(session, () => RemoteClipboardText?.Invoke(text));
         session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, credentials.Username, credentials.Domain,
             credentials.Password, (int)size.Width, (int)size.Height));
+    }
+
+    private void Ended(RdpEndReason reason)
+    {
+        if (reason == RdpEndReason.CertificateRejected)
+            CloseRequested?.Invoke();
+        else
+            State = SessionState.Disconnected;
+    }
+
+    // Güvenilen parmak izi aynıysa sormadan kabul; değilse kullanıcıya sorulur.
+    private Task<bool> AskCertificate(IRdpSession from, RdpCertificate certificate)
+    {
+        var answer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (Session != from)
+                answer.TrySetResult(false);
+            else if (Server.Server.CertificateFingerprint == certificate.Fingerprint)
+                answer.TrySetResult(true);
+            else
+            {
+                _certificateAnswer?.TrySetResult(false);
+                _certificateAnswer = answer;
+                CertificatePrompt = certificate;
+            }
+        });
+        return answer.Task;
+    }
+
+    [RelayCommand]
+    private void TrustCertificate()
+    {
+        if (CertificatePrompt is not { } certificate)
+            return;
+        Server.Server.CertificateFingerprint = certificate.Fingerprint;
+        ServerChanged?.Invoke();
+        AnswerCertificate(true);
+    }
+
+    [RelayCommand]
+    private void CancelCertificate() => AnswerCertificate(false);
+
+    private void AnswerCertificate(bool trust)
+    {
+        CertificatePrompt = null;
+        _certificateAnswer?.TrySetResult(trust);
+        _certificateAnswer = null;
     }
 
     // Oturum alanı boyut değiştirdi: son değişiklikten 300 ms sonra sunucudan bu çözünürlük istenir.
@@ -118,6 +180,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     public override void OnClosed()
     {
+        AnswerCertificate(false);
         lock (_resizeGate)
             _resizeTimer?.Dispose();
         Session?.Dispose();

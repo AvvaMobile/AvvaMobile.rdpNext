@@ -1,12 +1,39 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:s="using:RdpNext.App.Strings"
              x:Class="RdpNext.App.Views.SessionView"
              x:DataType="vm:SessionTabViewModel"
              Focusable="True">
-  <Border Background="{StaticResource SessionBrush}" ClipToBounds="True">
-    <!-- Sunucu çözünürlüğü alana uymazsa (dinamik çözünürlük yoksa) görüntü küçültülür, büyütülmez. -->
-    <Image x:Name="Screen" Source="{Binding Screen.Bitmap}" Stretch="Uniform" StretchDirection="DownOnly"
-           HorizontalAlignment="Left" VerticalAlignment="Top" />
-  </Border>
+  <Panel>
+    <Border Background="{StaticResource SessionBrush}" ClipToBounds="True">
+      <!-- Sunucu çözünürlüğü alana uymazsa (dinamik çözünürlük yoksa) görüntü küçültülür, büyütülmez. -->
+      <Image x:Name="Screen" Source="{Binding Screen.Bitmap}" Stretch="Uniform" StretchDirection="DownOnly"
+             HorizontalAlignment="Left" VerticalAlignment="Top" />
+    </Border>
+
+    <!-- Sertifika sorusu: oturumun üstünde, arka plan karartılır (docs/tasarim/rdp-oturumu.png, a). -->
+    <Panel IsVisible="{Binding CertificatePrompt, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <Border Background="#99000000" />
+      <Border x:Name="CertificateCard" Classes="session-card">
+        <StackPanel Spacing="14">
+          <TextBlock Classes="card-title" Text="{x:Static s:Strings.UntrustedCertificate}" />
+          <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+            <TextBlock Classes="secondary" Text="{x:Static s:Strings.CertificateServer}" />
+            <TextBlock Grid.Column="1" Text="{Binding Title}" TextWrapping="Wrap" />
+            <TextBlock Grid.Row="1" Classes="secondary" Text="{x:Static s:Strings.CertificateIssuedTo}" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CertificatePrompt.Subject}" TextWrapping="Wrap" />
+            <TextBlock Grid.Row="2" Classes="secondary" Text="{x:Static s:Strings.CertificateIssuedBy}" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CertificatePrompt.Issuer}" TextWrapping="Wrap" />
+            <TextBlock Grid.Row="3" Classes="secondary" Text="{x:Static s:Strings.CertificateFingerprint}" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Classes="mono" Text="{Binding CertificatePrompt.Fingerprint}" TextWrapping="Wrap" />
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+            <Button Classes="secondary" Content="{x:Static s:Strings.Cancel}" Command="{Binding CancelCertificateCommand}" />
+            <Button Classes="primary" Content="{x:Static s:Strings.Trust}" Command="{Binding TrustCertificateCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Panel>
+  </Panel>
 </UserControl>

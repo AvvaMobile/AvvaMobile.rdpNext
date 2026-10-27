@@ -16,6 +16,10 @@ public sealed unsafe class RdpSession : IRdpSession
     private Thread? _thread;
     private IntPtr _ctx;
     private volatile bool _stopping;
+    private readonly CancellationTokenSource _stop = new();
+    private bool _certificateRejected;
+
+    public Func<RdpCertificate, Task<bool>>? VerifyCertificate { get; set; }
 
     public event Action? Connected;
 
@@ -81,6 +85,7 @@ public sealed unsafe class RdpSession : IRdpSession
             if (_stopping)
                 return;
             _stopping = true;
+            _stop.Cancel();
             if (_ctx != IntPtr.Zero)
                 NativeMethods.Abort(_ctx);
             thread = _thread;
@@ -91,7 +96,10 @@ public sealed unsafe class RdpSession : IRdpSession
 
     private void Run(RdpConnectOptions options)
     {
-        var callbacks = new RnCallbacks { Frame = &OnFrame, Pointer = &OnPointer, ClipboardText = &OnClipboardText };
+        var callbacks = new RnCallbacks
+        {
+            Frame = &OnFrame, VerifyCertificate = &OnVerifyCertificate, Pointer = &OnPointer, ClipboardText = &OnClipboardText,
+        };
         var ctx = NativeMethods.Create(&callbacks, GCHandle.ToIntPtr(_self));
         lock (_gate)
         {
@@ -108,7 +116,9 @@ public sealed unsafe class RdpSession : IRdpSession
         var error = Connect(ctx, options);
         if (error != 0)
         {
-            var reason = RdpErrors.Classify(error, NativeMethods.EndReason(ctx), wasConnected: false);
+            var reason = _certificateRejected
+                ? RdpEndReason.CertificateRejected
+                : RdpErrors.Classify(error, NativeMethods.EndReason(ctx), wasConnected: false);
             Finish(ctx, reason);
             return;
         }
@@ -175,6 +185,34 @@ public sealed unsafe class RdpSession : IRdpSession
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     private static void OnFrame(IntPtr user, IntPtr buffer, int width, int height, int stride, int x, int y, int w, int h) =>
         From(user)?.Frame?.Invoke(new RdpFrame(buffer, width, height, stride, x, y, w, h));
+
+    // Kullanıcının cevabı beklenir; oturum kapatılırsa bekleme bırakılır ve reddedilmiş sayılır.
+    private bool Verify(RdpCertificate certificate)
+    {
+        if (VerifyCertificate is not { } verify)
+            return false;
+        try
+        {
+            var answer = verify(certificate);
+            answer.Wait(_stop.Token);
+            return answer.Result;
+        }
+        catch (Exception e) when (e is OperationCanceledException or AggregateException)
+        {
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static int OnVerifyCertificate(IntPtr user, IntPtr subject, IntPtr issuer, IntPtr fingerprint, int changed)
+    {
+        if (From(user) is not { } session)
+            return 0;
+        var accepted = session.Verify(new RdpCertificate(Marshal.PtrToStringUTF8(subject) ?? "", Marshal.PtrToStringUTF8(issuer) ?? "",
+            Marshal.PtrToStringUTF8(fingerprint) ?? "", changed != 0));
+        session._certificateRejected = !accepted;
+        return accepted ? 1 : 0;
+    }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     private static void OnClipboardText(IntPtr user, IntPtr text)

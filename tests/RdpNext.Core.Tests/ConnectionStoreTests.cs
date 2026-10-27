@@ -27,6 +27,7 @@ public sealed class ConnectionStoreTests : IDisposable
         {
             Name = "web-01", Host = "10.0.1.11", Port = 3390, Color = ServerColor.Violet,
             Screen = ScreenMode.FullScreen, Username = "ali", Domain = "AVVA2", Icon = ServerIcon.Ssh,
+            CertificateFingerprint = "sha256 AA:BB",
         };
         root.Add(uretim);
         uretim.Add(web);
@@ -43,6 +44,7 @@ public sealed class ConnectionStoreTests : IDisposable
         Assert.Equal(
             (server.Id, "web-01", "10.0.1.11", 3390, ServerColor.Violet, ScreenMode.FullScreen, "ali", "AVVA2", ServerIcon.Ssh, Protocol.Rdp),
             (lServer.Id, lServer.Name, lServer.Host, lServer.Port, lServer.Color, lServer.Screen, lServer.Username, lServer.Domain, lServer.Icon, lServer.Protocol));
+        Assert.Equal("sha256 AA:BB", lServer.CertificateFingerprint);
         Assert.Same(lWeb, lServer.Parent);
         Assert.Same(lUretim, lWeb.Parent);
         Assert.Same(loaded, lUretim.Parent);

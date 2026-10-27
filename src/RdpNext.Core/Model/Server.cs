@@ -24,6 +24,9 @@ public sealed class Server : Node
 
     public ServerIcon Icon { get; set; } = ServerIcon.Windows;
 
+    // Kullanıcının "güven" dediği sertifikanın parmak izi; aynısı gelirse sorulmaz.
+    public string? CertificateFingerprint { get; set; }
+
     public Server CopyWithNewId(string name) => new()
     {
         Name = name,

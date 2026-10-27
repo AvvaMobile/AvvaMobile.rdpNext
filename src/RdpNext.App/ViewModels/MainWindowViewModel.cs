@@ -154,6 +154,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         var tab = Sessions.Open(server);
         if (tab.Session is not null)
             return;
+        tab.CloseRequested += () => Sessions.Close(tab);
+        tab.ServerChanged += Persist;
         tab.Connect(_rdp(), CredentialResolver.Resolve(server.Server, Secrets), SessionAreaSize);
         if (server.Server.Screen == ScreenMode.FullScreen)
             FullScreenSession = tab;

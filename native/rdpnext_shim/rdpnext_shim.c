@@ -289,7 +289,8 @@ static DWORD rn_ask_certificate(freerdp* instance, const char* subject, const ch
 	rnContext* rc = (rnContext*)instance->context;
 	if (!rc->callbacks.verify_certificate)
 		return 2; /* bu oturum için kabul */
-	return rc->callbacks.verify_certificate(rc->user, subject, issuer, fingerprint, changed) ? 1 : 0;
+	/* 2: yalnız bu oturum için kabul. FreeRDP'nin kendi sertifika deposuna yazılmaz; güvenilenler rdpNext'te tutulur. */
+	return rc->callbacks.verify_certificate(rc->user, subject, issuer, fingerprint, changed) ? 2 : 0;
 }
 
 static DWORD rn_verify_certificate(freerdp* instance, const char* host, UINT16 port, const char* common_name, const char* subject,

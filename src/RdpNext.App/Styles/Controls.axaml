@@ -173,6 +173,24 @@
     <Setter Property="Opacity" Value="0.9" />
   </Style>
 
+  <!-- Oturum alanında açılan soru kartları (sertifika, giriş). -->
+  <Style Selector="Border.session-card">
+    <Setter Property="Width" Value="420" />
+    <Setter Property="Padding" Value="22" />
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="BoxShadow" Value="0 20 50 0 #59000000" />
+  </Style>
+  <Style Selector="TextBlock.card-title">
+    <Setter Property="FontSize" Value="17" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="Menlo, Consolas, monospace" />
+    <Setter Property="FontSize" Value="14" />
+  </Style>
   <Style Selector="Border.content-frame.fullscreen">
     <Setter Property="Margin" Value="0" />
     <Setter Property="CornerRadius" Value="0" />
