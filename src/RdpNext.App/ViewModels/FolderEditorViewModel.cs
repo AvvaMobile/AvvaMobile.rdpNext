@@ -20,6 +20,7 @@ public sealed partial class FolderEditorViewModel : TabViewModel
             _name = existing.Name;
             _username = existing.Username ?? "";
             _domain = existing.Domain ?? "";
+            _color = existing.Color;
             _password = _savedPassword = owner.Secrets.GetPassword(existing.Id) ?? "";
             parent = existing.Parent;
         }
@@ -43,6 +44,11 @@ public sealed partial class FolderEditorViewModel : TabViewModel
 
     [ObservableProperty]
     private FolderOption _parent;
+
+    public IReadOnlyList<ServerColor> Colors { get; } = Enum.GetValues<ServerColor>();
+
+    [ObservableProperty]
+    private ServerColor _color = ServerColor.Blue;
 
     [ObservableProperty]
     private string _username = "";
@@ -73,6 +79,7 @@ public sealed partial class FolderEditorViewModel : TabViewModel
         group.Name = Name.Trim();
         group.Username = string.IsNullOrWhiteSpace(Username) ? null : Username.Trim();
         group.Domain = string.IsNullOrWhiteSpace(Domain) ? null : Domain.Trim();
+        group.Color = Color;
 
         if (Existing is null)
         {

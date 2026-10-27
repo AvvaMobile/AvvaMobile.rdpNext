@@ -51,7 +51,6 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <SolidColorBrush x:Key="GroupTileBrush" Color="#1f4f7a" />
   <SolidColorBrush x:Key="ConnectedBrush" Color="#2fbf71" />
   <SolidColorBrush x:Key="NoticeBrush" Color="#e5673a" />
   <SolidColorBrush x:Key="SessionBrush" Color="#0f1424" />
