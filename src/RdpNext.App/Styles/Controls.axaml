@@ -21,6 +21,12 @@
     <Setter Property="Foreground" Value="White" />
     <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
   </Style>
+  <Style Selector="Button.add.icon">
+    <Setter Property="Width" Value="42" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+  </Style>
   <Style Selector="Button.add:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
     <Setter Property="Foreground" Value="White" />
