@@ -14,7 +14,7 @@
                  Foreground="{StaticResource NoticeBrush}"
                  FontSize="{StaticResource SecondaryFontSize}"
                  TextWrapping="Wrap" />
-      <!-- DENEME 1: ekle düğmeleri arama kutusunun sağında, yalnız ikon. -->
+      <!-- Arama kutusu ve yanında, onunla aynı görünümde iki ikon düğme (sunucu ekle, klasör ekle). -->
       <Grid ColumnDefinitions="*,8,Auto,6,Auto">
         <TextBox x:Name="SearchBox" Classes="search" Watermark="{x:Static s:Strings.Search}" Text="{Binding Tree.Query}">
           <TextBox.KeyBindings>
@@ -25,29 +25,15 @@
                   Width="14" Height="14" Stretch="Uniform" Margin="12,0,4,0" />
           </TextBox.InnerLeftContent>
         </TextBox>
-        <Button x:Name="AddServerButton" Grid.Column="2" Classes="add icon" Command="{Binding NewServerCommand}"
+        <Button x:Name="AddServerButton" Grid.Column="2" Classes="tool" Command="{Binding NewServerCommand}"
                 ToolTip.Tip="{x:Static s:Strings.AddServer}">
-          <Panel Width="19" Height="19">
-            <Path Data="{StaticResource ServerIcon}" Fill="White" Width="15" Height="15" Stretch="Uniform"
-                  HorizontalAlignment="Left" VerticalAlignment="Top" />
-            <!-- Artı, düğme renginde bir halkanın içinde: simgeden ayrı görünsün. -->
-            <Border Width="11" Height="11" CornerRadius="6" Background="{DynamicResource ButtonBrush}"
-                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-2">
-              <Path Data="{StaticResource PlusIcon}" Stroke="White" StrokeThickness="1.8" Width="7" Height="7" Stretch="Uniform" />
-            </Border>
-          </Panel>
+          <Path Data="{StaticResource AddServerIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.7"
+                StrokeLineCap="Round" StrokeJoin="Round" Width="19" Height="19" Stretch="Uniform" />
         </Button>
-        <Button x:Name="AddFolderButton" Grid.Column="4" Classes="add icon" Command="{Binding NewFolderCommand}"
+        <Button x:Name="AddFolderButton" Grid.Column="4" Classes="tool" Command="{Binding NewFolderCommand}"
                 ToolTip.Tip="{x:Static s:Strings.AddFolder}">
-          <Panel Width="19" Height="19">
-            <Path Data="{StaticResource FolderIcon}" Fill="White" Width="15" Height="15" Stretch="Uniform"
-                  HorizontalAlignment="Left" VerticalAlignment="Top" />
-            <!-- Artı, düğme renginde bir halkanın içinde: simgeden ayrı görünsün. -->
-            <Border Width="11" Height="11" CornerRadius="6" Background="{DynamicResource ButtonBrush}"
-                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-2">
-              <Path Data="{StaticResource PlusIcon}" Stroke="White" StrokeThickness="1.8" Width="7" Height="7" Stretch="Uniform" />
-            </Border>
-          </Panel>
+          <Path Data="{StaticResource AddFolderIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.7"
+                StrokeLineCap="Round" StrokeJoin="Round" Width="19" Height="19" Stretch="Uniform" />
         </Button>
       </Grid>
     </StackPanel>

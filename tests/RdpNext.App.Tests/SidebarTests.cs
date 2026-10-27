@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -56,20 +57,22 @@ public class SidebarTests
     }
 
     [AvaloniaFact]
-    public void AddServerAndFolderButtonsSideBySide()
+    public void AddButtonsAreIconsRightOfSearch()
     {
         var (window, _) = TestWindows.Open();
+        var search = window.Named<TextBox>("SearchBox");
         var server = window.Named<Button>("AddServerButton");
         var folder = window.Named<Button>("AddFolderButton");
 
-        Assert.Equal(("Add server", "Add folder"), (Strings.Strings.AddServer, Strings.Strings.AddFolder));
-        Assert.Contains(server.Texts(), t => t.Text == "Add server");
-        Assert.Contains(folder.Texts(), t => t.Text == "Add folder");
+        Assert.Equal(("Add server", "Add folder"), (ToolTip.GetTip(server), ToolTip.GetTip(folder)));
+        Assert.Empty(server.Texts());
         Assert.NotEmpty(server.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
         Assert.NotEmpty(folder.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
-        Assert.Equal(server.Bounds.Y, folder.Bounds.Y);
-        Assert.True(folder.Bounds.X > server.Bounds.Right);
-        Assert.True(server.Bounds.Height <= 40, $"{server.Bounds.Height}");
+        Point Top(Control c) => c.TranslatePoint(new Point(0, 0), window)!.Value;
+        Assert.Equal(Top(search).Y, Top(server).Y, 0.5);
+        Assert.Equal(Top(search).Y, Top(folder).Y, 0.5);
+        Assert.True(Top(server).X > Top(search).X + search.Bounds.Width);
+        Assert.True(Top(folder).X > Top(server).X + server.Bounds.Width);
     }
 
     [AvaloniaFact]
