@@ -14,6 +14,7 @@
     <KeyBinding Gesture="Meta+OemComma" Command="{Binding OpenSettingsCommand}" />
     <KeyBinding Gesture="Ctrl+OemComma" Command="{Binding OpenSettingsCommand}" />
   </Window.KeyBindings>
+  <Panel>
   <DockPanel>
     <Border x:Name="TitleBar" DockPanel.Dock="Top" Height="52" Background="{DynamicResource WindowBrush}"
             BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1"
@@ -47,4 +48,9 @@
       </ContentControl>
     </Border>
   </DockPanel>
+  <!-- Kaydedince sağ üstte kısa bildirim. -->
+  <Border x:Name="Toast" Classes="toast" IsVisible="{Binding ToastMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
+    <TextBlock Text="{Binding ToastMessage}" />
+  </Border>
+  </Panel>
 </Window>

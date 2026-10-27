@@ -16,6 +16,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Func<IRdpSession>? rdp = null, TimeProvider? time = null)
     {
         _rdp = rdp ?? (() => new RdpSession());
+        _time = time ?? TimeProvider.System;
         Sessions = new SessionsViewModel(time);
         Store = store;
         Settings = settings ?? new SettingsStore(SettingsStore.Beside(store.FilePath));
@@ -34,6 +35,20 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public ConnectionStore Store { get; }
 
     private readonly Func<IRdpSession> _rdp;
+    private readonly TimeProvider _time;
+    private ITimer? _toastTimer;
+
+    // Sağ üstte kısa süre görünen bildirim ("Saved" gibi); null ise gizli.
+    [ObservableProperty]
+    private string? _toastMessage;
+
+    public void ShowToast(string message)
+    {
+        ToastMessage = message;
+        _toastTimer?.Dispose();
+        _toastTimer = _time.CreateTimer(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() => ToastMessage = null),
+            null, TimeSpan.FromSeconds(2.5), Timeout.InfiniteTimeSpan);
+    }
 
     // Oturum alanının son boyutu; yeni oturum bu çözünürlükle açılır.
     public Size SessionAreaSize { get; set; } = new(1280, 800);

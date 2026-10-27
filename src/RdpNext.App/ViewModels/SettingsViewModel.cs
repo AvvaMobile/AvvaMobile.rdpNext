@@ -70,6 +70,7 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
         Themes.Apply(settings.Theme);
         _savedThemeIndex = ThemeIndex;
         SaveGeneralCommand.NotifyCanExecuteChanged();
+        owner.ShowToast(Strings.Strings.Saved);
     }
 
     // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.
