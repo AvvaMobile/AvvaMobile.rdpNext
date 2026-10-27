@@ -56,7 +56,7 @@
   <data name="Language" xml:space="preserve"><value>Dil</value></data>
   <data name="RestartToApply" xml:space="preserve"><value>Yeniden başlatınca uygulanır.</value></data>
   <data name="InheritedFrom" xml:space="preserve"><value>{0}</value><comment>Türkçede kullanılmaz, ek TurkishText ile hesaplanır.</comment></data>
-  <data name="BackupFileName" xml:space="preserve"><value>rdpNext-yedek-{0}.json</value></data>
+  <data name="BackupFileName" xml:space="preserve"><value>rdpNext-{0}.json</value></data>
   <data name="About" xml:space="preserve"><value>{0} Hakkında</value></data>
   <data name="Version" xml:space="preserve"><value>Sürüm {0}</value></data>
 </root>

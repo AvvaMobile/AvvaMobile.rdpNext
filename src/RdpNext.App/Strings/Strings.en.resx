@@ -56,7 +56,7 @@
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="RestartToApply" xml:space="preserve"><value>Takes effect after restart.</value></data>
   <data name="InheritedFrom" xml:space="preserve"><value>from {0}</value></data>
-  <data name="BackupFileName" xml:space="preserve"><value>rdpNext-backup-{0}.json</value></data>
+  <data name="BackupFileName" xml:space="preserve"><value>rdpNext-{0}.json</value></data>
   <data name="About" xml:space="preserve"><value>About {0}</value></data>
   <data name="Version" xml:space="preserve"><value>Version {0}</value></data>
 </root>
