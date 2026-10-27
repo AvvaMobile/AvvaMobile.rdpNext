@@ -45,6 +45,20 @@ public class ServerEditorTests
     }
 
     [Fact]
+    public void IconIsSavedAndLoaded()
+    {
+        var editor = NewIn("Üretim");
+        Assert.Equal(ServerIcon.Windows, editor.Icon);
+        editor.Host = "10.0.1.70";
+        editor.Icon = ServerIcon.Linux;
+
+        editor.SaveCommand.Execute(null);
+
+        Assert.Equal(ServerIcon.Linux, Reload().AllServers().Single(s => s.Host == "10.0.1.70").Icon);
+        Assert.Equal(ServerIcon.Linux, Server("10.0.1.70").Icon);
+    }
+
+    [Fact]
     public void EmptyNameDefaultsToHost()
     {
         var editor = NewIn("Üretim");

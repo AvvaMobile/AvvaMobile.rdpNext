@@ -5,3 +5,6 @@ public enum Protocol { Rdp }
 public enum ScreenMode { FitToWindow, FullScreen }
 
 public enum ServerColor { Blue, Teal, Orange, Violet, Green }
+
+// Yalnız görüntü; bağlantı her durumda Protocol ile kurulur.
+public enum ServerIcon { Windows, Linux, Ssh }

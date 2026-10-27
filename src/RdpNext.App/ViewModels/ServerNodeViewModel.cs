@@ -11,6 +11,8 @@ public sealed partial class ServerNodeViewModel(Server server) : TreeNodeViewMod
 
     public ServerColor Color => Server.Color;
 
+    public ServerIcon Icon => Server.Icon;
+
     [ObservableProperty]
     private bool _isConnected;
 }

@@ -26,7 +26,7 @@ public sealed class ConnectionStoreTests : IDisposable
         var server = new Server
         {
             Name = "web-01", Host = "10.0.1.11", Port = 3390, Color = ServerColor.Violet,
-            Screen = ScreenMode.FullScreen, Username = "ali", Domain = "AVVA2",
+            Screen = ScreenMode.FullScreen, Username = "ali", Domain = "AVVA2", Icon = ServerIcon.Ssh,
         };
         root.Add(uretim);
         uretim.Add(web);
@@ -41,8 +41,8 @@ public sealed class ConnectionStoreTests : IDisposable
         Assert.False(lWeb.IsExpanded);
         var lServer = Assert.IsType<Server>(Assert.Single(lWeb.Children));
         Assert.Equal(
-            (server.Id, "web-01", "10.0.1.11", 3390, ServerColor.Violet, ScreenMode.FullScreen, "ali", "AVVA2", Protocol.Rdp),
-            (lServer.Id, lServer.Name, lServer.Host, lServer.Port, lServer.Color, lServer.Screen, lServer.Username, lServer.Domain, lServer.Protocol));
+            (server.Id, "web-01", "10.0.1.11", 3390, ServerColor.Violet, ScreenMode.FullScreen, "ali", "AVVA2", ServerIcon.Ssh, Protocol.Rdp),
+            (lServer.Id, lServer.Name, lServer.Host, lServer.Port, lServer.Color, lServer.Screen, lServer.Username, lServer.Domain, lServer.Icon, lServer.Protocol));
         Assert.Same(lWeb, lServer.Parent);
         Assert.Same(lUretim, lWeb.Parent);
         Assert.Same(loaded, lUretim.Parent);
@@ -164,6 +164,17 @@ public sealed class ConnectionStoreTests : IDisposable
         var server = Assert.IsType<Server>(Assert.Single(new ConnectionStore(_path).Load().Root.Children));
 
         Assert.Equal(("", ""), (server.Name, server.Host));
+    }
+
+    // İkon alanından önce kaydedilmiş dosyalardaki sunucular Windows ikonuyla açılır.
+    [Fact]
+    public void MissingIconLoadsAsWindows()
+    {
+        File.WriteAllText(_path, """{ "version": 1, "root": { "kind": "group", "children": [ { "kind": "server", "name": "web-01", "host": "h" } ] } }""");
+
+        var server = Assert.IsType<Server>(Assert.Single(new ConnectionStore(_path).Load().Root.Children));
+
+        Assert.Equal(ServerIcon.Windows, server.Icon);
     }
 
     [Fact]

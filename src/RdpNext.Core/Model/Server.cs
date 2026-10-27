@@ -22,6 +22,8 @@ public sealed class Server : Node
 
     public ScreenMode Screen { get; set; } = ScreenMode.FitToWindow;
 
+    public ServerIcon Icon { get; set; } = ServerIcon.Windows;
+
     public Server CopyWithNewId(string name) => new()
     {
         Name = name,
@@ -32,5 +34,6 @@ public sealed class Server : Node
         Domain = Domain,
         Color = Color,
         Screen = Screen,
+        Icon = Icon,
     };
 }
