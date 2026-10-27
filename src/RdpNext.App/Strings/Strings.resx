@@ -13,7 +13,7 @@
   <data name="NewServer" xml:space="preserve"><value>Yeni sunucu</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>{0} ayarları</value></data>
   <data name="TopLevel" xml:space="preserve"><value>En üstte</value></data>
-  <data name="Address" xml:space="preserve"><value>Adres</value></data>
+  <data name="Address" xml:space="preserve"><value>Host/IP</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>
   <data name="User" xml:space="preserve"><value>Kullanıcı</value></data>
   <data name="Password" xml:space="preserve"><value>Şifre</value></data>
@@ -39,4 +39,6 @@
   <data name="DeleteFolderConfirm" xml:space="preserve"><value>{0} ve içindeki {1} sunucu silinsin mi?</value></data>
   <data name="CopyName" xml:space="preserve"><value>{0} kopya</value></data>
   <data name="KeychainError" xml:space="preserve"><value>Anahtar zincirine erişilemedi, şifre okunamadı ya da kaydedilmedi.</value></data>
+  <data name="FolderNamePrompt" xml:space="preserve"><value>Klasör adı</value></data>
+  <data name="Add" xml:space="preserve"><value>Ekle</value></data>
 </root>

@@ -79,8 +79,8 @@ Onaylı çizim: `docs/tasarim/duzenle-sekmesi.png` (kaynak: `docs/tasarim/duzenl
 
 1. Ortadaki alanda ayrı bir sekme olarak açılır; sekme şeridinde dişli ikonu ve "<ad> ayarları" başlığıyla durur. Sağ panel ya da üstte açılan pencere değil.
 2. Açılış: sunucuya ya da klasöre sağ tık > Düzenle. Tek tık ve çift tık bu ekranı açmaz.
-3. Sol paneldeki "Sunucu ekle" ve "Klasör ekle" butonları aynı sekmeyi boş açar; seçili klasör önceden seçili gelir.
-4. Üstte alt sekmeler: Genel, Gelişmiş. Etiketler alanların üstünde, satırlar ikişerli: Adres + Port, Kullanıcı + Şifre (göz ikonuyla), Domain + Klasör, Görünen ad + Renk. Gelişmiş: ekran ayarı (pencereye sığdır / tam ekran).
+3. "Sunucu ekle" düzenleme sekmesini boş açar; seçili klasör önceden seçili gelir. "Klasör ekle" yalnız ad soran küçük bir pencere açar (Vazgeç / Ekle); klasör ağaçta seçili yere eklenir, kimlik bilgileri sonradan sağ tık > Düzenle ile girilir (Murat, 2026-10-27).
+4. Üstte alt sekmeler: Genel, Gelişmiş. Etiketler alanların üstünde, sıra (Murat, 2026-10-27): Görünen ad (tam satır); Klasör + Renk; Host/IP + Port; Kullanıcı + Şifre (göz ikonuyla); Domain. Gelişmiş: ekran ayarı (pencereye sığdır / tam ekran).
 5. Gruptan devralınan değer alanda soluk görünür ve sağında "<klasör>'den" yazar.
 6. Altta: Bağlan, Kaydet; sağda Sil.
 7. Klasör ekranı aynı düzende: Ad, Üst klasör, Kullanıcı, Şifre, Domain.

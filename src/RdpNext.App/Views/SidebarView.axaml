@@ -60,7 +60,8 @@
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).NewFolderInCommand}" CommandParameter="{Binding}" />
                 <MenuItem Header="{x:Static s:Strings.Edit}"
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).EditCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="{x:Static s:Strings.Delete}"
+                <Separator />
+                <MenuItem Classes="danger" Header="{x:Static s:Strings.Delete}"
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).DeleteNodeCommand}" CommandParameter="{Binding}" />
               </ContextMenu>
             </Grid.ContextMenu>
@@ -81,7 +82,8 @@
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).EditCommand}" CommandParameter="{Binding}" />
                 <MenuItem Header="{x:Static s:Strings.Copy}"
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).CopyServerCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="{x:Static s:Strings.Delete}"
+                <Separator />
+                <MenuItem Classes="danger" Header="{x:Static s:Strings.Delete}"
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).DeleteNodeCommand}" CommandParameter="{Binding}" />
               </ContextMenu>
             </Grid.ContextMenu>

@@ -1,4 +1,6 @@
+using RdpNext.App.Services;
 using RdpNext.App.ViewModels;
+using RdpNext.Core.Secrets;
 using RdpNext.Core.Storage;
 
 namespace RdpNext.App.Tests;
@@ -8,69 +10,45 @@ public class FolderEditorTests
     private readonly string _path = TestWindows.SampleFile();
     private readonly MainWindowViewModel _vm;
 
-    public FolderEditorTests() => _vm = TestWindows.ViewModel(_path);
+    private sealed class Answer(string name) : IConfirmService
+    {
+        public Task<bool> ConfirmAsync(string message, string confirmText) => Task.FromResult(true);
+
+        public Task<string?> AskTextAsync(string message, string confirmText) => Task.FromResult<string?>(name);
+    }
+
+    public FolderEditorTests() => _vm = new MainWindowViewModel(new ConnectionStore(_path), new InMemorySecretStore(), new Answer("Web"));
 
     private GroupNodeViewModel Folder(string name) => _vm.Tree.Node<GroupNodeViewModel>(
         _vm.Tree.Root.Children.OfType<Group>().First(g => g.Name == name).Id);
 
     private Group Reload() => new ConnectionStore(_path).Load().Root;
 
-    private FolderEditorViewModel Open()
-    {
-        _vm.NewFolder();
-        return Assert.IsType<FolderEditorViewModel>(_vm.Sessions.Selected);
-    }
+
+
+
 
     [Fact]
-    public void NewFolderAtTopLevel()
-    {
-        _vm.Tree.Selected = null;
-        var editor = Open();
-        Assert.Equal("Yeni klasör", editor.Title);
-        editor.Name = "Muhasebe";
-
-        editor.SaveCommand.Execute(null);
-
-        Assert.Contains(Reload().Children, n => n is Group { Name: "Muhasebe" });
-        Assert.Contains(_vm.Tree.Roots, n => n.Name == "Muhasebe");
-        Assert.Equal("Muhasebe ayarları", editor.Title);
-    }
-
-    [Fact]
-    public void NewFolderInsideSelected()
+    public async Task FolderCannotMoveIntoItself()
     {
         _vm.Tree.Selected = Folder("Üretim");
-        var editor = Open();
-        editor.Name = "Web";
-
-        editor.SaveCommand.Execute(null);
-
-        var uretim = Reload().Children.OfType<Group>().Single(g => g.Name == "Üretim");
-        Assert.Contains(uretim.Children, n => n is Group { Name: "Web" });
-    }
-
-    [Fact]
-    public void EmptyNameDisablesSave()
-    {
-        var editor = Open();
-        editor.Name = "  ";
-
-        Assert.False(editor.SaveCommand.CanExecute(null));
-    }
-
-    [Fact]
-    public void FolderCannotMoveIntoItself()
-    {
-        _vm.Tree.Selected = Folder("Üretim");
-        var child = Open();
-        child.Name = "Web";
-        child.SaveCommand.Execute(null);
+        await _vm.NewFolderCommand.ExecuteAsync(null);
 
         _vm.EditFolder(Folder("Üretim"));
         var editor = Assert.IsType<FolderEditorViewModel>(_vm.Sessions.Selected);
 
         Assert.DoesNotContain(editor.Folders, f => f.Group?.Name is "Üretim" or "Web");
         Assert.Contains(editor.Folders, f => f.Group?.Name == "Test");
+    }
+
+    [Fact]
+    public void EditedFolderEmptyNameDisablesSave()
+    {
+        _vm.EditFolder(Folder("Test"));
+        var editor = Assert.IsType<FolderEditorViewModel>(_vm.Sessions.Selected);
+        editor.Name = "  ";
+
+        Assert.False(editor.SaveCommand.CanExecute(null));
     }
 
     [Fact]
