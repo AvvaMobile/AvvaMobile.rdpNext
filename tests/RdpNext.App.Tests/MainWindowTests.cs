@@ -216,6 +216,29 @@ public class MainWindowTests
         Assert.Empty(form.GetVisualDescendants().OfType<ComboBox>());
     }
 
+    // Sil, düz yazı değil ikonlu kırmızı düğme ve Kaydet'in hemen sağında.
+    [AvaloniaFact]
+    public void DeleteIsIconButtonNextToSave()
+    {
+        var (window, vm) = TestWindows.Open();
+        var folder = vm.Tree.Roots.OfType<GroupNodeViewModel>().First();
+        vm.EditCommand.Execute(folder.Children.OfType<ServerNodeViewModel>().First());
+        Dispatcher.UIThread.RunJobs();
+        AssertNextTo(window.Named<Button>("SaveButton"), window.Named<Button>("DeleteButton"));
+
+        vm.EditCommand.Execute(folder);
+        Dispatcher.UIThread.RunJobs();
+        AssertNextTo(window.Named<Button>("SaveFolderButton"), window.Named<Button>("DeleteFolderButton"));
+
+        static void AssertNextTo(Button save, Button delete)
+        {
+            Assert.Contains("danger", delete.Classes);
+            Assert.NotEmpty(delete.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
+            var gap = delete.TranslatePoint(new Point(0, 0), save)!.Value.X - save.Bounds.Width;
+            Assert.InRange(gap, 0, 16);
+        }
+    }
+
     [AvaloniaFact]
     public void AppNameIsRdpNext()
     {
