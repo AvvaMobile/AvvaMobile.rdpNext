@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
+using CommunityToolkit.Mvvm.Input;
 using RdpNext.App.ViewModels;
 
 namespace RdpNext.App.Views;
@@ -23,26 +24,34 @@ public partial class MainWindow : Window
         }
     }
 
-    // macOS üst menü çubuğundaki File menüsü; diğer sistemlerde görünmez.
+    // macOS'ta uygulama adına tıklanınca açılan menü; Avalonia'nın varsayılan "About Avalonia"sının yerine geçer.
+    // Avalonia bu menüyü açılışta kurar ve yenisini görmez; o yüzden var olan menünün içi değiştirilir,
+    // Services, Gizle ve Çık maddeleri yerinde kalır.
+    // Diğer sistemlerde görünmez.
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
-        if (DataContext is not MainWindowViewModel vm)
+        if (DataContext is not MainWindowViewModel vm || Application.Current is not { } app)
             return;
-        NativeMenu.SetMenu(this, new NativeMenu
-        {
-            new NativeMenuItem(Strings.Strings.File)
-            {
-                Menu = new NativeMenu
-                {
-                    new NativeMenuItem(Strings.Strings.AddServer) { Command = vm.NewServerCommand },
-                    new NativeMenuItem(Strings.Strings.AddFolder) { Command = vm.NewFolderCommand },
-                    new NativeMenuItemSeparator(),
-                    new NativeMenuItem(Strings.Strings.Settings) { Command = vm.OpenSettingsCommand },
-                },
-            },
-        });
+        var menu = NativeMenu.GetMenu(app);
+        if (menu is null)
+            NativeMenu.SetMenu(app, menu = new NativeMenu());
+        if (menu.Items.FirstOrDefault() is NativeMenuItem { Header: "About Avalonia" } avalonia)
+            menu.Items.Remove(avalonia);
+        NativeMenuItemBase[] items =
+        [
+            new NativeMenuItem(string.Format(Strings.Strings.About, "rdpNext")) { Command = new RelayCommand(ShowAbout) },
+            new NativeMenuItemSeparator(),
+            new NativeMenuItem(Strings.Strings.AddServer) { Command = vm.NewServerCommand },
+            new NativeMenuItem(Strings.Strings.AddFolder) { Command = vm.NewFolderCommand },
+            new NativeMenuItemSeparator(),
+            new NativeMenuItem(Strings.Strings.Settings) { Command = vm.OpenSettingsCommand },
+        ];
+        for (var i = 0; i < items.Length; i++)
+            menu.Items.Insert(i, items[i]);
     }
+
+    private void ShowAbout() => new AboutWindow().ShowDialog(this);
 
     // Başlık çubuğunun boş yerine çift tık: ekranı doldur ya da eski boyuta dön.
     private void OnTitleBarDoubleTapped(object? sender, TappedEventArgs e)

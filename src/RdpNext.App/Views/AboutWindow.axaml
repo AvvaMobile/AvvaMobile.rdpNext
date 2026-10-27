@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RdpNext.App.Views.AboutWindow"
+        Width="320" SizeToContent="Height" CanResize="False" ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner" Title="rdpNext">
+  <StackPanel Margin="24,28" Spacing="6" HorizontalAlignment="Center">
+    <Image x:Name="AppIcon" Source="/Assets/rdpNext.png" Width="128" Height="128" Margin="0,0,0,8" />
+    <TextBlock Text="rdpNext" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" />
+    <TextBlock x:Name="VersionText" Classes="secondary" HorizontalAlignment="Center" />
+    <TextBlock Classes="secondary" Text="© 2026 Avva Mobile Enterprise Solutions" HorizontalAlignment="Center" Margin="0,12,0,0" />
+  </StackPanel>
+</Window>
