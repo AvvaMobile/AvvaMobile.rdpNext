@@ -34,6 +34,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     public SessionsViewModel Sessions { get; } = new();
 
+    [ObservableProperty]
+    private bool _isSidebarVisible = true;
+
+    [RelayCommand]
+    private void ToggleSidebar() => IsSidebarVisible = !IsSidebarVisible;
+
     public void Persist() => Store.Save(Tree.Root);
 
     // Ağaçta seçili klasör; sunucu seçiliyse onun klasörü; hiçbiri yoksa en üst (null).
