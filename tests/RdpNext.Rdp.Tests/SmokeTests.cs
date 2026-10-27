@@ -66,4 +66,20 @@ public class SmokeTests
 
         Assert.Equal(RdpEndReason.CertificateRejected, await ended.Task.WaitAsync(TimeSpan.FromSeconds(20), TestContext.Current.CancellationToken));
     }
+
+    // Hesabı kilitlememek için yalnız RDPNEXT_SMOKE_WRONG_PASSWORD=1 ile, bilerek çalıştırılır.
+    [Fact]
+    public async Task WrongPasswordEndsWithAuthFailed()
+    {
+        var options = SmokeServer.Options();
+        Assert.SkipWhen(options is null || Environment.GetEnvironmentVariable("RDPNEXT_SMOKE_WRONG_PASSWORD") != "1",
+            "RDPNEXT_SMOKE_WRONG_PASSWORD ayarlı değil");
+        using var session = new RdpSession { VerifyCertificate = _ => Task.FromResult(true) };
+        var ended = new TaskCompletionSource<RdpEndReason>();
+        session.Ended += (r, _) => ended.TrySetResult(r);
+
+        session.Start(options! with { Password = "rdpNext-wrong-" + Guid.NewGuid() });
+
+        Assert.Equal(RdpEndReason.AuthFailed, await ended.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken));
+    }
 }

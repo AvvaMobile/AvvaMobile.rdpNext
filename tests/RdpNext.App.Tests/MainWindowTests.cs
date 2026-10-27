@@ -105,6 +105,10 @@ public class MainWindowTests
         var (window, vm) = TestWindows.Open();
         var session = window.Named<Control>("SessionArea");
         Assert.Empty(session.Texts());
+        // Kullanıcı bilgisi olmayan sunucuda giriş sorusu çıkardı; bu test boş oturum alanına bakar.
+        var uretim = vm.Tree.Root.Children.OfType<Group>().First(g => g.Name == "Üretim");
+        uretim.Username = "admin";
+        vm.Secrets.SetPassword(uretim.Id, "pw");
 
         vm.ConnectFirstMatchCommand.Execute(null);
         vm.Tree.Query = "web";

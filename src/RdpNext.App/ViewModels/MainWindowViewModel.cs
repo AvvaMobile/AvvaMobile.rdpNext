@@ -151,14 +151,26 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void Connect(ServerNodeViewModel server)
     {
+        var existing = Sessions.Find<SessionTabViewModel>(t => t.Server == server);
         var tab = Sessions.Open(server);
-        if (tab.Session is not null)
+        if (existing is not null)
             return;
         tab.CloseRequested += () => Sessions.Close(tab);
         tab.ServerChanged += Persist;
-        tab.Connect(_rdp(), CredentialResolver.Resolve(server.Server, Secrets), SessionAreaSize);
+        tab.CredentialsSaved += (username, password, domain) => SaveCredentials(server, username, password, domain);
+        tab.Connect(_rdp, CredentialResolver.Resolve(server.Server, Secrets), SessionAreaSize);
         if (server.Server.Screen == ScreenMode.FullScreen)
             FullScreenSession = tab;
+    }
+
+    // Şifre sorusunda "Save" işaretliyse: kullanıcı ve domain sunucuya, şifre anahtar zincirine.
+    private void SaveCredentials(ServerNodeViewModel server, string username, string password, string? domain)
+    {
+        server.Server.Username = username;
+        server.Server.Domain = domain;
+        Secrets.SetPassword(server.Server.Id, password);
+        server.Refresh();
+        Persist();
     }
 
     // Uygulama kapanırken açık oturumların hepsi kapatılır.

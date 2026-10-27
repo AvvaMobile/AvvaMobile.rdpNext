@@ -136,6 +136,9 @@ public class SessionTabTests
         GiveUretimCredentials();
         Connect("web-01");
         var vm = TestWindows.ViewModel(sessions: _sessions, confirm: true);
+        var uretim = vm.Tree.Root.Children.OfType<Group>().First(g => g.Name == "Üretim");
+        uretim.Username = "admin";
+        vm.Secrets.SetPassword(uretim.Id, "pw");
         vm.ConnectCommand.Execute(vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == "sql-01").Id));
 
         await vm.DeleteNodeCommand.ExecuteAsync(vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == "sql-01").Id));
