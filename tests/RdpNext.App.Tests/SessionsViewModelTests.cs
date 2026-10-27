@@ -108,4 +108,20 @@ public class SessionsViewModelTests
         Assert.Same(tab, _sessions.Selected);
         Assert.Same(tab, _sessions.Find<FakeTab>(t => t.Title == "ayarlar"));
     }
+
+    [Fact]
+    public void MoveTabReordersAndKeepsSelection()
+    {
+        var a = _sessions.Open(_a);
+        var b = _sessions.Open(_b);
+        var c = _sessions.Open(_c);
+        _sessions.Selected = b;
+
+        _sessions.MoveTab(c, 0);
+        Assert.Equal([c, a, b], _sessions.Tabs);
+
+        _sessions.MoveTab(c, 5);
+        Assert.Equal([a, b, c], _sessions.Tabs);
+        Assert.Same(b, _sessions.Selected);
+    }
 }
