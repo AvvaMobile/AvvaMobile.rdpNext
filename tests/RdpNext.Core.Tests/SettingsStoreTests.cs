@@ -16,7 +16,16 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
-    public void MissingFileGivesDefaults() => Assert.NotNull(new SettingsStore(_path).Load());
+    public void MissingFileGivesDefaults() => Assert.Equal(AppTheme.System, new SettingsStore(_path).Load().Theme);
+
+    [Fact]
+    public void RoundTripKeepsTheme()
+    {
+        new SettingsStore(_path).Save(new AppSettings { Theme = AppTheme.Dark });
+
+        Assert.Equal(AppTheme.Dark, new SettingsStore(_path).Load().Theme);
+        Assert.Contains("\"dark\"", File.ReadAllText(_path));
+    }
 
     [Fact]
     public void CorruptFileGivesDefaults()
@@ -24,6 +33,6 @@ public sealed class SettingsStoreTests : IDisposable
         Directory.CreateDirectory(_dir);
         File.WriteAllText(_path, "{ bozuk");
 
-        Assert.NotNull(new SettingsStore(_path).Load());
+        Assert.Equal(AppTheme.System, new SettingsStore(_path).Load().Theme);
     }
 }

@@ -20,7 +20,20 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Panel>
-          <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}" />
+          <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}">
+            <Grid ColumnDefinitions="*,12,*">
+              <StackPanel>
+                <TextBlock Classes="label" Text="{x:Static s:Strings.Theme}" />
+                <ComboBox x:Name="ThemeBox" Classes="field" SelectedIndex="{Binding ThemeIndex}">
+                  <ComboBoxItem Content="{x:Static s:Strings.ThemeDark}" />
+                  <ComboBoxItem Content="{x:Static s:Strings.ThemeLight}" />
+                  <ComboBoxItem Content="{x:Static s:Strings.ThemeSystem}" />
+                </ComboBox>
+              </StackPanel>
+            </Grid>
+            <Button x:Name="SaveGeneralButton" Classes="primary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveGeneralCommand}"
+                    Margin="0,6,0,0" />
+          </StackPanel>
           <StackPanel Classes="form" IsVisible="{Binding ShowExport}">
             <TextBlock x:Name="ExportHint" Text="{x:Static s:Strings.ExportHint}" TextWrapping="Wrap" />
             <Button x:Name="ExportButton" Classes="primary" Content="{x:Static s:Strings.Export}" Command="{Binding ExportCommand}" />

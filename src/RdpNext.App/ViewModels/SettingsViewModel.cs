@@ -4,7 +4,7 @@ using RdpNext.Core.Storage;
 
 namespace RdpNext.App.ViewModels;
 
-// Ayarlar sekmesi: Genel, Dışa aktar (listeyi dosyaya ver) ve İçe aktar (dosyadan yükle).
+// Ayarlar sekmesi: Genel (tema), Dışa aktar (listeyi dosyaya ver) ve İçe aktar (dosyadan yükle).
 public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabViewModel
 {
     public override string Title => Strings.Strings.Settings;
@@ -48,6 +48,28 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
     {
         if (selected)
             Page = page;
+    }
+
+    // Genel sekmesindeki ayarlar Kaydet'e basınca yazılır ve uygulanır. Tema seçicisindeki sıra: 0 Dark, 1 Light, 2 System.
+    private static readonly AppTheme[] ThemeOrder = [AppTheme.Dark, AppTheme.Light, AppTheme.System];
+
+    private int _savedThemeIndex = Array.IndexOf(ThemeOrder, owner.Settings.Load().Theme);
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveGeneralCommand))]
+    private int _themeIndex = Array.IndexOf(ThemeOrder, owner.Settings.Load().Theme);
+
+    private bool CanSaveGeneral() => ThemeIndex != _savedThemeIndex;
+
+    [RelayCommand(CanExecute = nameof(CanSaveGeneral))]
+    private void SaveGeneral()
+    {
+        var settings = owner.Settings.Load();
+        settings.Theme = ThemeOrder[ThemeIndex];
+        owner.Settings.Save(settings);
+        Themes.Apply(settings.Theme);
+        _savedThemeIndex = ThemeIndex;
+        SaveGeneralCommand.NotifyCanExecuteChanged();
     }
 
     // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.

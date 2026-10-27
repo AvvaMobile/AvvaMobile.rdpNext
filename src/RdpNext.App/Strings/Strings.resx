@@ -53,6 +53,10 @@
   <data name="DeleteOld" xml:space="preserve"><value>Delete all existing entries</value></data>
   <data name="ImportDeleteConfirm" xml:space="preserve"><value>All current servers and folders will be deleted. Are you sure?</value></data>
   <data name="DeleteAndImport" xml:space="preserve"><value>Delete and import</value></data>
+  <data name="Theme" xml:space="preserve"><value>Theme</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>System</value></data>
   <data name="InheritedFrom" xml:space="preserve"><value>from {0}</value></data>
   <data name="BackupFileName" xml:space="preserve"><value>rdpNext-{0}.json</value></data>
   <data name="About" xml:space="preserve"><value>About {0}</value></data>
