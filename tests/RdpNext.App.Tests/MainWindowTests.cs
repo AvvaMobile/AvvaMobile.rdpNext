@@ -199,9 +199,10 @@ public class MainWindowTests
         vm.ConnectCommand.Execute(web);
         Dispatcher.UIThread.RunJobs();
 
-        var linux = Application.Current!.FindResource("LinuxLogo");
-        Assert.NotNull(linux);
-        bool Shows(string name) => window.Named<Control>(name).GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Any(p => p.Data == linux);
+        // Linux çizimi görünür, diğerleri gizli.
+        bool Shows(string name) => window.Named<Control>(name).GetVisualDescendants().OfType<Views.ServerIconView>()
+            .Any(i => i.Icon == ServerIcon.Linux && i.Named<Control>("LinuxGlyph").IsVisible
+                      && !i.Named<Control>("WindowsGlyph").IsVisible && !i.Named<Control>("SshGlyph").IsVisible);
         Assert.True(Shows("Tree"));
         Assert.True(Shows("TabStrip"));
     }

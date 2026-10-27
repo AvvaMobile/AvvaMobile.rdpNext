@@ -1,5 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using RdpNext.Core.Model;
@@ -21,15 +19,6 @@ public static class Converters
 
     public static readonly IValueConverter TabTileBrush =
         new FuncValueConverter<ServerColor?, IBrush>(color => color is { } c ? ServerBrushes[c] : EditorTile);
-
-    // Tokens.axaml'daki şekil: Windows logosu, penguen ya da terminal.
-    public static readonly IValueConverter ServerIconGeometry =
-        new FuncValueConverter<ServerIcon, Geometry?>(icon => Application.Current!.FindResource(icon switch
-        {
-            ServerIcon.Linux => "LinuxLogo",
-            ServerIcon.Ssh => "TerminalIcon",
-            _ => "WindowsLogo",
-        }) as Geometry);
 
     public static readonly IValueConverter ServerColorBrush =
         new FuncValueConverter<ServerColor, IBrush>(color => ServerBrushes[color]);
