@@ -111,7 +111,7 @@ public class MainWindowTests
         vm.ConnectFirstMatchCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
         Assert.Empty(session.Texts());
-        Assert.NotEmpty(session.GetVisualDescendants().OfType<Views.SessionPlaceholderView>());
+        Assert.NotEmpty(session.GetVisualDescendants().OfType<Views.SessionView>());
     }
 
     [AvaloniaFact]
@@ -249,7 +249,7 @@ public class MainWindowTests
         vm.Tree.Query = "web-01";
         vm.ConnectFirstMatchCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
-        var session = frame.GetVisualDescendants().OfType<Views.SessionPlaceholderView>().Single().Bounds;
+        var session = frame.GetVisualDescendants().OfType<Views.SessionView>().Single().Bounds;
 
         vm.NewServer();
         Dispatcher.UIThread.RunJobs();
