@@ -10,6 +10,9 @@
 #include <freerdp/event.h>
 #include <freerdp/client/disp.h>
 #include <freerdp/channels/disp.h>
+#include <freerdp/client/cliprdr.h>
+#include <freerdp/channels/cliprdr.h>
+#include <winpr/string.h>
 #include <string.h>
 #include <winpr/synch.h>
 
@@ -25,7 +28,117 @@ typedef struct
 	rn_callbacks callbacks;
 	void* user;
 	DispClientContext* disp;
+	CliprdrClientContext* clip;
+	char* local_text;
 } rnContext;
+
+/* ---- Metin panosu (cliprdr, CF_UNICODETEXT) ---- */
+
+static UINT rn_clip_send_format_list(rnContext* rc)
+{
+	CLIPRDR_FORMAT format = { CF_UNICODETEXT, NULL };
+	CLIPRDR_FORMAT_LIST list = { 0 };
+	list.common.msgType = CB_FORMAT_LIST;
+	list.numFormats = rc->local_text ? 1 : 0;
+	list.formats = rc->local_text ? &format : NULL;
+	return rc->clip->ClientFormatList(rc->clip, &list);
+}
+
+static UINT rn_clip_monitor_ready(CliprdrClientContext* clip, const CLIPRDR_MONITOR_READY* ready)
+{
+	rnContext* rc = (rnContext*)clip->custom;
+	CLIPRDR_GENERAL_CAPABILITY_SET general = { 0 };
+	general.capabilitySetType = CB_CAPSTYPE_GENERAL;
+	general.capabilitySetLength = CB_CAPSTYPE_GENERAL_LEN;
+	general.version = CB_CAPS_VERSION_2;
+	general.generalFlags = CB_USE_LONG_FORMAT_NAMES;
+	CLIPRDR_CAPABILITIES caps = { 0 };
+	caps.common.msgType = CB_CLIP_CAPS;
+	caps.cCapabilitiesSets = 1;
+	caps.capabilitySets = (CLIPRDR_CAPABILITY_SET*)&general;
+	UINT rv = clip->ClientCapabilities(clip, &caps);
+	return rv == CHANNEL_RC_OK ? rn_clip_send_format_list(rc) : rv;
+}
+
+static UINT rn_clip_server_capabilities(CliprdrClientContext* clip, const CLIPRDR_CAPABILITIES* caps)
+{
+	return CHANNEL_RC_OK;
+}
+
+/* Sunucuda kopyalandı: metin varsa hemen istenir. */
+static UINT rn_clip_server_format_list(CliprdrClientContext* clip, const CLIPRDR_FORMAT_LIST* list)
+{
+	CLIPRDR_FORMAT_LIST_RESPONSE response = { 0 };
+	response.common.msgType = CB_FORMAT_LIST_RESPONSE;
+	response.common.msgFlags = CB_RESPONSE_OK;
+	UINT rv = clip->ClientFormatListResponse(clip, &response);
+	if (rv != CHANNEL_RC_OK)
+		return rv;
+	for (UINT32 i = 0; i < list->numFormats; i++)
+	{
+		if (list->formats[i].formatId != CF_UNICODETEXT)
+			continue;
+		CLIPRDR_FORMAT_DATA_REQUEST request = { 0 };
+		request.common.msgType = CB_FORMAT_DATA_REQUEST;
+		request.requestedFormatId = CF_UNICODETEXT;
+		return clip->ClientFormatDataRequest(clip, &request);
+	}
+	return CHANNEL_RC_OK;
+}
+
+static UINT rn_clip_server_format_list_response(CliprdrClientContext* clip, const CLIPRDR_FORMAT_LIST_RESPONSE* response)
+{
+	return CHANNEL_RC_OK;
+}
+
+static UINT rn_clip_server_format_data_response(CliprdrClientContext* clip, const CLIPRDR_FORMAT_DATA_RESPONSE* response)
+{
+	rnContext* rc = (rnContext*)clip->custom;
+	if (response->common.msgFlags != CB_RESPONSE_OK || !response->requestedFormatData || !rc->callbacks.clipboard_text)
+		return CHANNEL_RC_OK;
+	char* text = ConvertWCharNToUtf8Alloc((const WCHAR*)response->requestedFormatData, response->common.dataLen / sizeof(WCHAR), NULL);
+	if (text)
+	{
+		rc->callbacks.clipboard_text(rc->user, text);
+		free(text);
+	}
+	return CHANNEL_RC_OK;
+}
+
+/* Sunucuda yapıştırıldı: Mac'teki metin gönderilir. */
+static UINT rn_clip_server_format_data_request(CliprdrClientContext* clip, const CLIPRDR_FORMAT_DATA_REQUEST* request)
+{
+	rnContext* rc = (rnContext*)clip->custom;
+	CLIPRDR_FORMAT_DATA_RESPONSE response = { 0 };
+	response.common.msgType = CB_FORMAT_DATA_RESPONSE;
+	size_t size = 0;
+	WCHAR* data = NULL;
+	if (request->requestedFormatId == CF_UNICODETEXT && rc->local_text)
+		data = ConvertUtf8ToWCharAlloc(rc->local_text, &size);
+	if (data)
+	{
+		response.common.msgFlags = CB_RESPONSE_OK;
+		response.common.dataLen = (UINT32)((size + 1) * sizeof(WCHAR));
+		response.requestedFormatData = (const BYTE*)data;
+	}
+	else
+		response.common.msgFlags = CB_RESPONSE_FAIL;
+	UINT rv = clip->ClientFormatDataResponse(clip, &response);
+	free(data);
+	return rv;
+}
+
+static void rn_clip_init(rnContext* rc, CliprdrClientContext* clip)
+{
+	rc->clip = clip;
+	clip->custom = rc;
+	clip->MonitorReady = rn_clip_monitor_ready;
+	clip->ServerCapabilities = rn_clip_server_capabilities;
+	clip->ServerFormatList = rn_clip_server_format_list;
+	clip->ServerFormatListResponse = rn_clip_server_format_list_response;
+	clip->ServerFormatDataResponse = rn_clip_server_format_data_response;
+	clip->ServerFormatDataRequest = rn_clip_server_format_data_request;
+}
 
 /* disp kanalının bağlamı saklanır; diğer kanallar (rdpgfx vb.) FreeRDP'nin ortak işleyicisine gider. */
 static void rn_channel_connected(void* context, const ChannelConnectedEventArgs* e)
@@ -33,6 +146,8 @@ static void rn_channel_connected(void* context, const ChannelConnectedEventArgs*
 	rnContext* rc = (rnContext*)context;
 	if (strcmp(e->name, DISP_DVC_CHANNEL_NAME) == 0)
 		rc->disp = (DispClientContext*)e->pInterface;
+	else if (strcmp(e->name, CLIPRDR_SVC_CHANNEL_NAME) == 0)
+		rn_clip_init(rc, (CliprdrClientContext*)e->pInterface);
 	else
 		freerdp_client_OnChannelConnectedEventHandler(context, e);
 }
@@ -42,6 +157,8 @@ static void rn_channel_disconnected(void* context, const ChannelDisconnectedEven
 	rnContext* rc = (rnContext*)context;
 	if (strcmp(e->name, DISP_DVC_CHANNEL_NAME) == 0)
 		rc->disp = NULL;
+	else if (strcmp(e->name, CLIPRDR_SVC_CHANNEL_NAME) == 0)
+		rc->clip = NULL;
 	else
 		freerdp_client_OnChannelDisconnectedEventHandler(context, e);
 }
@@ -231,6 +348,7 @@ uint32_t rn_connect(rdpContext* ctx, const rn_options* o)
 	freerdp_settings_set_bool(s, FreeRDP_SupportDisplayControl, TRUE);
 	freerdp_settings_set_bool(s, FreeRDP_DynamicResolutionUpdate, TRUE);
 	freerdp_settings_set_bool(s, FreeRDP_SupportGraphicsPipeline, TRUE);
+	freerdp_settings_set_bool(s, FreeRDP_RedirectClipboard, TRUE);
 	if (freerdp_connect(ctx->instance))
 		return 0;
 	uint32_t error = freerdp_get_last_error(ctx);
@@ -283,6 +401,15 @@ int rn_resize(rdpContext* ctx, int width, int height)
 	return rc->disp->SendMonitorLayout(rc->disp, 1, &layout) == CHANNEL_RC_OK;
 }
 
+void rn_set_clipboard_text(rdpContext* ctx, const char* text)
+{
+	rnContext* rc = (rnContext*)ctx;
+	free(rc->local_text);
+	rc->local_text = text && *text ? _strdup(text) : NULL;
+	if (rc->clip)
+		rn_clip_send_format_list(rc);
+}
+
 void rn_key(rdpContext* ctx, uint16_t code, int extended, int down)
 {
 	freerdp_input_send_keyboard_event_ex(ctx->input, down ? TRUE : FALSE, FALSE, MAKE_RDP_SCANCODE(code, extended));
@@ -295,6 +422,7 @@ void rn_unicode(rdpContext* ctx, uint16_t code, int down)
 
 void rn_free(rdpContext* ctx)
 {
+	free(((rnContext*)ctx)->local_text);
 	freerdp_disconnect(ctx->instance);
 	freerdp_client_context_free(ctx);
 }

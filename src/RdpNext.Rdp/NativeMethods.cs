@@ -58,6 +58,9 @@ internal static unsafe partial class NativeMethods
     [LibraryImport(Library, EntryPoint = "rn_resize")]
     public static partial int Resize(IntPtr ctx, int width, int height);
 
+    [LibraryImport(Library, EntryPoint = "rn_set_clipboard_text", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial void SetClipboardText(IntPtr ctx, string text);
+
     [LibraryImport(Library, EntryPoint = "rn_free")]
     public static partial void Free(IntPtr ctx);
 }

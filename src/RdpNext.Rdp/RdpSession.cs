@@ -25,6 +25,8 @@ public sealed unsafe class RdpSession : IRdpSession
 
     public event Action<RdpPointer?>? PointerChanged;
 
+    public event Action<string>? RemoteClipboardText;
+
     // C katmanı ve FreeRDP bu makinede yüklenebiliyor mu.
     public static bool IsAvailable { get; } =
         NativeLibrary.TryLoad(NativeMethods.Library, typeof(RdpSession).Assembly, null, out _);
@@ -58,6 +60,8 @@ public sealed unsafe class RdpSession : IRdpSession
         return (horizontal ? RdpMouseFlags.HWheel : RdpMouseFlags.Wheel) | (RdpMouseFlags)(value & 0x1FF);
     }
 
+    public void SetLocalClipboardText(string text) => _requests.Enqueue(ctx => NativeMethods.SetClipboardText(ctx, text));
+
     public void Resize(int width, int height) => _requests.Enqueue(ctx => NativeMethods.Resize(ctx, width, height));
 
     public void SendKey(ushort code, bool extended, bool down) =>
@@ -87,7 +91,7 @@ public sealed unsafe class RdpSession : IRdpSession
 
     private void Run(RdpConnectOptions options)
     {
-        var callbacks = new RnCallbacks { Frame = &OnFrame, Pointer = &OnPointer };
+        var callbacks = new RnCallbacks { Frame = &OnFrame, Pointer = &OnPointer, ClipboardText = &OnClipboardText };
         var ctx = NativeMethods.Create(&callbacks, GCHandle.ToIntPtr(_self));
         lock (_gate)
         {
@@ -171,6 +175,13 @@ public sealed unsafe class RdpSession : IRdpSession
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     private static void OnFrame(IntPtr user, IntPtr buffer, int width, int height, int stride, int x, int y, int w, int h) =>
         From(user)?.Frame?.Invoke(new RdpFrame(buffer, width, height, stride, x, y, w, h));
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void OnClipboardText(IntPtr user, IntPtr text)
+    {
+        if (Marshal.PtrToStringUTF8(text) is { } value)
+            From(user)?.RemoteClipboardText?.Invoke(value);
+    }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     private static void OnPointer(IntPtr user, IntPtr bgra, int width, int height, int hotX, int hotY)

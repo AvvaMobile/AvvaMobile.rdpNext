@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using RdpNext.App.Rdp;
@@ -24,6 +25,13 @@ public partial class SessionView : UserControl
         DetachedFromVisualTree += (_, _) => Watch(null);
         SizeChanged += (_, e) => _tab?.ViewSizeChanged(e.NewSize.Width, e.NewSize.Height);
         LostFocus += (_, _) => ReleaseKeys();
+        // Oturuma dönülünce bu bilgisayarın panosundaki metin sunucuya duyurulur.
+        GotFocus += async (_, _) =>
+        {
+            if (Session is { } session && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard
+                && await clipboard.TryGetTextAsync() is { } text)
+                session.SetLocalClipboardText(text);
+        };
     }
 
     private IRdpSession? Session => _tab?.Session;
@@ -40,17 +48,25 @@ public partial class SessionView : UserControl
         {
             _tab.Screen.Invalidated -= Redraw;
             _tab.PropertyChanged -= OnTabChanged;
+            _tab.RemoteClipboardText -= OnRemoteClipboardText;
         }
         _tab = tab;
         if (_tab is not null)
         {
             _tab.Screen.Invalidated += Redraw;
             _tab.PropertyChanged += OnTabChanged;
+            _tab.RemoteClipboardText += OnRemoteClipboardText;
             ShowPointer(_tab.Pointer);
         }
     }
 
     private void Redraw() => Screen.InvalidateVisual();
+
+    private async void OnRemoteClipboardText(string text)
+    {
+        if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            await clipboard.SetTextAsync(text);
+    }
 
     private void OnTabChanged(object? sender, PropertyChangedEventArgs e)
     {

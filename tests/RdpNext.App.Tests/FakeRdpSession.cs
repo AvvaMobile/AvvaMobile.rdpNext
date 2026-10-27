@@ -17,7 +17,11 @@ public sealed class FakeRdpSession : IRdpSession
 
     public List<(int Width, int Height)> Resizes { get; } = [];
 
+    public string? LocalClipboard { get; private set; }
+
     public bool Disposed { get; private set; }
+
+    public event Action<string>? RemoteClipboardText;
 
     public event Action<RdpPointer?>? PointerChanged;
 
@@ -39,7 +43,11 @@ public sealed class FakeRdpSession : IRdpSession
 
     public void Resize(int width, int height) => Resizes.Add((width, height));
 
+    public void SetLocalClipboardText(string text) => LocalClipboard = text;
+
     public void Dispose() => Disposed = true;
+
+    public void RaiseClipboardText(string text) => RemoteClipboardText?.Invoke(text);
 
     public void RaisePointer(RdpPointer? pointer) => PointerChanged?.Invoke(pointer);
 
