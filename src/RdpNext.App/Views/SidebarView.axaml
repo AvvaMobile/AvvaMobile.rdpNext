@@ -99,8 +99,13 @@
               <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
               <TextBlock Classes="secondary" Text="{Binding Host}" TextTrimming="CharacterEllipsis" />
             </StackPanel>
-            <Ellipse Grid.Column="2" Width="8" Height="8" Margin="0,0,10,0" Fill="{StaticResource ConnectedBrush}"
-                     IsVisible="{Binding IsConnected}" />
+            <!-- Oturum durumu: bağlanırken halka, bağlıyken yeşil, koptuğunda turuncu (docs/tasarim/rdp-oturumu.png, e). -->
+            <Panel Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center">
+              <Arc x:Name="ConnectingMark" Classes="spinner" Width="10" Height="10" StartAngle="0" SweepAngle="100"
+                   Stroke="{StaticResource ConnectedBrush}" StrokeThickness="2" IsVisible="{Binding IsConnecting}" />
+              <Ellipse x:Name="ConnectedMark" Width="8" Height="8" Fill="{StaticResource ConnectedBrush}" IsVisible="{Binding IsConnected}" />
+              <Ellipse x:Name="DisconnectedMark" Width="8" Height="8" Fill="{StaticResource NoticeBrush}" IsVisible="{Binding IsDisconnected}" />
+            </Panel>
           </Grid>
         </DataTemplate>
       </TreeView.DataTemplates>

@@ -113,6 +113,8 @@ public class MainWindowTests
         vm.ConnectFirstMatchCommand.Execute(null);
         vm.Tree.Query = "web";
         vm.ConnectFirstMatchCommand.Execute(null);
+        // Bağlanırken "Connecting to ..." yazar (onaylı çizim); bağlanınca alan yazısız kalır.
+        ((FakeRdpSession)((SessionTabViewModel)vm.Sessions.Selected!).Session!).RaiseConnected();
         Dispatcher.UIThread.RunJobs();
         Assert.Empty(session.Texts());
         Assert.NotEmpty(session.GetVisualDescendants().OfType<Views.SessionView>());

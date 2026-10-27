@@ -33,7 +33,8 @@ public sealed partial class SessionTabViewModel : TabViewModel
         // Sunucunun adı, rengi ya da ikonu değişince sekme de güncellenir.
         server.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is nameof(ServerNodeViewModel.State) or nameof(ServerNodeViewModel.IsConnected))
+            if (e.PropertyName is nameof(ServerNodeViewModel.State) or nameof(ServerNodeViewModel.IsConnected)
+                or nameof(ServerNodeViewModel.IsConnecting) or nameof(ServerNodeViewModel.IsDisconnected))
                 return;
             TitleChanged();
             OnPropertyChanged(nameof(Color));
@@ -51,9 +52,19 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     public SessionScreen Screen { get; } = new();
 
+    public override bool CanReconnect => true;
+
+    public string ConnectingTitle => string.Format(Strings.Strings.ConnectingTo, Title);
+
+    // "Bağlanıyor" yazısı soru kartı açıkken gizlenir.
+    public bool ShowConnecting => State == SessionState.Connecting && !IsAskingCredentials && CertificatePrompt is null;
+
+    public bool ShowDisconnected => State == SessionState.Disconnected && !IsAskingCredentials;
+
     public IRdpSession? Session { get; private set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowConnecting), nameof(ShowDisconnected))]
     private SessionState _state = SessionState.Connecting;
 
     partial void OnStateChanged(SessionState value) => Server.State = value;
@@ -66,6 +77,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     // Doğrulanamayan sertifika soruluyor; cevap gelene kadar bağlanma bekler.
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowConnecting))]
     private RdpCertificate? _certificatePrompt;
 
     private TaskCompletionSource<bool>? _certificateAnswer;
@@ -79,10 +91,12 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     private Func<IRdpSession>? _newSession;
     private Size _size;
-    private (string Username, string? Domain) _lastSignIn;
+    // Son bağlanılan bilgiler; Reconnect aynı bilgilerle bağlanır (şifre yalnız bellekte).
+    private (string Username, string Password, string? Domain) _lastSignIn;
 
     // Kullanıcı adı ve şifre soruluyor (bulunamadı ya da sunucu reddetti).
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowConnecting), nameof(ShowDisconnected))]
     private bool _isAskingCredentials;
 
     [ObservableProperty]
@@ -119,7 +133,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
         var session = _newSession!();
         Session = session;
         State = SessionState.Connecting;
-        _lastSignIn = (username, domain);
+        _lastSignIn = (username, password, domain);
         session.VerifyCertificate = certificate => AskCertificate(session, certificate);
         session.Connected += () => OnUi(session, () => State = SessionState.Connected);
         session.Ended += (reason, _) => OnUi(session, () => Ended(reason));
@@ -166,8 +180,22 @@ public sealed partial class SessionTabViewModel : TabViewModel
             CloseRequested?.Invoke();
         else if (reason == RdpEndReason.AuthFailed)
             AskCredentials(_lastSignIn.Username, _lastSignIn.Domain);
+        else if (reason == RdpEndReason.UserLogoff)
+            CloseRequested?.Invoke();
         else
             State = SessionState.Disconnected;
+    }
+
+    // Kopan oturum aynı sekmede, aynı bilgilerle yeniden açılır.
+    [RelayCommand]
+    private void Reconnect()
+    {
+        if (_newSession is null || IsAskingCredentials)
+            return;
+        if (_lastSignIn.Username is null)
+            AskCredentials(null, null);
+        else
+            Start(_lastSignIn.Username, _lastSignIn.Password, _lastSignIn.Domain);
     }
 
     // Güvenilen parmak izi aynıysa sormadan kabul; değilse kullanıcıya sorulur.

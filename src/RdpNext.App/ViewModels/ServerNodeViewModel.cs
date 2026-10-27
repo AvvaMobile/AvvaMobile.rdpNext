@@ -15,8 +15,12 @@ public sealed partial class ServerNodeViewModel(Server server) : TreeNodeViewMod
 
     // Açık sekmesi yoksa null.
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsConnected))]
+    [NotifyPropertyChangedFor(nameof(IsConnected), nameof(IsConnecting), nameof(IsDisconnected))]
     private SessionState? _state;
 
     public bool IsConnected => State == SessionState.Connected;
+
+    public bool IsConnecting => State == SessionState.Connecting;
+
+    public bool IsDisconnected => State == SessionState.Disconnected;
 }
