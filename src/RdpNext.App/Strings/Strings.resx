@@ -50,5 +50,8 @@
   <data name="ExportFailed" xml:space="preserve"><value>Dosya kaydedilemedi: {0}</value></data>
   <data name="ImportDone" xml:space="preserve"><value>Yedek yüklendi, {0} sunucu.</value></data>
   <data name="ImportFailed" xml:space="preserve"><value>Dosya okunamadı: {0}</value></data>
-  <data name="ImportConfirm" xml:space="preserve"><value>Mevcut liste {0} içindeki listeyle değiştirilsin mi? Açık sekmeler kapanır.</value></data>
+  <data name="ImportAdded" xml:space="preserve"><value>İçe aktarıldı, {0} yeni sunucu eklendi.</value></data>
+  <data name="DeleteOld" xml:space="preserve"><value>Önceki tüm kayıtları sil</value></data>
+  <data name="ImportDeleteConfirm" xml:space="preserve"><value>Mevcut tüm sunucu ve klasörler silinecek. Emin misin?</value></data>
+  <data name="DeleteAndImport" xml:space="preserve"><value>Sil ve içe aktar</value></data>
 </root>
