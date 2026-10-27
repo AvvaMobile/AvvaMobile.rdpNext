@@ -21,7 +21,7 @@ public sealed class ConnectionStoreTests : IDisposable
     public void RoundTripKeepsEverything()
     {
         var root = new Group();
-        var uretim = new Group { Name = "Üretim", Username = "admin", Domain = "AVVA" };
+        var uretim = new Group { Name = "Üretim", Username = "admin", Domain = "AVVA", Color = ServerColor.Orange };
         var web = new Group { Name = "Web", IsExpanded = false };
         var server = new Server
         {
@@ -36,7 +36,7 @@ public sealed class ConnectionStoreTests : IDisposable
         var loaded = new ConnectionStore(_path).Load().Root;
 
         var lUretim = Assert.IsType<Group>(Assert.Single(loaded.Children));
-        Assert.Equal((uretim.Id, "Üretim", "admin", "AVVA"), (lUretim.Id, lUretim.Name, lUretim.Username, lUretim.Domain));
+        Assert.Equal((uretim.Id, "Üretim", "admin", "AVVA", ServerColor.Orange), (lUretim.Id, lUretim.Name, lUretim.Username, lUretim.Domain, lUretim.Color));
         var lWeb = Assert.IsType<Group>(Assert.Single(lUretim.Children));
         Assert.False(lWeb.IsExpanded);
         var lServer = Assert.IsType<Server>(Assert.Single(lWeb.Children));
@@ -76,6 +76,7 @@ public sealed class ConnectionStoreTests : IDisposable
         Assert.Equal(1, json["version"]!.GetValue<int>());
         var jGroup = json["root"]!["children"]![0]!;
         Assert.Equal("group", jGroup["kind"]!.GetValue<string>());
+        Assert.Equal("blue", jGroup["color"]!.GetValue<string>());
         var jServer = jGroup["children"]![0]!;
         Assert.Equal("server", jServer["kind"]!.GetValue<string>());
         Assert.Equal("rdp", jServer["protocol"]!.GetValue<string>());

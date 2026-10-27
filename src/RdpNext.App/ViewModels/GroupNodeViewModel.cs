@@ -14,6 +14,8 @@ public sealed partial class GroupNodeViewModel : TreeNodeViewModel
 
     public Group Group { get; }
 
+    public ServerColor Color => Group.Color;
+
     public ObservableCollection<TreeNodeViewModel> Children { get; }
 
     private bool _showingFilter;

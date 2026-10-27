@@ -65,6 +65,20 @@ public class FolderEditorTests
     }
 
     [Fact]
+    public void FolderColorSaved()
+    {
+        _vm.EditFolder(Folder("Test"));
+        var editor = Assert.IsType<FolderEditorViewModel>(_vm.Sessions.Selected);
+        Assert.Equal(ServerColor.Blue, editor.Color);
+        editor.Color = ServerColor.Teal;
+
+        editor.SaveCommand.Execute(null);
+
+        Assert.Equal(ServerColor.Teal, Folder("Test").Color);
+        Assert.Equal(ServerColor.Teal, Reload().Children.OfType<Group>().Single(g => g.Name == "Test").Color);
+    }
+
+    [Fact]
     public void MovingFolderMovesItInTree()
     {
         _vm.EditFolder(Folder("Test"));

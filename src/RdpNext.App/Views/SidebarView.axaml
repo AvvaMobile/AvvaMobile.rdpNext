@@ -70,7 +70,7 @@
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).DeleteNodeCommand}" CommandParameter="{Binding}" />
               </ContextMenu>
             </Grid.ContextMenu>
-            <Border Classes="tile-small" Background="{StaticResource GroupTileBrush}">
+            <Border Classes="tile-small" Background="{Binding Color, Converter={x:Static v:Converters.ServerColorBrush}}">
               <Path Data="{StaticResource FolderIcon}" Fill="White" Width="13" Height="13" Stretch="Uniform" />
             </Border>
             <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" Margin="12,0"

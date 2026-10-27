@@ -11,6 +11,8 @@ public sealed class Group : Node
 
     public string? Domain { get; set; }
 
+    public ServerColor Color { get; set; } = ServerColor.Blue;
+
     public bool IsExpanded { get; set; } = true;
 
     [JsonIgnore]

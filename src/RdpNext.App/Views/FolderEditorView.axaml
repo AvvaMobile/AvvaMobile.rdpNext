@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:v="using:RdpNext.App.Views"
+             xmlns:m="using:RdpNext.Core.Model"
              xmlns:s="using:RdpNext.App.Strings"
              x:Class="RdpNext.App.Views.FolderEditorView"
              x:DataType="vm:FolderEditorViewModel"
@@ -18,11 +20,27 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
         <StackPanel Classes="form">
-          <!-- Şimdilik yalnız ad; kimlik bilgileri ve üst klasör ekrandan kaldırıldı. -->
+          <!-- Şimdilik ad ve renk; kimlik bilgileri ve üst klasör ekrandan kaldırıldı. -->
           <Grid ColumnDefinitions="*,12,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Name}" />
               <TextBox x:Name="FolderNameBox" Classes="field" Text="{Binding Name}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Color}" />
+              <ListBox Classes="swatches" ItemsSource="{Binding Colors}" SelectedItem="{Binding Color}">
+                <ListBox.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                  </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                  <DataTemplate DataType="m:ServerColor">
+                    <Border Width="30" Height="30" CornerRadius="8"
+                            Background="{Binding Converter={x:Static v:Converters.ServerColorBrush}}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
             </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
