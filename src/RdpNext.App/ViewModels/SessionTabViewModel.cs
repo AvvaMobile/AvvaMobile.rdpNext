@@ -57,6 +57,9 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     partial void OnStateChanged(SessionState value) => Server.State = value;
 
+    // Sunucuda kopyalanan metin; görünüm bunu bu bilgisayarın panosuna yazar.
+    public event Action<string>? RemoteClipboardText;
+
     // Sunucunun imleç şekli; null ise sistemin oku.
     [ObservableProperty]
     private RdpPointer? _pointer;
@@ -76,6 +79,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
         session.Ended += (_, _) => OnUi(session, () => State = SessionState.Disconnected);
         session.Frame += Screen.CopyFrame;
         session.PointerChanged += pointer => OnUi(session, () => Pointer = pointer);
+        session.RemoteClipboardText += text => OnUi(session, () => RemoteClipboardText?.Invoke(text));
         session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, credentials.Username, credentials.Domain,
             credentials.Password, (int)size.Width, (int)size.Height));
     }

@@ -43,6 +43,9 @@ public interface IRdpSession : IDisposable
 
     event Action<RdpEndReason, string?>? Ended;
 
+    // Sunucuda kopyalanan metin.
+    event Action<string>? RemoteClipboardText;
+
     // null: sistemin varsayılan oku.
     event Action<RdpPointer?>? PointerChanged;
 
@@ -55,6 +58,9 @@ public interface IRdpSession : IDisposable
     void SendWheel(int delta, bool horizontal, int x, int y);
 
     void SendKey(ushort code, bool extended, bool down);
+
+    // Bu bilgisayarın panosundaki metin; sunucuda yapıştırılınca bu gider.
+    void SetLocalClipboardText(string text);
 
     // Sunucudan yeni çözünürlük ister (disp kanalı). Sunucu desteklemiyorsa görüntü aynı kalır.
     void Resize(int width, int height);
