@@ -21,7 +21,7 @@ public class SidebarTests
     [AvaloniaFact]
     public void ShowsServerNameAndHost()
     {
-        var (window, _) = TestWindows.Open();
+        var (window, _) = TestWindows.OpenExpanded();
 
         Assert.Contains(window.Texts(), t => t.Text == "web-01");
         Assert.Contains(window.Texts(), t => t.Text == "10.0.1.11");
@@ -30,7 +30,7 @@ public class SidebarTests
     [AvaloniaFact]
     public void FontSizesMeetMinimums()
     {
-        var (window, _) = TestWindows.Open();
+        var (window, _) = TestWindows.OpenExpanded();
 
         Assert.True(window.Text("web-01").FontSize >= 15);
         Assert.True(window.Text("10.0.1.11").FontSize >= 14);
@@ -47,7 +47,7 @@ public class SidebarTests
         var longHost = new string('b', 120) + ".avva.local";
         group.Add(new Server { Name = longName, Host = longHost });
 
-        var (window, _) = TestWindows.Open(TestWindows.FileWith(root));
+        var (window, _) = TestWindows.OpenExpanded(TestWindows.FileWith(root));
 
         Assert.Equal(TextTrimming.CharacterEllipsis, window.Text(longName).TextTrimming);
         Assert.Equal(TextTrimming.CharacterEllipsis, window.Text(longHost).TextTrimming);
@@ -99,11 +99,12 @@ public class SidebarTests
     }
 
     [AvaloniaFact]
-    public void ExpandStateComesFromModel()
+    public void FoldersStartCollapsed()
     {
         var (window, _) = TestWindows.Open();
 
-        Assert.True(window.Item("Üretim").IsExpanded);
+        Assert.False(window.Item("Üretim").IsExpanded);
         Assert.False(window.Item("Test").IsExpanded);
+        Assert.False(window.Item("Müşteriler").IsExpanded);
     }
 }

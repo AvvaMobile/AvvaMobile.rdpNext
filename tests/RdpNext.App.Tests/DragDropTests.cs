@@ -56,6 +56,7 @@ public class DragDropTests
     [Fact]
     public void ServerBelowExpandedFolderGoesToItsTop()
     {
+        Node("Üretim").IsExpanded = true;
         Drop("web-test", "Üretim", DropPlace.Below);
 
         Assert.Equal("web-test", Names("Üretim").First());
@@ -110,7 +111,7 @@ public class DragDropTests
     [AvaloniaFact]
     public void MouseDragShowsLineAndReorders()
     {
-        var (window, vm) = TestWindows.Open(_path);
+        var (window, vm) = TestWindows.OpenExpanded(_path);
         Point At(string name, double y) =>
             window.Text(name).TranslatePoint(new Point(5, 0), window)!.Value + new Point(0, y);
         var line = window.Named<Border>("DropLine");
@@ -132,7 +133,7 @@ public class DragDropTests
     [AvaloniaFact]
     public void MouseDragOnFolderHighlightsIt()
     {
-        var (window, vm) = TestWindows.Open(_path);
+        var (window, vm) = TestWindows.OpenExpanded(_path);
         Point At(string name, double y) =>
             window.Text(name).TranslatePoint(new Point(5, 0), window)!.Value + new Point(0, y);
         var mid = window.Text("Test").Bounds.Height / 2;
