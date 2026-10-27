@@ -26,6 +26,7 @@ Asıl dert: herkes bağlantılarını kendi PC'sinde tutuyor, PC giderse hepsi k
 14. Lisans ve ürün: bu ilk sürüm herkese açık repoda, MIT lisanslı "Community Edition" olarak tamamlanıp verilir. Bulut sürümü sonra ayrı ve ücretli satılır. (Repo bir ara private yapıldı, aynı gün geri public yapıldı; LICENSE yerinde.)
 15. Güncelleme: uygulama açılışta bu reponun GitHub sürümlerine bakar; yeni sürüm varsa "Güncelle" gösterir, basınca indirip kurar (indirip kurma kısmı Claude önerisi).
 16. SSH de eklenecek ama ilk sürümde şart değil; veri yapısı baştan protokol alanıyla kurulur.
+17. Düzenleme/ekleme ekranı DbGate mantığında: ortada ayrı sekme, sağ tık > Düzenle ile açılır; tek tık seçer, çift tık bağlanır. Sol panelde "Sunucu ekle" ve "Klasör ekle" yan yana; sekme şeridinde "+" yok. Ayrıntı tasarım dokümanında.
 
 ## Sonraki sürüm (ilk sürümde yok)
 

@@ -65,13 +65,25 @@ Onaylı çizim: `docs/tasarim/gorsel-stil.png` (kaynak HTML: `docs/tasarim/gorse
 
 ## Etkileşimler
 
-1. Çift tık (ya da Enter): sunucuya bağlan, yeni sekmede aç. Zaten açıksa o sekmeye geç.
+1. Tek tık: yalnız seçer. Çift tık (ya da Enter): sunucuya bağlan, yeni sekmede aç. Zaten açıksa o sekmeye geç.
 2. Sunucuya sağ tık: Bağlan, Düzenle, Kopyala, Gruba taşı, Sil.
 3. Gruba sağ tık: Sunucu ekle, Alt grup ekle, Düzenle, Sil.
 4. Ağaçta sürükle-bırak ile sunucuyu ya da grubu başka gruba taşıma.
 5. "Kopyala": sunucunun tüm ayarlarıyla aynı gruba bir kopyasını ekler ve düzenleme ekranını açar.
 6. Sekmeye sağ tık: Kapat, Diğerlerini kapat, Yeniden bağlan.
 7. Silmede onay sorulur.
+
+## Düzenleme ve ekleme ekranı (Murat onayı, 2026-10-27)
+
+Onaylı çizim: `docs/tasarim/duzenle-sekmesi.png` (kaynak: `docs/tasarim/duzenle-sekmesi.html`). DbGate'in bağlantı ekranı örnek alındı.
+
+1. Ortadaki alanda ayrı bir sekme olarak açılır; sekme şeridinde dişli ikonu ve "<ad> ayarları" başlığıyla durur. Sağ panel ya da üstte açılan pencere değil.
+2. Açılış: sunucuya ya da klasöre sağ tık > Düzenle. Tek tık ve çift tık bu ekranı açmaz.
+3. Sol paneldeki "Sunucu ekle" ve "Klasör ekle" butonları aynı sekmeyi boş açar; seçili klasör önceden seçili gelir.
+4. Üstte alt sekmeler: Genel, Gelişmiş. Etiketler alanların üstünde, satırlar ikişerli: Adres + Port, Kullanıcı + Şifre (göz ikonuyla), Domain + Klasör, Görünen ad + Renk. Gelişmiş: ekran ayarı (pencereye sığdır / tam ekran).
+5. Gruptan devralınan değer alanda soluk görünür ve sağında "<klasör>'den" yazar.
+6. Altta: Bağlan, Kaydet; sağda Sil.
+7. Klasör ekranı aynı düzende: Ad, Üst klasör, Kullanıcı, Şifre, Domain.
 
 ## Sunucu ve grup bilgileri
 
