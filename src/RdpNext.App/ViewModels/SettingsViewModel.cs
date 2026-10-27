@@ -4,7 +4,7 @@ using RdpNext.Core.Storage;
 
 namespace RdpNext.App.ViewModels;
 
-// Ayarlar sekmesi: Genel (dil), Dışa aktar (listeyi dosyaya ver) ve İçe aktar (dosyadan yükle).
+// Ayarlar sekmesi: Genel, Dışa aktar (listeyi dosyaya ver) ve İçe aktar (dosyadan yükle).
 public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabViewModel
 {
     public override string Title => Strings.Strings.Settings;
@@ -48,34 +48,6 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
     {
         if (selected)
             Page = page;
-    }
-
-    // Genel sekmesindeki ayarlar Kaydet'e basınca yazılır. Dil seçicisindeki sıra: 0 Türkçe, 1 English.
-    private static int SavedLanguageIndex(MainWindowViewModel owner) =>
-        (owner.Settings.Load().Language ?? Languages.Current.TwoLetterISOLanguageName) == Languages.English ? 1 : 0;
-
-    private static string LanguageAt(int index) => index == 1 ? Languages.English : Languages.Turkish;
-
-    private int _savedLanguageIndex = SavedLanguageIndex(owner);
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveGeneralCommand))]
-    private int _languageIndex = SavedLanguageIndex(owner);
-
-    // "Yeniden başlatınca uygulanır" yalnız kaydedilen dil açık olandan farklıysa görünür.
-    public bool ShowRestartNote => LanguageAt(_savedLanguageIndex) != Languages.Current.TwoLetterISOLanguageName;
-
-    private bool CanSaveGeneral() => LanguageIndex != _savedLanguageIndex;
-
-    [RelayCommand(CanExecute = nameof(CanSaveGeneral))]
-    private void SaveGeneral()
-    {
-        var settings = owner.Settings.Load();
-        settings.Language = LanguageAt(LanguageIndex);
-        owner.Settings.Save(settings);
-        _savedLanguageIndex = LanguageIndex;
-        SaveGeneralCommand.NotifyCanExecuteChanged();
-        OnPropertyChanged(nameof(ShowRestartNote));
     }
 
     // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.

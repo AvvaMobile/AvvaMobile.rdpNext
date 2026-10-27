@@ -26,7 +26,7 @@ public sealed class Group : Node
         set
         {
             if (value is null || value.Contains(null!))
-                throw new JsonException("Grup çocukları boş olamaz.");
+                throw new JsonException("Group children cannot be null.");
             foreach (var child in value)
                 Add(child);
         }
@@ -38,7 +38,7 @@ public sealed class Group : Node
     public void Insert(Node child, Node? before)
     {
         if (child is Group group && IsInside(group))
-            throw new InvalidOperationException("Klasör kendi içine taşınamaz.");
+            throw new InvalidOperationException("A folder cannot be moved into itself.");
         if (before == child)
             return;
         child.Parent?.Remove(child);

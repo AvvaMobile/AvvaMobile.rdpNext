@@ -16,15 +16,7 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
-    public void MissingFileGivesDefaults() => Assert.Null(new SettingsStore(_path).Load().Language);
-
-    [Fact]
-    public void RoundTripKeepsLanguage()
-    {
-        new SettingsStore(_path).Save(new AppSettings { Language = "en" });
-
-        Assert.Equal("en", new SettingsStore(_path).Load().Language);
-    }
+    public void MissingFileGivesDefaults() => Assert.NotNull(new SettingsStore(_path).Load());
 
     [Fact]
     public void CorruptFileGivesDefaults()
@@ -32,6 +24,6 @@ public sealed class SettingsStoreTests : IDisposable
         Directory.CreateDirectory(_dir);
         File.WriteAllText(_path, "{ bozuk");
 
-        Assert.Null(new SettingsStore(_path).Load().Language);
+        Assert.NotNull(new SettingsStore(_path).Load());
     }
 }

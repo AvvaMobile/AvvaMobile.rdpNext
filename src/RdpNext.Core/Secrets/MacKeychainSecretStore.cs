@@ -83,7 +83,7 @@ public sealed class MacKeychainSecretStore(string service = "rdpNext") : ISecret
     private static void Check(int status)
     {
         if (status != 0)
-            throw new InvalidOperationException($"Anahtar zinciri hatası: {status}");
+            throw new InvalidOperationException($"Keychain error: {status}");
     }
 
     [DllImport(Security)]

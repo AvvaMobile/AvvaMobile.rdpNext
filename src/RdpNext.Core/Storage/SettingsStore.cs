@@ -4,8 +4,6 @@ namespace RdpNext.Core.Storage;
 
 public sealed class AppSettings
 {
-    // "tr" ya da "en"; null ise sistem dili kullanılır.
-    public string? Language { get; set; }
 }
 
 // Uygulama ayarları; bağlantı dosyasının yanında settings.json.

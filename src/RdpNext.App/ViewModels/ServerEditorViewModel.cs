@@ -209,7 +209,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         PasswordSource = Source(inherited.Password);
     }
 
-    private static string? Source(InheritedValue? value) => value is null ? null : Languages.From(value.FromGroup, Languages.Current);
+    private static string? Source(InheritedValue? value) => value is null ? null : string.Format(Strings.Strings.InheritedFrom, value.FromGroup);
 
     private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
