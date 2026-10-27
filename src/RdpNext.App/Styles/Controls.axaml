@@ -1,0 +1,46 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Window">
+    <Setter Property="FontSize" Value="{StaticResource BodyFontSize}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    <Setter Property="Background" Value="{DynamicResource WindowBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.secondary">
+    <Setter Property="FontSize" Value="{StaticResource SecondaryFontSize}" />
+    <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
+  </Style>
+
+  <Style Selector="Button.accent-wide">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="Padding" Value="11" />
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+  </Style>
+  <Style Selector="Button.accent-wide:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+
+  <Style Selector="TextBox.search">
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+    <Setter Property="Padding" Value="8,10" />
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+  </Style>
+
+  <Style Selector="Border.tile">
+    <Setter Property="Width" Value="34" />
+    <Setter Property="Height" Value="34" />
+    <Setter Property="CornerRadius" Value="10" />
+  </Style>
+  <Style Selector="Border.tile-small">
+    <Setter Property="Width" Value="26" />
+    <Setter Property="Height" Value="26" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+</Styles>

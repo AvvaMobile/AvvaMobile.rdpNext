@@ -1,0 +1,84 @@
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
+using Avalonia.Media;
+using Avalonia.VisualTree;
+using RdpNext.App.Strings;
+
+namespace RdpNext.App.Tests;
+
+public class SidebarTests
+{
+    [AvaloniaFact]
+    public void ShowsGroupsWithServerCounts()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.Contains(window.Item("Üretim").Texts(), t => t.Text == "3");
+        Assert.Contains(window.Item("Müşteriler").Texts(), t => t.Text == "23");
+    }
+
+    [AvaloniaFact]
+    public void ShowsServerNameAndHost()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.Contains(window.Texts(), t => t.Text == "web-01");
+        Assert.Contains(window.Texts(), t => t.Text == "10.0.1.11");
+    }
+
+    [AvaloniaFact]
+    public void FontSizesMeetMinimums()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.True(window.Text("web-01").FontSize >= 15);
+        Assert.True(window.Text("10.0.1.11").FontSize >= 14);
+        Assert.True(window.Text("Üretim").FontSize >= 15);
+    }
+
+    [AvaloniaFact]
+    public void LongNamesAreTrimmed()
+    {
+        var root = new Group();
+        var group = new Group { Name = "Uzun" };
+        root.Add(group);
+        var longName = new string('a', 120);
+        var longHost = new string('b', 120) + ".avva.local";
+        group.Add(new Server { Name = longName, Host = longHost });
+
+        var (window, _) = TestWindows.Open(TestWindows.FileWith(root));
+
+        Assert.Equal(TextTrimming.CharacterEllipsis, window.Text(longName).TextTrimming);
+        Assert.Equal(TextTrimming.CharacterEllipsis, window.Text(longHost).TextTrimming);
+    }
+
+    [AvaloniaFact]
+    public void AddServerButtonPresent()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.Contains(window.GetVisualDescendants().OfType<Button>(), b => b.Content as string == Strings.Strings.AddServer);
+        Assert.Equal("+ Sunucu ekle", Strings.Strings.AddServer);
+    }
+
+    [AvaloniaFact]
+    public void CorruptFileShowsNotice()
+    {
+        var (broken, brokenVm) = TestWindows.Open(TestWindows.SampleFile("{ yarım"));
+        Assert.NotNull(brokenVm.Notice);
+        Assert.Contains(broken.Texts(), t => t.Text == brokenVm.Notice && t.Text!.StartsWith("Bağlantı dosyası okunamadı"));
+
+        var (normal, normalVm) = TestWindows.Open();
+        Assert.Null(normalVm.Notice);
+        Assert.DoesNotContain(normal.Texts(), t => t.Text?.StartsWith("Bağlantı dosyası okunamadı") == true);
+    }
+
+    [AvaloniaFact]
+    public void ExpandStateComesFromModel()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.True(window.Item("Üretim").IsExpanded);
+        Assert.False(window.Item("Test").IsExpanded);
+    }
+}

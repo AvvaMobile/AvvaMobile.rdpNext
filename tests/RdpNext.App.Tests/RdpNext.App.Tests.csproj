@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless.XUnit" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="RdpNext.Core.Model" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\samples\connections.sample.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RdpNext.App\RdpNext.App.csproj" />
+  </ItemGroup>
+</Project>

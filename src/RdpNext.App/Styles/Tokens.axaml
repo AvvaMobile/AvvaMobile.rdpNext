@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Renkler docs/tasarim/gorsel-stil.html'deki onaylı çizimden. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="WindowBrush" Color="#eef0f5" />
+      <SolidColorBrush x:Key="SidebarBrush" Color="#f7f8fb" />
+      <SolidColorBrush x:Key="CardBrush" Color="#ffffff" />
+      <SolidColorBrush x:Key="HoverBrush" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="TextBrush" Color="#1b1e2b" />
+      <SolidColorBrush x:Key="Text2Brush" Color="#6b7085" />
+      <SolidColorBrush x:Key="LineBrush" Color="#dfe2ea" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#3d6dfd" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="WindowBrush" Color="#151827" />
+      <SolidColorBrush x:Key="SidebarBrush" Color="#1a1d2e" />
+      <SolidColorBrush x:Key="CardBrush" Color="#252839" />
+      <SolidColorBrush x:Key="HoverBrush" Color="#2b2f43" />
+      <SolidColorBrush x:Key="TextBrush" Color="#e8eaf2" />
+      <SolidColorBrush x:Key="Text2Brush" Color="#8d92a8" />
+      <SolidColorBrush x:Key="LineBrush" Color="#262a3c" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#4c7dff" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <SolidColorBrush x:Key="GroupTileBrush" Color="#1f4f7a" />
+  <SolidColorBrush x:Key="ConnectedBrush" Color="#2fbf71" />
+  <SolidColorBrush x:Key="NoticeBrush" Color="#e5673a" />
+  <SolidColorBrush x:Key="SessionBrush" Color="#0f1424" />
+
+  <x:Double x:Key="BodyFontSize">15</x:Double>
+  <x:Double x:Key="SecondaryFontSize">14</x:Double>
+  <CornerRadius x:Key="RadiusLarge">12</CornerRadius>
+  <CornerRadius x:Key="RadiusSmall">8</CornerRadius>
+
+  <StreamGeometry x:Key="WindowsLogo">M0,0 H7.4 V7.4 H0 Z M8.6,0 H16 V7.4 H8.6 Z M0,8.6 H7.4 V16 H0 Z M8.6,8.6 H16 V16 H8.6 Z</StreamGeometry>
+  <StreamGeometry x:Key="FolderIcon">M1,3.5 C1,2.7 1.7,2 2.5,2 H6.1 L7.7,3.8 H13.5 C14.3,3.8 15,4.5 15,5.3 V12.5 C15,13.3 14.3,14 13.5,14 H2.5 C1.7,14 1,13.3 1,12.5 Z</StreamGeometry>
+  <StreamGeometry x:Key="SearchIcon">M10.5,3 A7.5,7.5 0 1 1 10.49,3 Z M16,16 L21,21</StreamGeometry>
+</ResourceDictionary>

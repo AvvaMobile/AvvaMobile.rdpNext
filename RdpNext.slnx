@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/RdpNext.App/RdpNext.App.csproj" />
     <Project Path="src/RdpNext.Core/RdpNext.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/RdpNext.App.Tests/RdpNext.App.Tests.csproj" />
     <Project Path="tests/RdpNext.Core.Tests/RdpNext.Core.Tests.csproj" />
   </Folder>
 </Solution>

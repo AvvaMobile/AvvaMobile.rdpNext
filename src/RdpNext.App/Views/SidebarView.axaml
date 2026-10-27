@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:v="using:RdpNext.App.Views"
+             xmlns:s="using:RdpNext.App.Strings"
+             x:Class="RdpNext.App.Views.SidebarView"
+             x:DataType="vm:MainWindowViewModel"
+             Background="{DynamicResource SidebarBrush}">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="12,14,12,8">
+      <TextBlock x:Name="NoticeText"
+                 Text="{Binding Notice}"
+                 IsVisible="{Binding Notice, Converter={x:Static ObjectConverters.IsNotNull}}"
+                 Foreground="{StaticResource NoticeBrush}"
+                 FontSize="{StaticResource SecondaryFontSize}"
+                 TextWrapping="Wrap" />
+      <Button x:Name="AddServerButton" Classes="accent-wide" Content="{x:Static s:Strings.AddServer}" />
+      <TextBox x:Name="SearchBox" Classes="search" Watermark="{x:Static s:Strings.Search}">
+        <TextBox.InnerLeftContent>
+          <Path Data="{StaticResource SearchIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="2"
+                Width="16" Height="16" Stretch="Uniform" Margin="12,0,2,0" />
+        </TextBox.InnerLeftContent>
+      </TextBox>
+    </StackPanel>
+
+    <TreeView x:Name="Tree" ItemsSource="{Binding Tree.Roots}" Margin="4,0,4,8">
+      <TreeView.Styles>
+        <Style Selector="TreeViewItem" x:DataType="vm:TreeNodeViewModel">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+          <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+          <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+          <Setter Property="MinHeight" Value="44" />
+        </Style>
+      </TreeView.Styles>
+      <TreeView.DataTemplates>
+        <TreeDataTemplate DataType="vm:GroupNodeViewModel" ItemsSource="{Binding Children}">
+          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4">
+            <Border Classes="tile-small" Background="{StaticResource GroupTileBrush}">
+              <Path Data="{StaticResource FolderIcon}" Fill="White" Width="13" Height="13" Stretch="Uniform" />
+            </Border>
+            <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" Margin="12,0"
+                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="2" Classes="secondary" Text="{Binding ServerCount}" Margin="0,0,10,0"
+                       VerticalAlignment="Center" />
+          </Grid>
+        </TreeDataTemplate>
+        <DataTemplate DataType="vm:ServerNodeViewModel">
+          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,3">
+            <Border Classes="tile" Background="{Binding Color, Converter={x:Static v:Converters.ServerColorBrush}}">
+              <Path Data="{StaticResource WindowsLogo}" Fill="White" Width="15" Height="15" Stretch="Uniform" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+              <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
+              <TextBlock Classes="secondary" Text="{Binding Host}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <Ellipse Grid.Column="2" Width="8" Height="8" Margin="0,0,10,0" Fill="{StaticResource ConnectedBrush}"
+                     IsVisible="{Binding IsConnected}" />
+          </Grid>
+        </DataTemplate>
+      </TreeView.DataTemplates>
+    </TreeView>
+  </DockPanel>
+</UserControl>

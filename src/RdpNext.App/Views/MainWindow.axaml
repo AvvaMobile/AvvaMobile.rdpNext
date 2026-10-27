@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RdpNext.App.ViewModels"
+        xmlns:v="using:RdpNext.App.Views"
+        x:Class="RdpNext.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="rdpNext"
+        Width="1280" Height="800" MinWidth="800" MinHeight="500"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="52">
+  <DockPanel>
+    <!-- Başlık çubuğu: sekmeler Task 6'da buraya gelir. -->
+    <Border x:Name="TitleBar" DockPanel.Dock="Top" Height="52" Background="{DynamicResource WindowBrush}"
+            BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" />
+    <v:SidebarView DockPanel.Dock="Left" Width="310" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0" />
+    <Border x:Name="SessionArea" Margin="12" CornerRadius="{StaticResource RadiusLarge}" />
+  </DockPanel>
+</Window>
