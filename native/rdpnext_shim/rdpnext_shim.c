@@ -15,6 +15,7 @@
 #include <winpr/string.h>
 #include <string.h>
 #include <winpr/synch.h>
+#include <stdatomic.h>
 
 typedef struct
 {
@@ -28,6 +29,11 @@ typedef struct
 	rn_callbacks callbacks;
 	void* user;
 	DispClientContext* disp;
+	/* Sunucu çözünürlük kanalının hazır olduğunu (DisplayControlCaps) bildirdi mi; bildirmeden giden istek düşer. */
+	atomic_int disp_ready;
+	/* Kanal hazır olmadan gelen son istek (genişlik << 32 | yükseklik); hazır olunca gönderilir. 0 ise bekleyen yok.
+	   Kanalın iş parçacığı ile oturumun iş parçacığı arasında atomik değiştirilir; isteği yalnız bir taraf gönderir. */
+	atomic_llong pending_size;
 	CliprdrClientContext* clip;
 	char* local_text;
 } rnContext;
@@ -140,12 +146,43 @@ static void rn_clip_init(rnContext* rc, CliprdrClientContext* clip)
 	clip->ServerFormatDataRequest = rn_clip_server_format_data_request;
 }
 
+static BOOL rn_send_layout(rnContext* rc, UINT32 width, UINT32 height)
+{
+	DISPLAY_CONTROL_MONITOR_LAYOUT layout = { 0 };
+	layout.Flags = DISPLAY_CONTROL_MONITOR_PRIMARY;
+	layout.Width = width;
+	layout.Height = height;
+	layout.DesktopScaleFactor = 100;
+	layout.DeviceScaleFactor = 100;
+	return rc->disp->SendMonitorLayout(rc->disp, 1, &layout) == CHANNEL_RC_OK;
+}
+
+static void rn_send_pending(rnContext* rc)
+{
+	long long size = atomic_exchange(&rc->pending_size, 0);
+	if (size)
+		rn_send_layout(rc, (UINT32)(size >> 32), (UINT32)(size & 0xFFFFFFFF));
+}
+
+/* Sunucu çözünürlük kanalını açtı: bekleyen istek varsa şimdi gönderilir. */
+static UINT rn_disp_caps(DispClientContext* disp, UINT32 max_monitors, UINT32 factor_a, UINT32 factor_b)
+{
+	rnContext* rc = (rnContext*)disp->custom;
+	atomic_store(&rc->disp_ready, 1);
+	rn_send_pending(rc);
+	return CHANNEL_RC_OK;
+}
+
 /* disp kanalının bağlamı saklanır; diğer kanallar (rdpgfx vb.) FreeRDP'nin ortak işleyicisine gider. */
 static void rn_channel_connected(void* context, const ChannelConnectedEventArgs* e)
 {
 	rnContext* rc = (rnContext*)context;
 	if (strcmp(e->name, DISP_DVC_CHANNEL_NAME) == 0)
+	{
 		rc->disp = (DispClientContext*)e->pInterface;
+		rc->disp->custom = rc;
+		rc->disp->DisplayControlCaps = rn_disp_caps;
+	}
 	else if (strcmp(e->name, CLIPRDR_SVC_CHANNEL_NAME) == 0)
 		rn_clip_init(rc, (CliprdrClientContext*)e->pInterface);
 	else
@@ -156,7 +193,10 @@ static void rn_channel_disconnected(void* context, const ChannelDisconnectedEven
 {
 	rnContext* rc = (rnContext*)context;
 	if (strcmp(e->name, DISP_DVC_CHANNEL_NAME) == 0)
+	{
 		rc->disp = NULL;
+		atomic_store(&rc->disp_ready, 0);
+	}
 	else if (strcmp(e->name, CLIPRDR_SVC_CHANNEL_NAME) == 0)
 		rc->clip = NULL;
 	else
@@ -396,15 +436,12 @@ void rn_mouse(rdpContext* ctx, uint16_t flags, uint16_t x, uint16_t y)
 int rn_resize(rdpContext* ctx, int width, int height)
 {
 	rnContext* rc = (rnContext*)ctx;
-	if (!rc->disp)
+	/* En son istenen boyut saklanır; kanal hazırsa hemen, değilse hazır olunca gönderilir. */
+	atomic_store(&rc->pending_size, ((long long)width << 32) | (UINT32)height);
+	if (!rc->disp || !atomic_load(&rc->disp_ready))
 		return 0;
-	DISPLAY_CONTROL_MONITOR_LAYOUT layout = { 0 };
-	layout.Flags = DISPLAY_CONTROL_MONITOR_PRIMARY;
-	layout.Width = (UINT32)width;
-	layout.Height = (UINT32)height;
-	layout.DesktopScaleFactor = 100;
-	layout.DeviceScaleFactor = 100;
-	return rc->disp->SendMonitorLayout(rc->disp, 1, &layout) == CHANNEL_RC_OK;
+	rn_send_pending(rc);
+	return 1;
 }
 
 void rn_set_clipboard_text(rdpContext* ctx, const char* text)
