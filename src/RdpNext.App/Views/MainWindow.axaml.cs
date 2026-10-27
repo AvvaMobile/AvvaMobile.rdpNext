@@ -10,10 +10,10 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        // macOS'ta sol üstteki pencere düğmeleri sekmelerin üstüne binmesin.
+        // macOS'ta sol üstteki pencere düğmeleri sidebar düğmesinin ve sekmelerin üstüne binmesin.
         if (OperatingSystem.IsMacOS())
         {
-            Tabs.Margin = new Avalonia.Thickness(84, 0, 14, 0);
+            TitleContent.Margin = new Avalonia.Thickness(92, 0, 14, 0);
             Opened += (_, _) =>
             {
                 if (OperatingSystem.IsMacOS())

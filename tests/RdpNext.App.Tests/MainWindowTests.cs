@@ -203,4 +203,20 @@ public class MainWindowTests
 
         Assert.Equal(session, editor);
     }
+
+    [AvaloniaFact]
+    public void SidebarButtonHidesAndShowsSidebar()
+    {
+        var (window, _) = TestWindows.Open();
+        var sidebar = window.Named<Views.SidebarView>("Sidebar");
+        var button = window.Named<Button>("SidebarToggle");
+
+        button.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(sidebar.IsVisible);
+
+        button.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(sidebar.IsVisible);
+    }
 }
