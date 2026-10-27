@@ -1,10 +1,14 @@
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Threading;
 using RdpNext.App.ViewModels;
 
 namespace RdpNext.App.Tests;
 
+// Tam ekrana alınan her oturum kendi penceresinde açılır; ana pencere olduğu gibi kalır.
+// O pencere kapanınca yalnız o oturum kapanır; kısayolla çıkınca oturum sekmesine döner.
 public class FullScreenTests
 {
     private readonly List<FakeRdpSession> _sessions = [];
@@ -22,45 +26,90 @@ public class FullScreenTests
         return (window, vm);
     }
 
-    private static void Connect(MainWindowViewModel vm, string name)
+    private static SessionTabViewModel Connect(MainWindowViewModel vm, string name)
     {
-        vm.ConnectCommand.Execute(vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == name).Id));
+        var server = vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == name).Id);
+        vm.ConnectCommand.Execute(server);
         Dispatcher.UIThread.RunJobs();
+        return vm.Sessions.Find<SessionTabViewModel>(t => t.Server == server)!;
     }
 
     [AvaloniaFact]
-    public void ToggleHidesSidebarAndTabs()
+    public void ToggleMovesSessionToOwnFullScreenWindow()
     {
         var (window, vm) = Open();
-        Connect(vm, "web-01");
+        var tab = Connect(vm, "web-01");
+        var state = window.WindowState;
 
         vm.ToggleFullScreenCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Equal(WindowState.FullScreen, window.WindowState);
-        Assert.False(window.Named<Control>("Sidebar").IsVisible);
-        Assert.False(window.Named<Control>("TitleBar").IsVisible);
-        Assert.True(window.Named<Control>("SessionViewRoot").IsEffectivelyVisible);
-        // Tam ekranda oturum kenardan kenara: çerçevenin boşluğu, köşesi ve kenarlığı yok.
-        var frame = window.Named<Border>("ContentFrame");
-        Assert.Equal((new Avalonia.Thickness(0), new Avalonia.CornerRadius(0), new Avalonia.Thickness(0)),
-            (frame.Margin, frame.CornerRadius, frame.BorderThickness));
+        var own = Assert.Single(window.SessionWindows);
+        Assert.Same(tab, own.DataContext);
+        Assert.Equal(WindowState.FullScreen, own.WindowState);
+        Assert.True(own.IsVisible);
+        Assert.DoesNotContain(tab, vm.Sessions.Tabs);
+        Assert.Equal(state, window.WindowState);
+        Assert.False(_sessions[0].Disposed);
     }
 
     [AvaloniaFact]
-    public void ToggleTwiceRestoresWindowState()
+    public void ToggleBackReturnsSessionToTab()
     {
         var (window, vm) = Open();
-        Connect(vm, "web-01");
-        window.WindowState = WindowState.Maximized;
-
-        vm.ToggleFullScreenCommand.Execute(null);
+        var tab = Connect(vm, "web-01");
         vm.ToggleFullScreenCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Equal(WindowState.Maximized, window.WindowState);
-        Assert.True(window.Named<Control>("Sidebar").IsVisible);
-        Assert.True(window.Named<Control>("TitleBar").IsVisible);
+        vm.ToggleFullScreenCommand.Execute(tab);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Empty(window.SessionWindows);
+        Assert.Same(tab, vm.Sessions.Selected);
+        Assert.False(_sessions[0].Disposed);
+    }
+
+    [AvaloniaFact]
+    public void ClosingFullScreenWindowClosesOnlyThatSession()
+    {
+        var (window, vm) = Open();
+        var sql = Connect(vm, "sql-01");
+        Connect(vm, "web-01");
+        vm.ToggleFullScreenCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        window.SessionWindows.Single().Close();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.True(_sessions[1].Disposed);
+        Assert.False(_sessions[0].Disposed);
+        Assert.True(window.IsVisible);
+        Assert.Equal([sql], vm.Sessions.Tabs);
+        Assert.Null(vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == "web-01").Id).State);
+    }
+
+    [AvaloniaFact]
+    public void EachFullScreenSessionHasOwnWindow()
+    {
+        var (window, vm) = Open();
+        Connect(vm, "web-01");
+        vm.ToggleFullScreenCommand.Execute(null);
+        Connect(vm, "sql-01");
+        vm.ToggleFullScreenCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(2, window.SessionWindows.Count);
+    }
+
+    [AvaloniaFact]
+    public void FullScreenServerOpensOwnWindow()
+    {
+        var (window, vm) = Open(uretim => uretim.Children.OfType<Server>().First(s => s.Name == "web-01").Screen = ScreenMode.FullScreen);
+
+        Connect(vm, "web-01");
+
+        Assert.Single(window.SessionWindows);
+        Assert.NotEqual(WindowState.FullScreen, window.WindowState);
     }
 
     // Yalnız oturum sekmesi tam ekran olur.
@@ -73,53 +122,45 @@ public class FullScreenTests
         vm.ToggleFullScreenCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Null(vm.FullScreenSession);
-        Assert.NotEqual(WindowState.FullScreen, window.WindowState);
+        Assert.Empty(window.SessionWindows);
     }
 
     [AvaloniaFact]
-    public void FullScreenServerOpensFullScreen()
-    {
-        var (window, vm) = Open(uretim => uretim.Children.OfType<Server>().First(s => s.Name == "web-01").Screen = ScreenMode.FullScreen);
-
-        Connect(vm, "web-01");
-
-        Assert.NotNull(vm.FullScreenSession);
-        Assert.Equal(WindowState.FullScreen, window.WindowState);
-    }
-
-    [AvaloniaFact]
-    public void ClosingFullScreenSessionLeavesFullScreen()
+    public void ShutdownClosesFullScreenWindows()
     {
         var (window, vm) = Open();
         Connect(vm, "web-01");
         vm.ToggleFullScreenCommand.Execute(null);
-
-        vm.CloseTabCommand.Execute(vm.FullScreenSession!);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Null(vm.FullScreenSession);
-        Assert.NotEqual(WindowState.FullScreen, window.WindowState);
-        Assert.True(window.Named<Control>("TitleBar").IsVisible);
+        vm.Shutdown();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Empty(window.SessionWindows);
+        Assert.True(_sessions[0].Disposed);
     }
 
-    // Tam ekran kısayolu oturum klavyeyi tutarken de çalışır; basılı kalan Ctrl sunucuda bırakılır.
+    // Kısayol oturum klavyeyi tutarken de çalışır; basılı kalan Ctrl sunucuda bırakılır.
     [AvaloniaFact]
-    public void ShortcutTogglesFromSessionAndReleasesKeys()
+    public void ShortcutTogglesBothWaysAndReleasesKeys()
     {
         var (window, vm) = Open();
-        Connect(vm, "web-01");
+        var tab = Connect(vm, "web-01");
         window.Named<Views.SessionView>("SessionViewRoot").Focus();
         var (key, mods, physical) = OperatingSystem.IsMacOS()
-            ? (Avalonia.Input.Key.F, Avalonia.Input.RawInputModifiers.Control | Avalonia.Input.RawInputModifiers.Meta, Avalonia.Input.PhysicalKey.F)
-            : (Avalonia.Input.Key.Enter, Avalonia.Input.RawInputModifiers.Control | Avalonia.Input.RawInputModifiers.Alt, Avalonia.Input.PhysicalKey.Enter);
+            ? (Key.F, RawInputModifiers.Control | RawInputModifiers.Meta, PhysicalKey.F)
+            : (Key.Enter, RawInputModifiers.Control | RawInputModifiers.Alt, PhysicalKey.Enter);
 
-        Avalonia.Headless.HeadlessWindowExtensions.KeyPress(window, Avalonia.Input.Key.LeftCtrl, Avalonia.Input.RawInputModifiers.Control,
-            Avalonia.Input.PhysicalKey.ControlLeft, null);
-        Avalonia.Headless.HeadlessWindowExtensions.KeyPress(window, key, mods, physical, null);
+        window.KeyPress(Key.LeftCtrl, RawInputModifiers.Control, PhysicalKey.ControlLeft, null);
+        window.KeyPress(key, mods, physical, null);
+        Dispatcher.UIThread.RunJobs();
+        var own = Assert.Single(window.SessionWindows);
+        Assert.Equal(((ushort)0x1D, false, false), _sessions[0].Keys[^1]);
+
+        own.KeyPress(key, mods, physical, null);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.NotNull(vm.FullScreenSession);
-        Assert.Equal(((ushort)0x1D, false, false), _sessions[0].Keys[^1]);
+        Assert.Empty(window.SessionWindows);
+        Assert.Same(tab, vm.Sessions.Selected);
     }
 }

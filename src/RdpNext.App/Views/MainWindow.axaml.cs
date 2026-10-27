@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -73,29 +74,40 @@ public partial class MainWindow : Window
     }
 
     private MainWindowViewModel? _watched;
-    private WindowState _beforeFullScreen = WindowState.Maximized;
+    private readonly List<SessionWindow> _sessionWindows = [];
+
+    // Tam ekrandaki oturumların pencereleri.
+    public IReadOnlyList<SessionWindow> SessionWindows => _sessionWindows;
 
     private void WatchFullScreen(MainWindowViewModel? vm)
     {
         if (_watched is not null)
-            _watched.PropertyChanged -= OnViewModelChanged;
+            _watched.Sessions.Windows.CollectionChanged -= OnSessionWindowsChanged;
         _watched = vm;
         if (_watched is not null)
-            _watched.PropertyChanged += OnViewModelChanged;
+            _watched.Sessions.Windows.CollectionChanged += OnSessionWindowsChanged;
     }
 
-    private void OnViewModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    // Oturum tam ekrana geçince kendi penceresi açılır; sekmesine dönünce pencere kapanır.
+    // Pencereyi kullanıcı kapatırsa yalnız o oturum kapanır.
+    private void OnSessionWindowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(MainWindowViewModel.IsFullScreen) || _watched is null)
+        if (_watched is not { } vm)
             return;
-        if (_watched.IsFullScreen)
+        foreach (var tab in e.NewItems?.OfType<SessionTabViewModel>() ?? [])
         {
-            if (WindowState != WindowState.FullScreen)
-                _beforeFullScreen = WindowState;
-            WindowState = WindowState.FullScreen;
+            var window = new SessionWindow(vm, tab);
+            window.Closed += (_, _) =>
+            {
+                _sessionWindows.Remove(window);
+                if (vm.Sessions.Windows.Contains(tab))
+                    vm.Sessions.Close(tab);
+            };
+            _sessionWindows.Add(window);
+            window.Show();
         }
-        else if (WindowState == WindowState.FullScreen)
-            WindowState = _beforeFullScreen;
+        foreach (var tab in e.OldItems?.OfType<SessionTabViewModel>() ?? [])
+            _sessionWindows.FirstOrDefault(w => w.DataContext == tab)?.Close();
     }
 
     // Başlık çubuğunun boş yerine çift tık: ekranı doldur ya da eski boyuta dön.

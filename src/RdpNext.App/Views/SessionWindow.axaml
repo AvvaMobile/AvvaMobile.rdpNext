@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RdpNext.App.ViewModels"
+        xmlns:v="using:RdpNext.App.Views"
+        x:Class="RdpNext.App.Views.SessionWindow"
+        x:DataType="vm:SessionTabViewModel"
+        Title="{Binding Title}"
+        Icon="/Assets/rdpNext.png"
+        Width="1280" Height="800"
+        Background="{StaticResource SessionBrush}">
+  <v:SessionView x:Name="SessionViewRoot" />
+</Window>
