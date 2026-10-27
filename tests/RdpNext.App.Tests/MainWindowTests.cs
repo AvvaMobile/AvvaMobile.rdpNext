@@ -205,6 +205,18 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
+    public void FolderEditorShowsOnlyName()
+    {
+        var (window, vm) = TestWindows.Open();
+        vm.EditCommand.Execute(vm.Tree.Roots.OfType<GroupNodeViewModel>().First());
+        Dispatcher.UIThread.RunJobs();
+        var form = window.GetVisualDescendants().OfType<Views.FolderEditorView>().Single();
+
+        Assert.Equal("FolderNameBox", Assert.Single(form.GetVisualDescendants().OfType<TextBox>()).Name);
+        Assert.Empty(form.GetVisualDescendants().OfType<ComboBox>());
+    }
+
+    [AvaloniaFact]
     public void AppNameIsRdpNext()
     {
         var (window, _) = TestWindows.Open();

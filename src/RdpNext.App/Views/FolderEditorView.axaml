@@ -18,43 +18,11 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
         <StackPanel Classes="form">
+          <!-- Şimdilik yalnız ad; kimlik bilgileri ve üst klasör ekrandan kaldırıldı. -->
           <Grid ColumnDefinitions="*,12,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Name}" />
               <TextBox x:Name="FolderNameBox" Classes="field" Text="{Binding Name}" />
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-              <TextBlock Classes="label" Text="{x:Static s:Strings.ParentFolder}" />
-              <ComboBox Classes="field" ItemsSource="{Binding Folders}" SelectedItem="{Binding Parent}">
-                <ComboBox.ItemTemplate>
-                  <DataTemplate DataType="vm:FolderOption">
-                    <TextBlock Text="{Binding Label}" />
-                  </DataTemplate>
-                </ComboBox.ItemTemplate>
-              </ComboBox>
-            </StackPanel>
-          </Grid>
-          <Grid ColumnDefinitions="*,12,*">
-            <StackPanel>
-              <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
-              <TextBox Classes="field" Text="{Binding Username}" />
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-              <TextBlock Classes="label" Text="{x:Static s:Strings.Password}" />
-              <TextBox Classes="field" Text="{Binding Password}" PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}">
-                <TextBox.InnerRightContent>
-                  <ToggleButton Classes="eye" IsChecked="{Binding IsPasswordVisible}">
-                    <Path Data="{StaticResource EyeIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.6"
-                          Width="16" Height="16" Stretch="Uniform" />
-                  </ToggleButton>
-                </TextBox.InnerRightContent>
-              </TextBox>
-            </StackPanel>
-          </Grid>
-          <Grid ColumnDefinitions="*,12,*">
-            <StackPanel>
-              <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
-              <TextBox Classes="field" Text="{Binding Domain}" />
             </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
