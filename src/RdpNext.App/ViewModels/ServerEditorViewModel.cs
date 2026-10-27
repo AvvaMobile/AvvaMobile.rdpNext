@@ -55,11 +55,11 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     private string _name = "";
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand), nameof(ConnectCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string _host = "";
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand), nameof(ConnectCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string _port = "3389";
 
     [ObservableProperty]
@@ -143,9 +143,6 @@ public sealed partial class ServerEditorViewModel : TabViewModel
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save() => Store();
-
-    [RelayCommand(CanExecute = nameof(CanSave))]
-    private void Connect() => _owner.Sessions.Open(Store());
 
     [RelayCommand]
     private Task Delete() => Existing is null
