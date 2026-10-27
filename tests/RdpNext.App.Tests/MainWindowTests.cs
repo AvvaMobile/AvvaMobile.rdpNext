@@ -213,6 +213,26 @@ public class MainWindowTests
         Assert.True(Shows("TabStrip"));
     }
 
+    // Advanced sekmesinde yapılan değişiklik de aynı yerdeki Save ile kaydedilir.
+    [AvaloniaFact]
+    public void AdvancedTabHasSave()
+    {
+        var path = TestWindows.SampleFile();
+        var (window, vm) = TestWindows.Open(path);
+        var web = vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == "web-01").Id);
+        vm.EditCommand.Execute(web);
+        var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
+        editor.ShowAdvanced = true;
+        editor.ScreenIndex = 1;
+        Dispatcher.UIThread.RunJobs();
+
+        var save = window.Named<Control>("SessionArea").GetVisualDescendants().OfType<Button>()
+            .Single(b => b.IsEffectivelyVisible && b.Content as string == "Save");
+        save.Command!.Execute(null);
+
+        Assert.Equal(ScreenMode.FullScreen, new Core.Storage.ConnectionStore(path).Load().Root.AllServers().First(s => s.Name == "web-01").Screen);
+    }
+
     [AvaloniaFact]
     public void EditorShowsFieldsInApprovedOrder()
     {
