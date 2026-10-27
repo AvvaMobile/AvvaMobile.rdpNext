@@ -10,12 +10,12 @@ namespace RdpNext.App.Tests;
 public class SidebarTests
 {
     [AvaloniaFact]
-    public void ShowsGroupsWithServerCounts()
+    public void GroupRowsShowNoServerCount()
     {
         var (window, _) = TestWindows.Open();
 
-        Assert.Contains(window.Item("Üretim").Texts(), t => t.Text == "3");
-        Assert.Contains(window.Item("Müşteriler").Texts(), t => t.Text == "23");
+        Assert.DoesNotContain(window.Item("Müşteriler").Texts(), t => t.Text == "23");
+        Assert.DoesNotContain(window.Item("Test").Texts(), t => t.Text == "7");
     }
 
     [AvaloniaFact]
