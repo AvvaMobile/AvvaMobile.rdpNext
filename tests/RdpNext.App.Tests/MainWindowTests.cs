@@ -216,26 +216,27 @@ public class MainWindowTests
         Assert.Empty(form.GetVisualDescendants().OfType<ComboBox>());
     }
 
-    // Sil, düz yazı değil ikonlu kırmızı düğme ve Kaydet'in hemen sağında.
+    // Sil, düz yazı değil ikonlu kırmızı düğme ve formun sağ kenarına hizalı.
     [AvaloniaFact]
-    public void DeleteIsIconButtonNextToSave()
+    public void DeleteIsIconButtonAlignedRight()
     {
         var (window, vm) = TestWindows.Open();
         var folder = vm.Tree.Roots.OfType<GroupNodeViewModel>().First();
         vm.EditCommand.Execute(folder.Children.OfType<ServerNodeViewModel>().First());
         Dispatcher.UIThread.RunJobs();
-        AssertNextTo(window.Named<Button>("SaveButton"), window.Named<Button>("DeleteButton"));
+        AssertRight(window.Named<Button>("DeleteButton"));
 
         vm.EditCommand.Execute(folder);
         Dispatcher.UIThread.RunJobs();
-        AssertNextTo(window.Named<Button>("SaveFolderButton"), window.Named<Button>("DeleteFolderButton"));
+        AssertRight(window.Named<Button>("DeleteFolderButton"));
 
-        static void AssertNextTo(Button save, Button delete)
+        static void AssertRight(Button delete)
         {
             Assert.Contains("danger", delete.Classes);
             Assert.NotEmpty(delete.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
-            var gap = delete.TranslatePoint(new Point(0, 0), save)!.Value.X - save.Bounds.Width;
-            Assert.InRange(gap, 0, 16);
+            var form = delete.GetVisualAncestors().OfType<StackPanel>().First(p => p.Classes.Contains("form"));
+            var right = delete.TranslatePoint(new Point(delete.Bounds.Width, 0), form)!.Value.X;
+            Assert.Equal(form.Bounds.Width, right, 1);
         }
     }
 
