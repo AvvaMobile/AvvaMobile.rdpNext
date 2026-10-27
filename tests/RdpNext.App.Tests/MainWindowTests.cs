@@ -296,7 +296,7 @@ public class MainWindowTests
         Assert.Empty(form.GetVisualDescendants().OfType<ComboBox>());
     }
 
-    // Sil, düz yazı değil ikonlu kırmızı düğme ve formun sağ kenarına hizalı.
+    // Sunucu ayar ekranında Delete yok, sağ tık menüsünde. Klasör ekranında ikonlu kırmızı düğme, sağa hizalı.
     [AvaloniaFact]
     public void DeleteIsIconButtonAlignedRight()
     {
@@ -304,7 +304,8 @@ public class MainWindowTests
         var folder = vm.Tree.Roots.OfType<GroupNodeViewModel>().First();
         vm.EditCommand.Execute(folder.Children.OfType<ServerNodeViewModel>().First());
         Dispatcher.UIThread.RunJobs();
-        AssertRight(window.Named<Button>("DeleteButton"));
+        Assert.DoesNotContain(window.GetVisualDescendants().OfType<Views.ServerEditorView>().Single().GetVisualDescendants().OfType<Button>(),
+            b => b.Classes.Contains("danger"));
 
         vm.EditCommand.Execute(folder);
         Dispatcher.UIThread.RunJobs();

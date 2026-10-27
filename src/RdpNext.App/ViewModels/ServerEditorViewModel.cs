@@ -148,11 +148,6 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         _owner.ShowToast(Strings.Strings.Saved);
     }
 
-    [RelayCommand]
-    private Task Delete() => Existing is null
-        ? Task.CompletedTask
-        : _owner.DeleteNodeCommand.ExecuteAsync(_owner.Tree.Node<ServerNodeViewModel>(Existing.Id));
-
     private ServerNodeViewModel Store()
     {
         var tree = _owner.Tree;
