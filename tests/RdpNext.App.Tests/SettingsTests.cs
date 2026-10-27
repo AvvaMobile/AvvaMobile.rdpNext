@@ -179,8 +179,25 @@ public class SettingsTests
 
         Assert.Equal("Ayarlar", vm.Sessions.Selected?.Title);
         var view = window.GetVisualDescendants().OfType<Views.SettingsView>().Single();
-        Assert.NotNull(view.Named<Button>("ExportButton").Command);
-        Assert.NotNull(view.Named<Button>("ImportButton").Command);
+        var settings = (SettingsViewModel)vm.Sessions.Selected!;
+
+        // Genel sekmesi önde (şimdilik boş).
+        Assert.True(settings.ShowGeneral);
+        Assert.False(view.Named<Button>("ExportButton").IsEffectivelyVisible);
+        Assert.False(view.Named<Button>("ImportButton").IsEffectivelyVisible);
+
+        // Dışa aktar: açıklama ve tek düğme.
+        settings.ShowExport = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(view.Named<Button>("ExportButton").IsEffectivelyVisible);
+        Assert.False(view.Named<Button>("ImportButton").IsEffectivelyVisible);
+        Assert.True(view.Named<TextBlock>("ExportHint").IsEffectivelyVisible);
+
+        settings.ShowImport = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(view.Named<Button>("ExportButton").IsEffectivelyVisible);
+        Assert.True(view.Named<Button>("ImportButton").IsEffectivelyVisible);
+        Assert.True(view.Named<TextBlock>("ImportHint").IsEffectivelyVisible);
         Assert.False(view.Named<CheckBox>("DeleteOldBox").IsChecked);
     }
 }

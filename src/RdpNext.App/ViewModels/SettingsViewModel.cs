@@ -4,7 +4,7 @@ using RdpNext.Core.Storage;
 
 namespace RdpNext.App.ViewModels;
 
-// Ayarlar sekmesi; şimdilik yalnız yedek: listeyi dosyaya ver, dosyadan geri yükle.
+// Ayarlar sekmesi: Genel (şimdilik boş), Dışa aktar (listeyi dosyaya ver) ve İçe aktar (dosyadan yükle).
 public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabViewModel
 {
     public override string Title => Strings.Strings.Settings;
@@ -12,6 +12,43 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
     // Son işlemin sonucu ya da hatası; ekranda düğmelerin altında.
     [ObservableProperty]
     private string? _status;
+
+    public enum SettingsPage
+    {
+        General,
+        Export,
+        Import,
+    }
+
+    // Alt sekme; Ayarlar Genel ile açılır.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowGeneral), nameof(ShowExport), nameof(ShowImport))]
+    private SettingsPage _page;
+
+    // Sekme düğmeleri için; işaretlenen sekme açılır, işaret kalkması yok sayılır.
+    public bool ShowGeneral
+    {
+        get => Page == SettingsPage.General;
+        set => Select(SettingsPage.General, value);
+    }
+
+    public bool ShowExport
+    {
+        get => Page == SettingsPage.Export;
+        set => Select(SettingsPage.Export, value);
+    }
+
+    public bool ShowImport
+    {
+        get => Page == SettingsPage.Import;
+        set => Select(SettingsPage.Import, value);
+    }
+
+    private void Select(SettingsPage page, bool selected)
+    {
+        if (selected)
+            Page = page;
+    }
 
     // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.
     [ObservableProperty]

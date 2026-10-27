@@ -8,7 +8,9 @@
   <DockPanel>
     <Border DockPanel.Dock="Top" Classes="subtabs">
       <StackPanel Orientation="Horizontal">
-        <RadioButton Classes="subtab" Content="{x:Static s:Strings.Backup}" IsChecked="True" />
+        <RadioButton Classes="subtab" Content="{x:Static s:Strings.General}" IsChecked="{Binding ShowGeneral}" />
+        <RadioButton Classes="subtab" Content="{x:Static s:Strings.Export}" IsChecked="{Binding ShowExport}" />
+        <RadioButton Classes="subtab" Content="{x:Static s:Strings.Import}" IsChecked="{Binding ShowImport}" />
       </StackPanel>
     </Border>
     <ScrollViewer>
@@ -17,16 +19,23 @@
           <ColumnDefinition Width="1000*" MaxWidth="876" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Classes="form">
-          <TextBlock Classes="secondary" Text="{x:Static s:Strings.BackupHint}" TextWrapping="Wrap" />
-          <StackPanel Orientation="Horizontal" Spacing="10">
+        <Panel>
+          <!-- Genel: şimdilik boş, ayarlar buraya eklenecek. -->
+          <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}" />
+          <StackPanel Classes="form" IsVisible="{Binding ShowExport}">
+            <TextBlock x:Name="ExportHint" Text="{x:Static s:Strings.ExportHint}" TextWrapping="Wrap" />
             <Button x:Name="ExportButton" Classes="primary" Content="{x:Static s:Strings.Export}" Command="{Binding ExportCommand}" />
-            <Button x:Name="ImportButton" Classes="secondary" Content="{x:Static s:Strings.Import}" Command="{Binding ImportCommand}" />
-            <CheckBox x:Name="DeleteOldBox" Content="{x:Static s:Strings.DeleteOld}" IsChecked="{Binding DeleteOld}" Margin="6,0,0,0" />
+            <TextBlock Classes="secondary" Text="{Binding Status}" TextWrapping="Wrap"
+                       IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}" />
           </StackPanel>
-          <TextBlock x:Name="StatusText" Classes="secondary" Text="{Binding Status}" TextWrapping="Wrap"
-                     IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
+          <StackPanel Classes="form" IsVisible="{Binding ShowImport}">
+            <TextBlock x:Name="ImportHint" Text="{x:Static s:Strings.ImportHint}" TextWrapping="Wrap" />
+            <CheckBox x:Name="DeleteOldBox" Content="{x:Static s:Strings.DeleteOld}" IsChecked="{Binding DeleteOld}" />
+            <Button x:Name="ImportButton" Classes="primary" Content="{x:Static s:Strings.Import}" Command="{Binding ImportCommand}" />
+            <TextBlock Classes="secondary" Text="{Binding Status}" TextWrapping="Wrap"
+                       IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          </StackPanel>
+        </Panel>
       </Grid>
     </ScrollViewer>
   </DockPanel>
