@@ -121,6 +121,29 @@ public sealed partial class TreeViewModel : ObservableObject
         StructureChanged?.Invoke();
     }
 
+    // Dosyadaki kayıtları listeye ekler; listede zaten olan kayıt (aynı kimlik) atlanır,
+    // aynı klasörün içindeki yeni kayıtlar o klasöre eklenir. Eklenen sunucu sayısını döner.
+    public int Merge(Group source)
+    {
+        var added = 0;
+        MergeInto(null, source);
+        return added;
+
+        void MergeInto(Group? target, Group from)
+        {
+            foreach (var child in from.Children.ToList())
+            {
+                if (!_byId.TryGetValue(child.Id, out var existing))
+                {
+                    added += child is Group group ? group.AllServers().Count() : 1;
+                    AddNode(child, target);
+                }
+                else if (existing is GroupNodeViewModel folder && child is Group group)
+                    MergeInto(folder.Group, group);
+            }
+        }
+    }
+
     public void Remove(TreeNodeViewModel node)
     {
         if (Selected is { } selected && IsUnder(selected.Model, node.Model))

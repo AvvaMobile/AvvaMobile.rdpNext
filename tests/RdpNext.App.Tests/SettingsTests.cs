@@ -11,14 +11,15 @@ namespace RdpNext.App.Tests;
 
 public class SettingsTests
 {
-    private sealed class FakeConfirm(bool answer) : IConfirmService
+    // sure: "emin misin" sorusunun cevabı.
+    private sealed class FakeConfirm(bool sure) : IConfirmService
     {
-        public string? LastMessage { get; private set; }
+        public List<string> Asked { get; } = [];
 
         public Task<bool> ConfirmAsync(string message, string confirmText)
         {
-            LastMessage = message;
-            return Task.FromResult(answer);
+            Asked.Add(message);
+            return Task.FromResult(sure);
         }
 
         public Task<string?> AskTextAsync(string message, string confirmText) => Task.FromResult<string?>(null);
@@ -40,8 +41,24 @@ public class SettingsTests
     private readonly string _path = TestWindows.SampleFile();
     private readonly string _backup = Path.Combine(Path.GetTempPath(), "rdpnext-backup-" + Guid.NewGuid() + ".json");
 
-    private MainWindowViewModel Create(string? picked, bool confirm = true) =>
-        new(new ConnectionStore(_path), new InMemorySecretStore(), new FakeConfirm(confirm), new FakeFiles(picked));
+    private FakeConfirm _confirm = new(true);
+
+    private MainWindowViewModel Create(string? picked, bool sure = true)
+    {
+        _confirm = new FakeConfirm(sure);
+        return new(new ConnectionStore(_path), _secrets, _confirm, new FakeFiles(picked));
+    }
+
+    private readonly InMemorySecretStore _secrets = new();
+
+    private void SaveBackup()
+    {
+        var backup = new Group();
+        var folder = new Group { Name = "Yedek klasör" };
+        folder.Add(new Server { Name = "yedek-01", Host = "10.9.9.9" });
+        backup.Add(folder);
+        new ConnectionStore(_backup).Save(backup);
+    }
 
     private static SettingsViewModel OpenSettings(MainWindowViewModel vm)
     {
@@ -72,32 +89,68 @@ public class SettingsTests
     }
 
     [Fact]
-    public async Task ImportReplacesListKeepsSettingsTabAndSaves()
+    public async Task ImportAddsToListByDefault()
     {
-        var backup = new Group();
-        var folder = new Group { Name = "Yedek klasör" };
-        folder.Add(new Server { Name = "yedek-01", Host = "10.9.9.9" });
-        backup.Add(folder);
-        new ConnectionStore(_backup).Save(backup);
+        SaveBackup();
         var vm = Create(_backup);
-        vm.ConnectCommand.Execute(vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First().Id));
+        var tab = vm.Sessions.Open(vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First().Id));
         var settings = OpenSettings(vm);
 
         await settings.ImportCommand.ExecuteAsync(null);
 
+        Assert.Equal(["Üretim", "Test", "Müşteriler", "Yedek klasör"], vm.Tree.Roots.Select(n => n.Name));
+        Assert.Contains(tab, vm.Sessions.Tabs);
+        Assert.Empty(_confirm.Asked);
+        Assert.Equal(4, new ConnectionStore(_path).Load().Root.Children.Count);
+    }
+
+    // Aynı yedeği iki kez eklemek kayıtları çoğaltmaz; klasörde yeni olan sunucu klasöre eklenir.
+    [Fact]
+    public async Task ImportSkipsRecordsAlreadyInList()
+    {
+        var vm = Create(_backup);
+        new ConnectionStore(_backup).Save(new ConnectionStore(_path).Load().Root);
+        var copy = ConnectionStore.Read(_backup)!;
+        ((Group)copy.Children[0]).Add(new Server { Name = "yeni-01" });
+        new ConnectionStore(_backup).Save(copy);
+        var before = vm.Tree.Root.AllServers().Count();
+
+        await OpenSettings(vm).ImportCommand.ExecuteAsync(null);
+
+        Assert.Equal(3, vm.Tree.Roots.Count);
+        Assert.Equal(before + 1, vm.Tree.Root.AllServers().Count());
+        Assert.Equal("yeni-01", ((GroupNodeViewModel)vm.Tree.Roots[0]).Children.Last().Name);
+    }
+
+    [Fact]
+    public async Task ImportWithDeleteAsksOnceThenReplaces()
+    {
+        SaveBackup();
+        var vm = Create(_backup, sure: true);
+        var old = vm.Tree.Root.AllServers().First();
+        vm.Secrets.SetPassword(old.Id, "eski");
+        vm.Sessions.Open(vm.Tree.Node<ServerNodeViewModel>(old.Id));
+        var settings = OpenSettings(vm);
+        settings.DeleteOld = true;
+
+        await settings.ImportCommand.ExecuteAsync(null);
+
+        Assert.Single(_confirm.Asked);
         Assert.Equal(["Yedek klasör"], vm.Tree.Roots.Select(n => n.Name));
-        Assert.Equal("yedek-01", ((GroupNodeViewModel)vm.Tree.Roots[0]).Children[0].Name);
         Assert.Equal([settings], vm.Sessions.Tabs);
+        Assert.Null(vm.Secrets.GetPassword(old.Id));
         Assert.Equal(["Yedek klasör"], new ConnectionStore(_path).Load().Root.Children.Select(n => n.Name));
     }
 
     [Fact]
-    public async Task ImportNeedsConfirm()
+    public async Task ImportWithDeleteNotSureKeepsList()
     {
-        new ConnectionStore(_backup).Save(new Group());
-        var vm = Create(_backup, confirm: false);
+        SaveBackup();
+        var vm = Create(_backup, sure: false);
+        var settings = OpenSettings(vm);
+        settings.DeleteOld = true;
 
-        await OpenSettings(vm).ImportCommand.ExecuteAsync(null);
+        await settings.ImportCommand.ExecuteAsync(null);
 
         Assert.Equal(3, vm.Tree.Roots.Count);
     }
@@ -128,5 +181,6 @@ public class SettingsTests
         var view = window.GetVisualDescendants().OfType<Views.SettingsView>().Single();
         Assert.NotNull(view.Named<Button>("ExportButton").Command);
         Assert.NotNull(view.Named<Button>("ImportButton").Command);
+        Assert.False(view.Named<CheckBox>("DeleteOldBox").IsChecked);
     }
 }

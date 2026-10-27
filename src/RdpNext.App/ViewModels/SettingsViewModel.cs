@@ -13,6 +13,10 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
     [ObservableProperty]
     private string? _status;
 
+    // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.
+    [ObservableProperty]
+    private bool _deleteOld;
+
     [RelayCommand]
     private async Task Export()
     {
@@ -41,7 +45,12 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
             Status = string.Format(Strings.Strings.ImportFailed, Path.GetFileName(path));
             return;
         }
-        if (!await owner.Confirm.ConfirmAsync(string.Format(Strings.Strings.ImportConfirm, Path.GetFileName(path)), Strings.Strings.Import))
+        if (!DeleteOld)
+        {
+            Status = string.Format(Strings.Strings.ImportAdded, owner.MergeTree(root));
+            return;
+        }
+        if (!await owner.Confirm.ConfirmAsync(Strings.Strings.ImportDeleteConfirm, Strings.Strings.DeleteAndImport))
             return;
         owner.ReplaceTree(root, keep: this);
         Status = string.Format(Strings.Strings.ImportDone, root.AllServers().Count());

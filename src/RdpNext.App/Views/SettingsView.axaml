@@ -22,6 +22,7 @@
           <StackPanel Orientation="Horizontal" Spacing="10">
             <Button x:Name="ExportButton" Classes="primary" Content="{x:Static s:Strings.Export}" Command="{Binding ExportCommand}" />
             <Button x:Name="ImportButton" Classes="secondary" Content="{x:Static s:Strings.Import}" Command="{Binding ImportCommand}" />
+            <CheckBox x:Name="DeleteOldBox" Content="{x:Static s:Strings.DeleteOld}" IsChecked="{Binding DeleteOld}" Margin="6,0,0,0" />
           </StackPanel>
           <TextBlock x:Name="StatusText" Classes="secondary" Text="{Binding Status}" TextWrapping="Wrap"
                      IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}" />

@@ -75,12 +75,25 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void OpenSettings() => Sessions.OpenTab(Sessions.Find<SettingsViewModel>(_ => true) ?? new SettingsViewModel(this));
 
-    // İçe aktarma: listenin tamamı değişir, eski düğümlere bağlı sekmeler kapanır.
+    // İçe aktarma, eskileri silerek: liste dosyadakiyle değişir, eski düğümlere bağlı sekmeler ve
+    // artık listede olmayan kayıtların şifreleri silinir.
     public void ReplaceTree(Group root, TabViewModel keep)
     {
+        var kept = root.Children.SelectMany(Subtree).Select(n => n.Id).ToHashSet();
+        var removed = Tree.Root.Children.SelectMany(Subtree).Where(n => !kept.Contains(n.Id)).ToList();
         Sessions.CloseOthers(keep);
         Tree.Replace(root);
+        foreach (var node in removed)
+            Secrets.DeletePassword(node.Id);
         Persist();
+    }
+
+    // İçe aktarma, ekleyerek; eklenen sunucu sayısını döner.
+    public int MergeTree(Group root)
+    {
+        var added = Tree.Merge(root);
+        Persist();
+        return added;
     }
 
     [RelayCommand]
