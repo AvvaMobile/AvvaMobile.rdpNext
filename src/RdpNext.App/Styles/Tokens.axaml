@@ -11,6 +11,16 @@
       <SolidColorBrush x:Key="Text2Brush" Color="#6b7085" />
       <SolidColorBrush x:Key="LineBrush" Color="#dfe2ea" />
       <SolidColorBrush x:Key="AccentBrush" Color="#3d6dfd" />
+      <!-- Fluent'in gri vurgu renkleri yerine çizimdeki zemin. -->
+      <SolidColorBrush x:Key="TreeViewItemBackgroundPointerOver" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundSelected" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPointerOver" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundPressed" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPressed" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundPointerOver" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundPressed" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPointerOver" Color="#e6e9f1" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPressed" Color="#e6e9f1" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="WindowBrush" Color="#151827" />
@@ -21,6 +31,15 @@
       <SolidColorBrush x:Key="Text2Brush" Color="#8d92a8" />
       <SolidColorBrush x:Key="LineBrush" Color="#262a3c" />
       <SolidColorBrush x:Key="AccentBrush" Color="#4c7dff" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundPointerOver" Color="#2b2f43" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundSelected" Color="#2b2f43" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPointerOver" Color="#2b2f43" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundPressed" Color="#2b2f43" />
+      <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPressed" Color="#2b2f43" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundPointerOver" Color="#2b2f43" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundPressed" Color="#2b2f43" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPointerOver" Color="#2b2f43" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPressed" Color="#2b2f43" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
