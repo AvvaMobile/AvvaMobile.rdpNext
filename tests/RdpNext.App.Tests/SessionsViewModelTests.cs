@@ -90,4 +90,22 @@ public class SessionsViewModelTests
         Assert.True(_b.IsConnected);
         Assert.False(_c.IsConnected);
     }
+
+    private sealed class FakeTab(string title) : TabViewModel
+    {
+        public override string Title => title;
+    }
+
+    [Fact]
+    public void OpenTabAddsAndSelectsAnyTab()
+    {
+        _sessions.Open(_a);
+        var tab = new FakeTab("ayarlar");
+
+        _sessions.OpenTab(tab);
+
+        Assert.Equal(2, _sessions.Tabs.Count);
+        Assert.Same(tab, _sessions.Selected);
+        Assert.Same(tab, _sessions.Find<FakeTab>(t => t.Title == "ayarlar"));
+    }
 }

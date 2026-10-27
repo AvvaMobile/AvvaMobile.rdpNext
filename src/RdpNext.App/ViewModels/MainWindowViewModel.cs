@@ -39,8 +39,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CloseTab(SessionTabViewModel tab) => Sessions.Close(tab);
+    private void CloseTab(TabViewModel tab) => Sessions.Close(tab);
 
     [RelayCommand]
-    private void CloseOtherTabs(SessionTabViewModel tab) => Sessions.CloseOthers(tab);
+    private void CloseOtherTabs(TabViewModel tab) => Sessions.CloseOthers(tab);
 }
