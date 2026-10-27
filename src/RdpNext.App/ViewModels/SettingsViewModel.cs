@@ -60,8 +60,12 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
             settings.Language = value == 1 ? Languages.English : Languages.Turkish;
             owner.Settings.Save(settings);
             OnPropertyChanged();
+            OnPropertyChanged(nameof(ShowRestartNote));
         }
     }
+
+    // "Yeniden başlatınca uygulanır" yalnız seçilen dil açık olandan farklıysa görünür.
+    public bool ShowRestartNote => (LanguageIndex == 1 ? Languages.English : Languages.Turkish) != Languages.Current.TwoLetterISOLanguageName;
 
     // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.
     [ObservableProperty]
