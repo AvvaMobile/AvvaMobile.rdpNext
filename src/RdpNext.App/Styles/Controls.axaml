@@ -142,6 +142,15 @@
     <Setter Property="Foreground" Value="White" />
   </Style>
 
+  <Style Selector="Border.content-frame">
+    <Setter Property="Margin" Value="12" />
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+    <Setter Property="ClipToBounds" Value="True" />
+  </Style>
+
   <!-- Düzenleme sekmesinin üst şeridi: gri zemin, boydan boya alt çizgi, seçili başlıkta mavi çizgi -->
   <Style Selector="Border.subtabs">
     <Setter Property="Background" Value="{DynamicResource SidebarBrush}" />
