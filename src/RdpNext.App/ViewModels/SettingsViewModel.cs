@@ -50,22 +50,33 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
             Page = page;
     }
 
-    // Dil seçicisindeki sıra: 0 Türkçe, 1 English. Seçim kaydedilir, yeniden başlatınca uygulanır.
-    public int LanguageIndex
-    {
-        get => (owner.Settings.Load().Language ?? Languages.Current.TwoLetterISOLanguageName) == Languages.English ? 1 : 0;
-        set
-        {
-            var settings = owner.Settings.Load();
-            settings.Language = value == 1 ? Languages.English : Languages.Turkish;
-            owner.Settings.Save(settings);
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(ShowRestartNote));
-        }
-    }
+    // Genel sekmesindeki ayarlar Kaydet'e basınca yazılır. Dil seçicisindeki sıra: 0 Türkçe, 1 English.
+    private static int SavedLanguageIndex(MainWindowViewModel owner) =>
+        (owner.Settings.Load().Language ?? Languages.Current.TwoLetterISOLanguageName) == Languages.English ? 1 : 0;
 
-    // "Yeniden başlatınca uygulanır" yalnız seçilen dil açık olandan farklıysa görünür.
-    public bool ShowRestartNote => (LanguageIndex == 1 ? Languages.English : Languages.Turkish) != Languages.Current.TwoLetterISOLanguageName;
+    private static string LanguageAt(int index) => index == 1 ? Languages.English : Languages.Turkish;
+
+    private int _savedLanguageIndex = SavedLanguageIndex(owner);
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveGeneralCommand))]
+    private int _languageIndex = SavedLanguageIndex(owner);
+
+    // "Yeniden başlatınca uygulanır" yalnız kaydedilen dil açık olandan farklıysa görünür.
+    public bool ShowRestartNote => LanguageAt(_savedLanguageIndex) != Languages.Current.TwoLetterISOLanguageName;
+
+    private bool CanSaveGeneral() => LanguageIndex != _savedLanguageIndex;
+
+    [RelayCommand(CanExecute = nameof(CanSaveGeneral))]
+    private void SaveGeneral()
+    {
+        var settings = owner.Settings.Load();
+        settings.Language = LanguageAt(LanguageIndex);
+        owner.Settings.Save(settings);
+        _savedLanguageIndex = LanguageIndex;
+        SaveGeneralCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(ShowRestartNote));
+    }
 
     // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.
     [ObservableProperty]
