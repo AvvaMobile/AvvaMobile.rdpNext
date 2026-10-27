@@ -110,3 +110,14 @@
 
 - [ ] Uygulamayı çalıştır, sunucu ve klasör ekle/düzenle/sil/kopyala; anahtar zincirinde kaydı `security find-generic-password -s rdpNext` ile doğrula (şifreyi ekrana basmadan). Ekran görüntüsünü çizimle karşılaştır.
 - [ ] Tüm testler yeşil, merge.
+
+## Uygulamada verilen kararlar (2026-10-27)
+
+1. Sürükle-bırak, menüden "Klasöre taşı" ve tema seçimi bu plana alınmadı; taşıma formdaki Klasör alanıyla yapılıyor.
+2. macOS'ta eski `SecKeychain*GenericPassword` API'si kullanıldı (basit, macOS 13+'da çalışıyor). Windows mağazası yazıldı ama Windows'ta denenmedi.
+3. Devralınan değerin kaynağı Türkçe ayrılma ekiyle yazılır ("Üretim'den", "Test'ten").
+4. Görünen ad boşsa adres kullanılır. Gelişmiş sekmesinde ekran seçimi açılır liste.
+5. Silme onayı küçük ayrı pencere: "web-01 silinsin mi?", "Üretim ve içindeki 3 sunucu silinsin mi?"; düğmeler Vazgeç, Sil.
+6. Anahtar zincirine erişilemezse uygulama çökmez; sol panelin üstünde "Anahtar zincirine erişilemedi, şifre okunamadı ya da kaydedilmedi." görünür. Şifre yalnız değiştiyse yazılır.
+7. İnceleme sonrası düzeltilenler: açık sekmeden klasörü kendi alt klasörüne taşıma (artık engelleniyor), silinen klasörden sonra çökme, arama açıkken silinen sunucuya Enter, anahtar zinciri reddinde çökme, her kaydetmede anahtar zinciri sorusu.
+8. Ertelenen küçükler: sunucu adı arama açıkken değişince süzme yenilenmiyor; "web-20" gibi onlarla biten adlarda ek yanlış ("dan"); kapanan oturum sekmesi sunucu düğümüne bağlı kalıyor; devralınan değer ipuçları başka sekmede klasör değişince yenilenmiyor; boş şifre okunurken olası hata; kaydedilmemiş değişiklikle sekme kapatılınca soru sorulmuyor.

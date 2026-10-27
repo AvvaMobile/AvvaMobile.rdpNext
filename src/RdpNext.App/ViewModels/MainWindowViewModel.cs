@@ -12,11 +12,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null)
     {
         Store = store;
-        Secrets = secrets;
+        Secrets = new GuardedSecretStore(secrets, message => Notice = message);
         Confirm = confirm ?? new DialogConfirmService();
         var loaded = store.Load();
         Tree = new TreeViewModel(loaded.Root);
-        Notice = loaded.CorruptBackupPath is { } backup
+        _notice = loaded.CorruptBackupPath is { } backup
             ? string.Format(Strings.Strings.CorruptFileNotice, backup)
             : null;
     }
@@ -29,7 +29,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     public TreeViewModel Tree { get; }
 
-    public string? Notice { get; }
+    [ObservableProperty]
+    private string? _notice;
 
     public SessionsViewModel Sessions { get; } = new();
 

@@ -14,7 +14,8 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     {
         _owner = owner;
         Existing = existing;
-        Folders = owner.Tree.FolderOptions();
+        _folders = owner.Tree.FolderOptions();
+        owner.Tree.StructureChanged += RebuildFolders;
         if (existing is not null)
         {
             _name = existing.Name;
@@ -22,12 +23,12 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             _port = existing.Port.ToString();
             _username = existing.Username ?? "";
             _domain = existing.Domain ?? "";
-            _password = owner.Secrets.GetPassword(existing.Id) ?? "";
+            _password = _savedPassword = owner.Secrets.GetPassword(existing.Id) ?? "";
             _color = existing.Color;
             _screen = existing.Screen;
             folder = existing.Parent;
         }
-        _folder = Folders.First(f => f.Group == (folder == owner.Tree.Root ? null : folder));
+        _folder = _folders.FirstOrDefault(f => f.Group == (folder == owner.Tree.Root ? null : folder)) ?? _folders[0];
         UpdateHints();
     }
 
@@ -39,7 +40,11 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         ? Strings.Strings.NewServer
         : string.Format(Strings.Strings.SettingsTitle, Existing.Name);
 
-    public IReadOnlyList<FolderOption> Folders { get; }
+    // Anahtar zincirine yalnız şifre değiştiyse yazılır.
+    private string _savedPassword = "";
+
+    [ObservableProperty]
+    private IReadOnlyList<FolderOption> _folders;
 
     public IReadOnlyList<ServerColor> Colors { get; } = Enum.GetValues<ServerColor>();
 
@@ -135,16 +140,30 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             node.Refresh();
         }
 
-        if (string.IsNullOrEmpty(Password))
-            _owner.Secrets.DeletePassword(server.Id);
-        else
-            _owner.Secrets.SetPassword(server.Id, Password);
         _owner.Persist();
+        if (Password != _savedPassword)
+        {
+            if (string.IsNullOrEmpty(Password))
+                _owner.Secrets.DeletePassword(server.Id);
+            else
+                _owner.Secrets.SetPassword(server.Id, Password);
+            _savedPassword = Password;
+        }
 
         Name = server.Name;
         TitleChanged();
         return node;
     }
+
+    // Başka sekmede klasör taşınır ya da silinirse liste yenilenir; seçili klasör gittiyse en üste döner.
+    private void RebuildFolders()
+    {
+        var selected = Folder.Group;
+        Folders = _owner.Tree.FolderOptions();
+        Folder = Folders.FirstOrDefault(f => f.Group == selected) ?? Folders[0];
+    }
+
+    public override void OnClosed() => _owner.Tree.StructureChanged -= RebuildFolders;
 
     private void UpdateHints()
     {

@@ -13,16 +13,17 @@ public sealed partial class FolderEditorViewModel : TabViewModel
     {
         _owner = owner;
         Existing = existing;
-        Folders = owner.Tree.FolderOptions(exclude: existing);
+        _folders = owner.Tree.FolderOptions(exclude: existing);
+        owner.Tree.StructureChanged += RebuildFolders;
         if (existing is not null)
         {
             _name = existing.Name;
             _username = existing.Username ?? "";
             _domain = existing.Domain ?? "";
-            _password = owner.Secrets.GetPassword(existing.Id) ?? "";
+            _password = _savedPassword = owner.Secrets.GetPassword(existing.Id) ?? "";
             parent = existing.Parent;
         }
-        _parent = Folders.First(f => f.Group == (parent == owner.Tree.Root ? null : parent));
+        _parent = _folders.FirstOrDefault(f => f.Group == (parent == owner.Tree.Root ? null : parent)) ?? _folders[0];
     }
 
     public Group? Existing { get; private set; }
@@ -31,7 +32,10 @@ public sealed partial class FolderEditorViewModel : TabViewModel
         ? Strings.Strings.NewFolder
         : string.Format(Strings.Strings.SettingsTitle, Existing.Name);
 
-    public IReadOnlyList<FolderOption> Folders { get; }
+    private string _savedPassword = "";
+
+    [ObservableProperty]
+    private IReadOnlyList<FolderOption> _folders;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -84,11 +88,24 @@ public sealed partial class FolderEditorViewModel : TabViewModel
             node.Refresh();
         }
 
-        if (string.IsNullOrEmpty(Password))
-            _owner.Secrets.DeletePassword(group.Id);
-        else
-            _owner.Secrets.SetPassword(group.Id, Password);
         _owner.Persist();
+        if (Password != _savedPassword)
+        {
+            if (string.IsNullOrEmpty(Password))
+                _owner.Secrets.DeletePassword(group.Id);
+            else
+                _owner.Secrets.SetPassword(group.Id, Password);
+            _savedPassword = Password;
+        }
         TitleChanged();
     }
+
+    private void RebuildFolders()
+    {
+        var selected = Parent.Group;
+        Folders = _owner.Tree.FolderOptions(exclude: Existing);
+        Parent = Folders.FirstOrDefault(f => f.Group == selected) ?? Folders[0];
+    }
+
+    public override void OnClosed() => _owner.Tree.StructureChanged -= RebuildFolders;
 }

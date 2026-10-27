@@ -32,9 +32,20 @@ public sealed class Group : Node
 
     public void Add(Node child)
     {
+        if (child is Group group && IsInside(group))
+            throw new InvalidOperationException("Klasör kendi içine taşınamaz.");
         child.Parent?.Remove(child);
         _children.Add(child);
         child.Parent = this;
+    }
+
+    // Bu klasör verilen klasörün kendisi ya da altında mı?
+    private bool IsInside(Group group)
+    {
+        for (Group? current = this; current is not null; current = current.Parent)
+            if (current == group)
+                return true;
+        return false;
     }
 
     public void Remove(Node child)

@@ -39,8 +39,7 @@ public sealed class MacKeychainSecretStore(string service = "rdpNext") : ISecret
     {
         var account = Account(nodeId);
         var bytes = Encoding.UTF8.GetBytes(password);
-        var status = SecKeychainFindGenericPassword(IntPtr.Zero, (uint)_service.Length, _service,
-            (uint)account.Length, account, out _, out var data, out var item);
+        var status = FindItem(account, out var item);
         if (status == ItemNotFound)
         {
             Check(SecKeychainAddGenericPassword(IntPtr.Zero, (uint)_service.Length, _service,
@@ -54,16 +53,13 @@ public sealed class MacKeychainSecretStore(string service = "rdpNext") : ISecret
         }
         finally
         {
-            SecKeychainItemFreeContent(IntPtr.Zero, data);
             CFRelease(item);
         }
     }
 
     public void DeletePassword(Guid nodeId)
     {
-        var account = Account(nodeId);
-        var status = SecKeychainFindGenericPassword(IntPtr.Zero, (uint)_service.Length, _service,
-            (uint)account.Length, account, out _, out var data, out var item);
+        var status = FindItem(Account(nodeId), out var item);
         if (status == ItemNotFound)
             return;
         Check(status);
@@ -73,10 +69,14 @@ public sealed class MacKeychainSecretStore(string service = "rdpNext") : ISecret
         }
         finally
         {
-            SecKeychainItemFreeContent(IntPtr.Zero, data);
             CFRelease(item);
         }
     }
+
+    // Şifreyi çözmeden yalnız öğeyi bulur; gereksiz erişim sorusu çıkmaz.
+    private int FindItem(byte[] account, out IntPtr item) =>
+        SecKeychainFindGenericPasswordItem(IntPtr.Zero, (uint)_service.Length, _service,
+            (uint)account.Length, account, IntPtr.Zero, IntPtr.Zero, out item);
 
     private static byte[] Account(Guid nodeId) => Encoding.UTF8.GetBytes(nodeId.ToString());
 
@@ -93,6 +93,10 @@ public sealed class MacKeychainSecretStore(string service = "rdpNext") : ISecret
     [DllImport(Security)]
     private static extern int SecKeychainFindGenericPassword(IntPtr keychainOrArray, uint serviceNameLength, byte[] serviceName,
         uint accountNameLength, byte[] accountName, out uint passwordLength, out IntPtr passwordData, out IntPtr itemRef);
+
+    [DllImport(Security, EntryPoint = "SecKeychainFindGenericPassword")]
+    private static extern int SecKeychainFindGenericPasswordItem(IntPtr keychainOrArray, uint serviceNameLength, byte[] serviceName,
+        uint accountNameLength, byte[] accountName, IntPtr passwordLength, IntPtr passwordData, out IntPtr itemRef);
 
     [DllImport(Security)]
     private static extern int SecKeychainItemModifyAttributesAndData(IntPtr itemRef, IntPtr attrList, uint length, byte[] data);

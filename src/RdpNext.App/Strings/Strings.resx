@@ -38,4 +38,5 @@
   <data name="DeleteConfirm" xml:space="preserve"><value>{0} silinsin mi?</value></data>
   <data name="DeleteFolderConfirm" xml:space="preserve"><value>{0} ve içindeki {1} sunucu silinsin mi?</value></data>
   <data name="CopyName" xml:space="preserve"><value>{0} kopya</value></data>
+  <data name="KeychainError" xml:space="preserve"><value>Anahtar zincirine erişilemedi, şifre okunamadı ya da kaydedilmedi.</value></data>
 </root>

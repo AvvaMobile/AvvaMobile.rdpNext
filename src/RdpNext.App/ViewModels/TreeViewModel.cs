@@ -30,6 +30,9 @@ public sealed partial class TreeViewModel : ObservableObject
     [ObservableProperty]
     private TreeNodeViewModel? _selected;
 
+    // Ağaçta ekleme, taşıma ya da silme olunca; açık düzenleme sekmeleri klasör listesini yeniler.
+    public event Action? StructureChanged;
+
     public T Node<T>(Guid id) where T : TreeNodeViewModel => (T)_byId[id];
 
     public IReadOnlyList<FolderOption> FolderOptions(Group? exclude = null)
@@ -56,19 +59,41 @@ public sealed partial class TreeViewModel : ObservableObject
 
     public void Move(TreeNodeViewModel node, Group? newParent)
     {
-        ChildrenOf(node.Model.Parent).Remove(node);
+        var oldParent = node.Model.Parent;
+        // Önce model: klasör kendi içine taşınmak istenirse burada durur, ekran bozulmaz.
         (newParent ?? Root).Add(node.Model);
+        ChildrenOf(oldParent).Remove(node);
         ChildrenOf(newParent).Add(node);
         OnQueryChanged(Query);
+        StructureChanged?.Invoke();
     }
 
     public void Remove(TreeNodeViewModel node)
     {
+        if (Selected is { } selected && IsUnder(selected.Model, node.Model))
+            Selected = null;
         ChildrenOf(node.Model.Parent).Remove(node);
         node.Model.Parent?.Remove(node.Model);
         Unindex(node);
-        if (Selected == node)
-            Selected = null;
+        OnQueryChanged(Query);
+        StructureChanged?.Invoke();
+    }
+
+    // Klasör hâlâ ağaçta mı (silinmiş bir klasörün altında değil mi)?
+    public bool IsAttached(Group? group)
+    {
+        for (var current = group; current is not null; current = current.Parent)
+            if (current == Root)
+                return true;
+        return group is null;
+    }
+
+    private static bool IsUnder(Node node, Node ancestor)
+    {
+        for (Node? current = node; current is not null; current = current.Parent)
+            if (current == ancestor)
+                return true;
+        return false;
     }
 
     private TreeNodeViewModel AddNode(Node model, Group? parent)
@@ -78,6 +103,7 @@ public sealed partial class TreeViewModel : ObservableObject
         ChildrenOf(parent).Add(node);
         Index([node]);
         OnQueryChanged(Query);
+        StructureChanged?.Invoke();
         return node;
     }
 
