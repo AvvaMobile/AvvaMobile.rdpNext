@@ -29,15 +29,12 @@ public class FolderEditorTests
 
 
     [Fact]
-    public async Task FolderCannotMoveIntoItself()
+    public void FolderCannotMoveIntoItself()
     {
-        _vm.Tree.Selected = Folder("Üretim");
-        await _vm.NewFolderCommand.ExecuteAsync(null);
-
         _vm.EditFolder(Folder("Üretim"));
         var editor = Assert.IsType<FolderEditorViewModel>(_vm.Sessions.Selected);
 
-        Assert.DoesNotContain(editor.Folders, f => f.Group?.Name is "Üretim" or "Web");
+        Assert.DoesNotContain(editor.Folders, f => f.Group?.Name == "Üretim");
         Assert.Contains(editor.Folders, f => f.Group?.Name == "Test");
     }
 

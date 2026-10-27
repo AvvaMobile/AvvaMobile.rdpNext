@@ -116,21 +116,19 @@ public class TreeActionsTests
     }
 
     [Fact]
-    public async Task AddFromFolderMenuUsesThatFolder()
+    public void AddFromFolderMenuUsesThatFolder()
     {
-        var (vm, _) = Create(text: "Alt");
+        var (vm, _) = Create();
         vm.Tree.Selected = null;
 
         vm.NewServerInCommand.Execute(Folder(vm, "Test"));
         var server = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
-        await vm.NewFolderInCommand.ExecuteAsync(Folder(vm, "Test"));
 
         Assert.Equal("Test", server.Folder.Group?.Name);
-        Assert.Contains(Folder(vm, "Test").Children, n => n.Name == "Alt");
     }
 
     [Fact]
-    public async Task NewFolderAsksOnlyNameAndAddsAtSelection()
+    public async Task NewFolderAsksOnlyNameAndAddsAtRoot()
     {
         var (vm, _) = Create(text: "  Muhasebe ");
         vm.Tree.Selected = Folder(vm, "Üretim");
@@ -138,8 +136,9 @@ public class TreeActionsTests
 
         await vm.NewFolderCommand.ExecuteAsync(null);
 
-        var uretim = Reload().Children.OfType<Group>().Single(g => g.Name == "Üretim");
-        Assert.Contains(uretim.Children, n => n is Group { Name: "Muhasebe" });
+        var root = Reload();
+        Assert.Contains(root.Children, n => n is Group { Name: "Muhasebe" });
+        Assert.DoesNotContain(root.Children.OfType<Group>().Single(g => g.Name == "Üretim").Children, n => n is Group);
         Assert.Equal(tabsBefore, vm.Sessions.Tabs.Count);
     }
 
@@ -188,7 +187,7 @@ public class TreeActionsTests
         var (window, _) = TestWindows.Open(_path);
         var row = window.Text("Üretim").GetVisualAncestors().OfType<Control>().First(c => c.ContextMenu is not null);
 
-        Assert.Equal(["Sunucu ekle", "Klasör ekle", "Düzenle", "Sil"],
+        Assert.Equal(["Sunucu ekle", "Düzenle", "Sil"],
             row.ContextMenu!.Items.OfType<MenuItem>().Select(i => i.Header as string));
     }
 

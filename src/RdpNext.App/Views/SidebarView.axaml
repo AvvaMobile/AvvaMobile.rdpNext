@@ -56,8 +56,6 @@
               <ContextMenu>
                 <MenuItem Header="{x:Static s:Strings.AddServer}"
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).NewServerInCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="{x:Static s:Strings.AddFolder}"
-                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).NewFolderInCommand}" CommandParameter="{Binding}" />
                 <MenuItem Header="{x:Static s:Strings.Edit}"
                           Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).EditCommand}" CommandParameter="{Binding}" />
                 <Separator />
