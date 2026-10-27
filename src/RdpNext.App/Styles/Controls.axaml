@@ -11,16 +11,16 @@
     <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
   </Style>
 
-  <Style Selector="Button.accent-wide">
+  <Style Selector="Button.add">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
-    <Setter Property="Padding" Value="11" />
-    <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="CornerRadius" Value="10" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
   </Style>
-  <Style Selector="Button.accent-wide:pointerover /template/ ContentPresenter">
+  <Style Selector="Button.add:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="Opacity" Value="0.9" />
