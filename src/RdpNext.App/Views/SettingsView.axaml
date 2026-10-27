@@ -20,8 +20,16 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Panel>
-          <!-- Genel: şimdilik boş, ayarlar buraya eklenecek. -->
-          <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}" />
+          <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}">
+            <StackPanel MaxWidth="400" HorizontalAlignment="Left">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Language}" />
+              <ComboBox x:Name="LanguageBox" Classes="field" SelectedIndex="{Binding LanguageIndex}">
+                <ComboBoxItem Content="Türkçe" />
+                <ComboBoxItem Content="English" />
+              </ComboBox>
+              <TextBlock Classes="secondary" Text="{x:Static s:Strings.RestartToApply}" TextWrapping="Wrap" />
+            </StackPanel>
+          </StackPanel>
           <StackPanel Classes="form" IsVisible="{Binding ShowExport}">
             <TextBlock x:Name="ExportHint" Text="{x:Static s:Strings.ExportHint}" TextWrapping="Wrap" />
             <Button x:Name="ExportButton" Classes="primary" Content="{x:Static s:Strings.Export}" Command="{Binding ExportCommand}" />

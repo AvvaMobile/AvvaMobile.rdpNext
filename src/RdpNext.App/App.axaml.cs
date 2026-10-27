@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -16,7 +17,9 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var vm = new MainWindowViewModel(new ConnectionStore(ConnectionStore.DefaultPath()), SecretStores.ForCurrentPlatform());
+            var settings = new SettingsStore(SettingsStore.DefaultPath());
+            Languages.Apply(Languages.Resolve(settings.Load().Language, CultureInfo.CurrentUICulture));
+            var vm = new MainWindowViewModel(new ConnectionStore(ConnectionStore.DefaultPath()), SecretStores.ForCurrentPlatform(), settings: settings);
             desktop.MainWindow = new MainWindow { DataContext = vm };
         }
         base.OnFrameworkInitializationCompleted();

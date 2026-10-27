@@ -55,4 +55,8 @@
   <data name="DeleteOld" xml:space="preserve"><value>Önceki tüm kayıtları sil</value></data>
   <data name="ImportDeleteConfirm" xml:space="preserve"><value>Mevcut tüm sunucu ve klasörler silinecek. Emin misin?</value></data>
   <data name="DeleteAndImport" xml:space="preserve"><value>Sil ve içe aktar</value></data>
+  <data name="Language" xml:space="preserve"><value>Dil</value></data>
+  <data name="RestartToApply" xml:space="preserve"><value>Yeniden başlatınca uygulanır.</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>{0}</value><comment>Türkçede kullanılmaz, ek TurkishText ile hesaplanır.</comment></data>
+  <data name="BackupFileName" xml:space="preserve"><value>rdpNext-yedek-{0}.json</value></data>
 </root>

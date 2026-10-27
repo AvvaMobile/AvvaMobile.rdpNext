@@ -8,6 +8,10 @@ namespace RdpNext.App.Tests;
 
 public static class TestAppBuilder
 {
-    public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UseHeadless(new AvaloniaHeadlessPlatformOptions());
+    // Testler arayüzü Türkçe bekler; makinenin diline bağlı kalmasın.
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        Languages.Apply(System.Globalization.CultureInfo.GetCultureInfo(Languages.Turkish));
+        return AppBuilder.Configure<App>().UseHeadless(new AvaloniaHeadlessPlatformOptions());
+    }
 }

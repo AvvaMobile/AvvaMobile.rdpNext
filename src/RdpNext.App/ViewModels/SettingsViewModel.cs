@@ -4,7 +4,7 @@ using RdpNext.Core.Storage;
 
 namespace RdpNext.App.ViewModels;
 
-// Ayarlar sekmesi: Genel (şimdilik boş), Dışa aktar (listeyi dosyaya ver) ve İçe aktar (dosyadan yükle).
+// Ayarlar sekmesi: Genel (dil), Dışa aktar (listeyi dosyaya ver) ve İçe aktar (dosyadan yükle).
 public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabViewModel
 {
     public override string Title => Strings.Strings.Settings;
@@ -50,6 +50,19 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
             Page = page;
     }
 
+    // Dil seçicisindeki sıra: 0 Türkçe, 1 English. Seçim kaydedilir, yeniden başlatınca uygulanır.
+    public int LanguageIndex
+    {
+        get => (owner.Settings.Load().Language ?? Languages.Current.TwoLetterISOLanguageName) == Languages.English ? 1 : 0;
+        set
+        {
+            var settings = owner.Settings.Load();
+            settings.Language = value == 1 ? Languages.English : Languages.Turkish;
+            owner.Settings.Save(settings);
+            OnPropertyChanged();
+        }
+    }
+
     // İçe aktarırken mevcut liste silinsin mi; işaretsizse dosyadakiler listeye eklenir.
     [ObservableProperty]
     private bool _deleteOld;
@@ -57,7 +70,7 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
     [RelayCommand]
     private async Task Export()
     {
-        var path = await owner.Files.SaveAsync($"rdpNext-yedek-{DateTime.Now:yyyy-MM-dd}.json");
+        var path = await owner.Files.SaveAsync(string.Format(Strings.Strings.BackupFileName, DateTime.Now.ToString("yyyy-MM-dd")));
         if (path is null)
             return;
         try
