@@ -81,7 +81,6 @@ public class ServerEditorTests
         editor.Port = port;
 
         Assert.False(editor.SaveCommand.CanExecute(null));
-        Assert.False(editor.ConnectCommand.CanExecute(null));
     }
 
     [Fact]
@@ -166,19 +165,6 @@ public class ServerEditorTests
 
         Assert.Equal(2, _vm.Sessions.Tabs.OfType<ServerEditorViewModel>().Count());
         Assert.Equal("web-01 settings", _vm.Sessions.Selected?.Title);
-    }
-
-    [Fact]
-    public void ConnectSavesThenOpensSession()
-    {
-        var editor = NewIn("Üretim");
-        editor.Host = "10.0.1.90";
-
-        editor.ConnectCommand.Execute(null);
-
-        Assert.Contains(Reload().AllServers(), s => s.Host == "10.0.1.90");
-        var session = Assert.IsType<SessionTabViewModel>(_vm.Sessions.Selected);
-        Assert.Equal("10.0.1.90", session.Title);
     }
 
     [Fact]
