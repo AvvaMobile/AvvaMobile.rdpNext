@@ -124,4 +124,40 @@ public class MainWindowTests
         Assert.True(right <= window.Bounds.Width, $"{right} > {window.Bounds.Width}");
         Assert.True(window.Named<Control>("TabStrip").Texts().First().Bounds.Width <= 200);
     }
+
+    private static void DoubleClick(Window window, Point point)
+    {
+        window.MouseDown(point, MouseButton.Left);
+        window.MouseUp(point, MouseButton.Left);
+        window.MouseDown(point, MouseButton.Left);
+        window.MouseUp(point, MouseButton.Left);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    [AvaloniaFact]
+    public void DoubleClickOnEmptyTitleBarTogglesMaximized()
+    {
+        var (window, _) = TestWindows.Open();
+        var empty = new Point(window.Bounds.Width - 200, 26);
+
+        DoubleClick(window, empty);
+        Assert.Equal(WindowState.Maximized, window.WindowState);
+
+        DoubleClick(window, new Point(window.Bounds.Width - 200, 26));
+        Assert.Equal(WindowState.Normal, window.WindowState);
+    }
+
+    [AvaloniaFact]
+    public void DoubleClickOnTabDoesNotMaximize()
+    {
+        var (window, vm) = TestWindows.Open();
+        vm.Tree.Query = "web";
+        vm.ConnectFirstMatchCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var tab = window.Named<Control>("TabStrip").Texts().First();
+
+        DoubleClick(window, tab.TranslatePoint(new Point(5, 5), window)!.Value);
+
+        Assert.Equal(WindowState.Normal, window.WindowState);
+    }
 }

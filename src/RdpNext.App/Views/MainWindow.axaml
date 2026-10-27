@@ -10,7 +10,8 @@
         ExtendClientAreaTitleBarHeightHint="52">
   <DockPanel>
     <Border x:Name="TitleBar" DockPanel.Dock="Top" Height="52" Background="{DynamicResource WindowBrush}"
-            BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+            BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1"
+            DoubleTapped="OnTitleBarDoubleTapped">
       <v:TabStripView x:Name="Tabs" Margin="14,0" />
     </Border>
     <v:SidebarView x:Name="Sidebar" DockPanel.Dock="Left" Width="310" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0" />
