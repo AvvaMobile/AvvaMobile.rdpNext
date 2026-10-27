@@ -61,18 +61,11 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
-    public void PlusTabFocusesSearch()
+    public void TitleBarHasNoPlusButton()
     {
         var (window, _) = TestWindows.Open();
-        var plus = window.Named<Button>("NewTabButton");
-        var point = plus.TranslatePoint(new Point(plus.Bounds.Width / 2, plus.Bounds.Height / 2), window)!.Value;
-        Assert.False(window.Named<TextBox>("SearchBox").IsFocused);
 
-        window.MouseDown(point, MouseButton.Left);
-        window.MouseUp(point, MouseButton.Left);
-        Dispatcher.UIThread.RunJobs();
-
-        Assert.True(window.Named<TextBox>("SearchBox").IsFocused);
+        Assert.DoesNotContain(window.Named<Control>("TitleBar").GetVisualDescendants().OfType<Button>(), b => b.Content as string == "+");
     }
 
     [AvaloniaFact]
@@ -108,7 +101,7 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
-    public void ManyTabsKeepPlusButtonInsideWindow()
+    public void ManyTabsStayInsideWindow()
     {
         var root = new Group();
         root.Add(new Server { Name = new string('u', 120) });
@@ -119,8 +112,8 @@ public class MainWindowTests
             vm.ConnectCommand.Execute(server);
         Dispatcher.UIThread.RunJobs();
 
-        var plus = window.Named<Button>("NewTabButton");
-        var right = plus.TranslatePoint(new Point(plus.Bounds.Width, 0), window)!.Value.X;
+        var strip = window.Named<Control>("TabStrip");
+        var right = strip.TranslatePoint(new Point(strip.Bounds.Width, 0), window)!.Value.X;
         Assert.True(right <= window.Bounds.Width, $"{right} > {window.Bounds.Width}");
         Assert.True(window.Named<Control>("TabStrip").Texts().First().Bounds.Width <= 200);
     }

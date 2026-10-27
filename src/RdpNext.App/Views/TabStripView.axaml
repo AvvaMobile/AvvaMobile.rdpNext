@@ -5,8 +5,7 @@
              xmlns:s="using:RdpNext.App.Strings"
              x:Class="RdpNext.App.Views.TabStripView"
              x:DataType="vm:MainWindowViewModel">
-  <v:TabStripPanel VerticalAlignment="Center">
-    <ListBox x:Name="TabStrip" Classes="tabs" ItemsSource="{Binding Sessions.Tabs}"
+  <ListBox x:Name="TabStrip" VerticalAlignment="Center" Classes="tabs" ItemsSource="{Binding Sessions.Tabs}"
              SelectedItem="{Binding Sessions.Selected}" Background="Transparent"
              ScrollViewer.HorizontalScrollBarVisibility="Hidden">
       <ListBox.ItemsPanel>
@@ -39,6 +38,5 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
-    <Button x:Name="NewTabButton" Classes="tab-plus" Content="+" Command="{Binding NewSessionCommand}" Margin="6,0,0,0" />
-  </v:TabStripPanel>
+
 </UserControl>

@@ -8,8 +8,6 @@ public partial class SidebarView : UserControl
 {
     public SidebarView() => InitializeComponent();
 
-    public void FocusSearch() => SearchBox.Focus();
-
     private void OnTreeDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (e.Source is Control { DataContext: ServerNodeViewModel server } && DataContext is MainWindowViewModel vm)
