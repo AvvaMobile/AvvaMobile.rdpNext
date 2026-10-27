@@ -134,12 +134,13 @@ public class ServerEditorTests
 
         var editor = NewIn("Üretim");
 
-        Assert.Equal("admin (Üretim'den)", editor.UsernameHint);
-        Assert.Equal("AVVA (Üretim'den)", editor.DomainHint);
-        Assert.Equal("•••••• (Üretim'den)", editor.PasswordHint);
+        Assert.Equal(("admin", "Üretim'den"), (editor.UsernameHint, editor.UsernameSource));
+        Assert.Equal(("AVVA", "Üretim'den"), (editor.DomainHint, editor.DomainSource));
+        Assert.Equal(("••••••", "Üretim'den"), (editor.PasswordHint, editor.PasswordSource));
 
         editor.Folder = editor.Folders.First(f => f.Group?.Name == "Test");
         Assert.Null(editor.UsernameHint);
+        Assert.Null(editor.UsernameSource);
     }
 
     [Fact]
