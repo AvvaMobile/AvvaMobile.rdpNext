@@ -25,11 +25,15 @@
               <TextBox x:Name="FolderNameBox" Classes="field" Text="{Binding Name}" />
             </StackPanel>
           </Grid>
-          <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
             <Button x:Name="SaveFolderButton" Classes="primary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />
-            <Button Grid.Column="1" Classes="danger-text" HorizontalAlignment="Right"
-                    Content="{x:Static s:Strings.Delete}" Command="{Binding DeleteCommand}" IsVisible="{Binding !IsNew}" />
-          </Grid>
+            <Button x:Name="DeleteFolderButton" Classes="danger" Command="{Binding DeleteCommand}" IsVisible="{Binding !IsNew}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Path Data="{StaticResource TrashIcon}" Fill="White" Width="13" Height="14" Stretch="Uniform" />
+                <TextBlock Text="{x:Static s:Strings.Delete}" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
         </StackPanel>
         </Grid>
       </ScrollViewer>
