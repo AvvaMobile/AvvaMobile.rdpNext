@@ -1,0 +1,365 @@
+{
+  "version": 1,
+  "root": {
+    "kind": "group",
+    "id": "00000000-0000-0000-0000-000000000025",
+    "name": "",
+    "isExpanded": true,
+    "children": [
+      {
+        "kind": "group",
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "Üretim",
+        "isExpanded": true,
+        "children": [
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000001",
+            "name": "web-01",
+            "protocol": "rdp",
+            "host": "10.0.1.11",
+            "port": 3389,
+            "color": "blue",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000002",
+            "name": "sql-01",
+            "protocol": "rdp",
+            "host": "10.0.1.20",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000003",
+            "name": "api-01",
+            "protocol": "rdp",
+            "host": "10.0.1.31",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          }
+        ]
+      },
+      {
+        "kind": "group",
+        "id": "00000000-0000-0000-0000-00000000000c",
+        "name": "Test",
+        "isExpanded": false,
+        "children": [
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000005",
+            "name": "web-test",
+            "protocol": "rdp",
+            "host": "10.0.2.11",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000006",
+            "name": "test-02",
+            "protocol": "rdp",
+            "host": "10.0.2.12",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000007",
+            "name": "test-03",
+            "protocol": "rdp",
+            "host": "10.0.2.13",
+            "port": 3389,
+            "color": "violet",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000008",
+            "name": "test-04",
+            "protocol": "rdp",
+            "host": "10.0.2.14",
+            "port": 3389,
+            "color": "green",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000009",
+            "name": "test-05",
+            "protocol": "rdp",
+            "host": "10.0.2.15",
+            "port": 3389,
+            "color": "blue",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000000a",
+            "name": "test-06",
+            "protocol": "rdp",
+            "host": "10.0.2.16",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000000b",
+            "name": "test-07",
+            "protocol": "rdp",
+            "host": "10.0.2.17",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          }
+        ]
+      },
+      {
+        "kind": "group",
+        "id": "00000000-0000-0000-0000-000000000024",
+        "name": "Müşteriler",
+        "isExpanded": false,
+        "children": [
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000000d",
+            "name": "musteri-01",
+            "protocol": "rdp",
+            "host": "10.0.3.11",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000000e",
+            "name": "musteri-02",
+            "protocol": "rdp",
+            "host": "10.0.3.12",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000000f",
+            "name": "musteri-03",
+            "protocol": "rdp",
+            "host": "10.0.3.13",
+            "port": 3389,
+            "color": "violet",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000010",
+            "name": "musteri-04",
+            "protocol": "rdp",
+            "host": "10.0.3.14",
+            "port": 3389,
+            "color": "green",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000011",
+            "name": "musteri-05",
+            "protocol": "rdp",
+            "host": "10.0.3.15",
+            "port": 3389,
+            "color": "blue",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000012",
+            "name": "musteri-06",
+            "protocol": "rdp",
+            "host": "10.0.3.16",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000013",
+            "name": "musteri-07",
+            "protocol": "rdp",
+            "host": "10.0.3.17",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000014",
+            "name": "musteri-08",
+            "protocol": "rdp",
+            "host": "10.0.3.18",
+            "port": 3389,
+            "color": "violet",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000015",
+            "name": "musteri-09",
+            "protocol": "rdp",
+            "host": "10.0.3.19",
+            "port": 3389,
+            "color": "green",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000016",
+            "name": "musteri-10",
+            "protocol": "rdp",
+            "host": "10.0.3.20",
+            "port": 3389,
+            "color": "blue",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000017",
+            "name": "musteri-11",
+            "protocol": "rdp",
+            "host": "10.0.3.21",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000018",
+            "name": "musteri-12",
+            "protocol": "rdp",
+            "host": "10.0.3.22",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000019",
+            "name": "musteri-13",
+            "protocol": "rdp",
+            "host": "10.0.3.23",
+            "port": 3389,
+            "color": "violet",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000001a",
+            "name": "musteri-14",
+            "protocol": "rdp",
+            "host": "10.0.3.24",
+            "port": 3389,
+            "color": "green",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000001b",
+            "name": "musteri-15",
+            "protocol": "rdp",
+            "host": "10.0.3.25",
+            "port": 3389,
+            "color": "blue",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000001c",
+            "name": "musteri-16",
+            "protocol": "rdp",
+            "host": "10.0.3.26",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000001d",
+            "name": "musteri-17",
+            "protocol": "rdp",
+            "host": "10.0.3.27",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000001e",
+            "name": "musteri-18",
+            "protocol": "rdp",
+            "host": "10.0.3.28",
+            "port": 3389,
+            "color": "violet",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-00000000001f",
+            "name": "musteri-19",
+            "protocol": "rdp",
+            "host": "10.0.3.29",
+            "port": 3389,
+            "color": "green",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000020",
+            "name": "musteri-20",
+            "protocol": "rdp",
+            "host": "10.0.3.30",
+            "port": 3389,
+            "color": "blue",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000021",
+            "name": "musteri-21",
+            "protocol": "rdp",
+            "host": "10.0.3.31",
+            "port": 3389,
+            "color": "teal",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000022",
+            "name": "musteri-22",
+            "protocol": "rdp",
+            "host": "10.0.3.32",
+            "port": 3389,
+            "color": "orange",
+            "screen": "fitToWindow"
+          },
+          {
+            "kind": "server",
+            "id": "00000000-0000-0000-0000-000000000023",
+            "name": "musteri-23",
+            "protocol": "rdp",
+            "host": "10.0.3.33",
+            "port": 3389,
+            "color": "violet",
+            "screen": "fitToWindow"
+          }
+        ]
+      }
+    ]
+  }
+}

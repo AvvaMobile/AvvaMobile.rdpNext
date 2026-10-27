@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RdpNext.App.ViewModels"
+        xmlns:v="using:RdpNext.App.Views"
+        x:Class="RdpNext.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="rdpNext"
+        Width="1280" Height="800" MinWidth="800" MinHeight="500"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="52">
+  <DockPanel>
+    <Border x:Name="TitleBar" DockPanel.Dock="Top" Height="52" Background="{DynamicResource WindowBrush}"
+            BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+      <v:TabStripView x:Name="Tabs" Margin="14,0" />
+    </Border>
+    <v:SidebarView x:Name="Sidebar" DockPanel.Dock="Left" Width="310" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0" />
+    <ContentControl x:Name="SessionArea" Margin="12" Content="{Binding Sessions.Selected}">
+      <ContentControl.DataTemplates>
+        <DataTemplate DataType="vm:SessionTabViewModel">
+          <v:SessionPlaceholderView />
+        </DataTemplate>
+      </ContentControl.DataTemplates>
+    </ContentControl>
+  </DockPanel>
+</Window>

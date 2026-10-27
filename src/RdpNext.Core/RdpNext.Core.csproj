@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <InternalsVisibleTo Include="RdpNext.Core.Tests" />
+  </ItemGroup>
+</Project>

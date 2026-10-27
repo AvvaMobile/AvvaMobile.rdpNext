@@ -282,3 +282,14 @@ Assert.True(SearchText.Matches("Çağrı Merkezi", SearchText.Fold("cagri")));
 git add -A && git commit -m "Ana ekran çizimle eşleştirildi"
 git switch master && git merge --no-ff temel-ana-ekran -m "Temel ve ana ekran" && git branch -d temel-ana-ekran
 ```
+
+## Uygulamada verilen kararlar (2026-10-27)
+
+1. xunit.v3 3.2.2 kullanıldı (Avalonia.Headless.XUnit 12.1.4 buna bağlı).
+2. Grup adı aramada eşleşirse Enter o grubun ilk sunucusuna bağlanır.
+3. `IsExpanded` görünüm modelinde taban sınıfta; yalnız gruplar modele yazar.
+4. Sekme kapatma ve "diğerlerini kapat" için `CloseTabCommand`, `CloseOtherTabsCommand` eklendi.
+5. Sekme şeridi için `TabStripPanel`: sekmeler sığdığı kadar yer alır, "+" hep görünür; sekme adı 180 px'te kesilir.
+6. Bozuk dosya: tür alanı eksik ya da çocuk listesi boş/null olan dosyalar da yedeklenip boş ağaçla açılır; null ad/adres boş metne çevrilir.
+7. Ertelenen önemli iş: 5000 sunuculuk ağaçta ilk geniş aramada ve açılışta saniyelerce donma (TreeView sanallaştırmıyor). Plan 4'ten (içe aktarma) önce ağaç sanallaştırılmış düz listeye çevrilmeli.
+8. Ertelenen küçükler: arama sırasında kapatılan grup modele yazılıyor; bozuk dosya uyarısı tam yolla birkaç satıra sarıyor; `Watermark` yerine `PlaceholderText` (AVLN5001 uyarısı); aynı Id'li düğüm kontrolü yok; App testleri geçici klasör bırakıyor; dosya sürümü okunurken kontrol edilmiyor.
