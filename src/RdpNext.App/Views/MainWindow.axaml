@@ -32,7 +32,7 @@
       <ContentControl x:Name="SessionArea" Content="{Binding Sessions.Selected}">
         <ContentControl.DataTemplates>
           <DataTemplate DataType="vm:SessionTabViewModel">
-            <v:SessionView />
+            <v:SessionView Name="SessionViewRoot" />
           </DataTemplate>
           <DataTemplate DataType="vm:ServerEditorViewModel">
             <v:ServerEditorView />

@@ -49,6 +49,12 @@ internal static unsafe partial class NativeMethods
     [LibraryImport(Library, EntryPoint = "rn_mouse")]
     public static partial void Mouse(IntPtr ctx, ushort flags, ushort x, ushort y);
 
+    [LibraryImport(Library, EntryPoint = "rn_key")]
+    public static partial void Key(IntPtr ctx, ushort code, int extended, int down);
+
+    [LibraryImport(Library, EntryPoint = "rn_unicode")]
+    public static partial void Unicode(IntPtr ctx, ushort code, int down);
+
     [LibraryImport(Library, EntryPoint = "rn_free")]
     public static partial void Free(IntPtr ctx);
 }

@@ -23,6 +23,8 @@ public sealed unsafe class RdpSession : IRdpSession
 
     public event Action<RdpEndReason, string?>? Ended;
 
+    public event Action<RdpPointer?>? PointerChanged;
+
     // C katmanı ve FreeRDP bu makinede yüklenebiliyor mu.
     public static bool IsAvailable { get; } =
         NativeLibrary.TryLoad(NativeMethods.Library, typeof(RdpSession).Assembly, null, out _);
@@ -43,6 +45,28 @@ public sealed unsafe class RdpSession : IRdpSession
     public void SendMouse(RdpMouseFlags flags, int x, int y) =>
         _requests.Enqueue(ctx => NativeMethods.Mouse(ctx, (ushort)flags, (ushort)Math.Max(0, x), (ushort)Math.Max(0, y)));
 
+    public void SendWheel(int delta, bool horizontal, int x, int y)
+    {
+        var flags = WheelFlags(delta, horizontal);
+        _requests.Enqueue(ctx => NativeMethods.Mouse(ctx, (ushort)flags, (ushort)Math.Max(0, x), (ushort)Math.Max(0, y)));
+    }
+
+    // RDP tekerlek değeri 9 bitlik ikiye tümleyen; en fazla 255.
+    internal static RdpMouseFlags WheelFlags(int delta, bool horizontal)
+    {
+        var value = Math.Clamp(delta, -255, 255);
+        return (horizontal ? RdpMouseFlags.HWheel : RdpMouseFlags.Wheel) | (RdpMouseFlags)(value & 0x1FF);
+    }
+
+    public void SendKey(ushort code, bool extended, bool down) =>
+        _requests.Enqueue(ctx => NativeMethods.Key(ctx, code, extended ? 1 : 0, down ? 1 : 0));
+
+    public void SendUnicode(char c) => _requests.Enqueue(ctx =>
+    {
+        NativeMethods.Unicode(ctx, c, 1);
+        NativeMethods.Unicode(ctx, c, 0);
+    });
+
     public void Dispose()
     {
         Thread? thread;
@@ -61,7 +85,7 @@ public sealed unsafe class RdpSession : IRdpSession
 
     private void Run(RdpConnectOptions options)
     {
-        var callbacks = new RnCallbacks { Frame = &OnFrame };
+        var callbacks = new RnCallbacks { Frame = &OnFrame, Pointer = &OnPointer };
         var ctx = NativeMethods.Create(&callbacks, GCHandle.ToIntPtr(_self));
         lock (_gate)
         {
@@ -145,4 +169,13 @@ public sealed unsafe class RdpSession : IRdpSession
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     private static void OnFrame(IntPtr user, IntPtr buffer, int width, int height, int stride, int x, int y, int w, int h) =>
         From(user)?.Frame?.Invoke(new RdpFrame(buffer, width, height, stride, x, y, w, h));
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void OnPointer(IntPtr user, IntPtr bgra, int width, int height, int hotX, int hotY)
+    {
+        RdpPointer? pointer = bgra == IntPtr.Zero
+            ? width < 0 ? null : RdpPointer.Hidden
+            : new RdpPointer(new Span<byte>((void*)bgra, width * height * 4).ToArray(), width, height, hotX, hotY);
+        From(user)?.PointerChanged?.Invoke(pointer);
+    }
 }
