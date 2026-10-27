@@ -30,6 +30,9 @@ public sealed partial class TreeViewModel : ObservableObject
     [ObservableProperty]
     private TreeNodeViewModel? _selected;
 
+    // Kullanıcı bir klasörü açtı ya da kapattı.
+    public event Action? FolderToggled;
+
     // Ağaçta ekleme, taşıma ya da silme olunca; açık düzenleme sekmeleri klasör listesini yeniler.
     public event Action? StructureChanged;
 
@@ -216,7 +219,10 @@ public sealed partial class TreeViewModel : ObservableObject
             _all.Add(node);
             _byId[node.Model.Id] = node;
             if (node is GroupNodeViewModel group)
+            {
+                group.ExpandedByUser += () => FolderToggled?.Invoke();
                 Index(group.Children);
+            }
         }
     }
 }

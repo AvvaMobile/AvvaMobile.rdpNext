@@ -24,9 +24,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Confirm = confirm ?? new DialogConfirmService();
         Files = files ?? new FileDialogService();
         var loaded = store.Load();
-        // Uygulama açılınca klasörler kapalı gelir; oturum içinde açılıp kapananlar arama sonrası korunur.
-        Collapse(loaded.Root);
         Tree = new TreeViewModel(loaded.Root);
+        // Klasörler kaldığı gibi açılır; açıp kapatınca durum hemen kaydedilir.
+        Tree.FolderToggled += Persist;
         _notice = loaded.CorruptBackupPath is { } backup
             ? string.Format(Strings.Strings.CorruptFileNotice, backup)
             : null;
@@ -53,14 +53,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     // Oturum alanının son boyutu; yeni oturum bu çözünürlükle açılır.
     public Size SessionAreaSize { get; set; } = new(1280, 800);
 
-    private static void Collapse(Group group)
-    {
-        foreach (var child in group.Children.OfType<Group>())
-        {
-            child.IsExpanded = false;
-            Collapse(child);
-        }
-    }
 
     public SettingsStore Settings { get; }
 

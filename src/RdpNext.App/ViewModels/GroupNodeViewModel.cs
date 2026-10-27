@@ -20,6 +20,9 @@ public sealed partial class GroupNodeViewModel : TreeNodeViewModel
 
     private bool _showingFilter;
 
+    // Kullanıcı klasörü açtı ya da kapattı (aramanın açması sayılmaz); durum diske yazılmalı.
+    public event Action? ExpandedByUser;
+
     public void ShowExpanded(bool value)
     {
         _showingFilter = true;
@@ -29,7 +32,9 @@ public sealed partial class GroupNodeViewModel : TreeNodeViewModel
 
     protected override void ExpandedChanged(bool value)
     {
-        if (!_showingFilter)
-            Group.IsExpanded = value;
+        if (_showingFilter || Group.IsExpanded == value)
+            return;
+        Group.IsExpanded = value;
+        ExpandedByUser?.Invoke();
     }
 }

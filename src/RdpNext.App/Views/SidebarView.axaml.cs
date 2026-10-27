@@ -16,6 +16,7 @@ public partial class SidebarView : UserControl
     private TreeNodeViewModel? _dragged;
     private Point _pressPoint;
     private bool _dragging;
+    private int _pressClickCount;
     private (TreeNodeViewModel Target, DropPlace Place)? _drop;
 
     public SidebarView()
@@ -41,6 +42,7 @@ public partial class SidebarView : UserControl
             return;
         _dragged = source.FindAncestorOfType<TreeViewItem>(includeSelf: true)?.DataContext as TreeNodeViewModel;
         _pressPoint = e.GetPosition(Tree);
+        _pressClickCount = e.ClickCount;
     }
 
     private void OnTreePointerMoved(object? sender, PointerEventArgs e)
@@ -67,6 +69,13 @@ public partial class SidebarView : UserControl
             if (_drop is { } drop && _dragged is { } dragged && DataContext is MainWindowViewModel vm)
                 vm.Drop(dragged, drop.Target, drop.Place);
             e.Handled = true;
+        }
+        else if (_dragged is GroupNodeViewModel folder && e.InitialPressMouseButton == MouseButton.Left && _pressClickCount == 1
+                 && (e.Source as Visual)?.FindAncestorOfType<TreeViewItem>(includeSelf: true)?.DataContext == folder)
+        {
+            // Klasör satırına tık açar ya da kapatır. Ok düğmesine basış ve çift tıktaki ikinci basış
+            // (TreeViewItem kendisi açıp kapatıyor) burada sayılmaz; böylece her tık bir kez açıp kapatır.
+            folder.IsExpanded = !folder.IsExpanded;
         }
         e.Pointer.Capture(null);
         EndDrag();

@@ -5,6 +5,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using RdpNext.App.Strings;
+using RdpNext.App.ViewModels;
 
 namespace RdpNext.App.Tests;
 
@@ -101,13 +102,56 @@ public class SidebarTests
         Assert.False(window.Item("Test").IsVisible);
     }
 
+    // Klasörler uygulama kapanırken nasılsa öyle açılır (örnek dosyada Üretim açık, Test ve Müşteriler kapalı).
     [AvaloniaFact]
-    public void FoldersStartCollapsed()
+    public void FoldersStartAsSaved()
     {
         var (window, _) = TestWindows.Open();
 
-        Assert.False(window.Item("Üretim").IsExpanded);
+        Assert.True(window.Item("Üretim").IsExpanded);
         Assert.False(window.Item("Test").IsExpanded);
         Assert.False(window.Item("Müşteriler").IsExpanded);
+    }
+
+    [AvaloniaFact]
+    public void ToggledFolderStateIsSaved()
+    {
+        var path = TestWindows.SampleFile();
+        var (_, vm) = TestWindows.Open(path);
+        var test = vm.Tree.Roots.OfType<GroupNodeViewModel>().First(g => g.Name == "Test");
+
+        test.IsExpanded = true;
+
+        Assert.True(new Core.Storage.ConnectionStore(path).Load().Root.Children.OfType<Group>().First(g => g.Name == "Test").IsExpanded);
+    }
+
+    // Aramanın açtığı klasörler kaydedilmez.
+    [AvaloniaFact]
+    public void SearchExpansionIsNotSaved()
+    {
+        var path = TestWindows.SampleFile();
+        var (_, vm) = TestWindows.Open(path);
+
+        vm.Tree.Query = "a";
+
+        Assert.False(new Core.Storage.ConnectionStore(path).Load().Root.Children.OfType<Group>().First(g => g.Name == "Test").IsExpanded);
+    }
+
+    // Klasör satırına tek tık: açar, bir daha tık: kapatır.
+    [AvaloniaFact]
+    public void SingleClickTogglesFolder()
+    {
+        var (window, _) = TestWindows.Open();
+        var item = window.Item("Test");
+        var text = window.Text("Test");
+        var point = text.TranslatePoint(new Point(5, text.Bounds.Height / 2), window)!.Value;
+
+        window.MouseDown(point, Avalonia.Input.MouseButton.Left);
+        window.MouseUp(point, Avalonia.Input.MouseButton.Left);
+        Assert.True(item.IsExpanded);
+
+        window.MouseDown(point, Avalonia.Input.MouseButton.Left);
+        window.MouseUp(point, Avalonia.Input.MouseButton.Left);
+        Assert.False(item.IsExpanded);
     }
 }
