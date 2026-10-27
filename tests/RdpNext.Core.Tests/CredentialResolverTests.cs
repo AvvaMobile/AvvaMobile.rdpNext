@@ -89,4 +89,23 @@ public class CredentialResolverTests
         Assert.Empty(a.Children);
         Assert.Single(b.Children);
     }
+
+    [Fact]
+    public void InheritedReportsSourceGroup()
+    {
+        var uretim = new Group { Name = "Üretim", Username = "admin" };
+        _secrets.SetPassword(uretim.Id, "g");
+        var web = new Group { Name = "Web", Domain = "AVVA" };
+        uretim.Add(web);
+
+        var result = CredentialResolver.Inherited(web, _secrets);
+
+        Assert.Equal(new InheritedValue("admin", "Üretim"), result.Username);
+        Assert.Equal(new InheritedValue("g", "Üretim"), result.Password);
+        Assert.Equal(new InheritedValue("AVVA", "Web"), result.Domain);
+    }
+
+    [Fact]
+    public void InheritedNullStartGivesNulls() =>
+        Assert.Equal(new InheritedCredentials(null, null, null), CredentialResolver.Inherited(null, _secrets));
 }

@@ -21,4 +21,16 @@ public sealed class Server : Node
     public ServerColor Color { get; set; } = ServerColor.Blue;
 
     public ScreenMode Screen { get; set; } = ScreenMode.FitToWindow;
+
+    public Server CopyWithNewId(string name) => new()
+    {
+        Name = name,
+        Protocol = Protocol,
+        Host = Host,
+        Port = Port,
+        Username = Username,
+        Domain = Domain,
+        Color = Color,
+        Screen = Screen,
+    };
 }
