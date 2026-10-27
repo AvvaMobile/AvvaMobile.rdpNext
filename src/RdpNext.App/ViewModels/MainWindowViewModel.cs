@@ -52,8 +52,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Sessions.Find<FolderEditorViewModel>(e => e.Existing == node.Group)
         ?? new FolderEditorViewModel(this, node.Group, null));
 
+    // Yeni klasörde yalnız ad sorulur; kimlik bilgileri sağ tık > Düzenle'de.
     [RelayCommand]
-    public void NewFolder() => Sessions.OpenTab(new FolderEditorViewModel(this, null, SelectedFolder()));
+    private async Task NewFolder()
+    {
+        var name = await Confirm.AskTextAsync(Strings.Strings.FolderNamePrompt, Strings.Strings.Add);
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+        Tree.AddGroup(new Group { Name = name.Trim() }, SelectedFolder());
+        Persist();
+    }
 
     [RelayCommand]
     public void NewServer() => Sessions.OpenTab(new ServerEditorViewModel(this, null, SelectedFolder()));
@@ -91,10 +99,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void NewFolderIn(GroupNodeViewModel folder)
+    private Task NewFolderIn(GroupNodeViewModel folder)
     {
         Tree.Selected = folder;
-        NewFolder();
+        return NewFolder();
     }
 
     [RelayCommand]

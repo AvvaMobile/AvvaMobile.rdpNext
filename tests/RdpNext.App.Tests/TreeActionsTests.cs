@@ -12,9 +12,11 @@ namespace RdpNext.App.Tests;
 
 public class TreeActionsTests
 {
-    private sealed class FakeConfirm(bool answer) : IConfirmService
+    private sealed class FakeConfirm(bool answer, string? text = null) : IConfirmService
     {
         public string? LastMessage { get; private set; }
+
+        public Task<string?> AskTextAsync(string message, string confirmText) => Task.FromResult(text);
 
         public Task<bool> ConfirmAsync(string message, string confirmText)
         {
@@ -25,9 +27,9 @@ public class TreeActionsTests
 
     private readonly string _path = TestWindows.SampleFile();
 
-    private (MainWindowViewModel Vm, FakeConfirm Confirm) Create(bool answer = true)
+    private (MainWindowViewModel Vm, FakeConfirm Confirm) Create(bool answer = true, string? text = null)
     {
-        var confirm = new FakeConfirm(answer);
+        var confirm = new FakeConfirm(answer, text);
         return (new MainWindowViewModel(new ConnectionStore(_path), new InMemorySecretStore(), confirm), confirm);
     }
 
@@ -114,18 +116,45 @@ public class TreeActionsTests
     }
 
     [Fact]
-    public void AddFromFolderMenuUsesThatFolder()
+    public async Task AddFromFolderMenuUsesThatFolder()
     {
-        var (vm, _) = Create();
+        var (vm, _) = Create(text: "Alt");
         vm.Tree.Selected = null;
 
         vm.NewServerInCommand.Execute(Folder(vm, "Test"));
         var server = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
-        vm.NewFolderInCommand.Execute(Folder(vm, "Test"));
-        var folder = Assert.IsType<FolderEditorViewModel>(vm.Sessions.Selected);
+        await vm.NewFolderInCommand.ExecuteAsync(Folder(vm, "Test"));
 
         Assert.Equal("Test", server.Folder.Group?.Name);
-        Assert.Equal("Test", folder.Parent.Group?.Name);
+        Assert.Contains(Folder(vm, "Test").Children, n => n.Name == "Alt");
+    }
+
+    [Fact]
+    public async Task NewFolderAsksOnlyNameAndAddsAtSelection()
+    {
+        var (vm, _) = Create(text: "  Muhasebe ");
+        vm.Tree.Selected = Folder(vm, "Üretim");
+        var tabsBefore = vm.Sessions.Tabs.Count;
+
+        await vm.NewFolderCommand.ExecuteAsync(null);
+
+        var uretim = Reload().Children.OfType<Group>().Single(g => g.Name == "Üretim");
+        Assert.Contains(uretim.Children, n => n is Group { Name: "Muhasebe" });
+        Assert.Equal(tabsBefore, vm.Sessions.Tabs.Count);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public async Task NewFolderCancelledOrBlankAddsNothing(string? answer)
+    {
+        var (vm, _) = Create(text: answer);
+        vm.Tree.Selected = null;
+        var before = vm.Tree.Roots.Count;
+
+        await vm.NewFolderCommand.ExecuteAsync(null);
+
+        Assert.Equal(before, vm.Tree.Roots.Count);
     }
 
     [Fact]

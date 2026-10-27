@@ -16,6 +16,38 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
         <StackPanel Classes="form">
+          <StackPanel>
+            <TextBlock Classes="label" Text="{x:Static s:Strings.DisplayName}" />
+            <TextBox Classes="field" Text="{Binding Name}" PlaceholderText="{Binding Host}" />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Folder}" />
+              <ComboBox Classes="field" ItemsSource="{Binding Folders}" SelectedItem="{Binding Folder}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate DataType="vm:FolderOption">
+                    <TextBlock Text="{Binding Label}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Color}" />
+              <ListBox Classes="swatches" ItemsSource="{Binding Colors}" SelectedItem="{Binding Color}">
+                <ListBox.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                  </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                  <DataTemplate DataType="m:ServerColor">
+                    <Border Width="30" Height="30" CornerRadius="8"
+                            Background="{Binding Converter={x:Static v:Converters.ServerColorBrush}}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+          </Grid>
           <Grid ColumnDefinitions="*,12,140">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Address}" />
@@ -48,38 +80,6 @@
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
               <TextBox Classes="field" Text="{Binding Domain}" PlaceholderText="{Binding DomainHint}" />
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-              <TextBlock Classes="label" Text="{x:Static s:Strings.Folder}" />
-              <ComboBox Classes="field" ItemsSource="{Binding Folders}" SelectedItem="{Binding Folder}">
-                <ComboBox.ItemTemplate>
-                  <DataTemplate DataType="vm:FolderOption">
-                    <TextBlock Text="{Binding Label}" />
-                  </DataTemplate>
-                </ComboBox.ItemTemplate>
-              </ComboBox>
-            </StackPanel>
-          </Grid>
-          <Grid ColumnDefinitions="*,12,*">
-            <StackPanel>
-              <TextBlock Classes="label" Text="{x:Static s:Strings.DisplayName}" />
-              <TextBox Classes="field" Text="{Binding Name}" PlaceholderText="{Binding Host}" />
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-              <TextBlock Classes="label" Text="{x:Static s:Strings.Color}" />
-              <ListBox Classes="swatches" ItemsSource="{Binding Colors}" SelectedItem="{Binding Color}">
-                <ListBox.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="8" />
-                  </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                  <DataTemplate DataType="m:ServerColor">
-                    <Border Width="30" Height="30" CornerRadius="8"
-                            Background="{Binding Converter={x:Static v:Converters.ServerColorBrush}}" />
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
             </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="Auto,10,Auto,*" Margin="0,6,0,0">

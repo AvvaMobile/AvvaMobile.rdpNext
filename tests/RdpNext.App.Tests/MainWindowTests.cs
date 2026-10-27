@@ -164,7 +164,7 @@ public class MainWindowTests
 
         var labels = editor.Texts().Where(t => t.Classes.Contains("label")).Select(t => t.Text).ToList();
 
-        Assert.Equal(["Adres", "Port", "Kullanıcı", "Şifre", "Domain", "Klasör", "Görünen ad", "Renk"], labels);
+        Assert.Equal(["Görünen ad", "Klasör", "Renk", "Host/IP", "Port", "Kullanıcı", "Şifre", "Domain"], labels);
         Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Bağlan");
         Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Kaydet");
         Assert.Contains(window.Named<Control>("TabStrip").Texts(), t => t.Text == "Yeni sunucu");
