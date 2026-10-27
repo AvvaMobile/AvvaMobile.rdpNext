@@ -2,9 +2,11 @@
   <Folder Name="/src/">
     <Project Path="src/RdpNext.App/RdpNext.App.csproj" />
     <Project Path="src/RdpNext.Core/RdpNext.Core.csproj" />
+    <Project Path="src/RdpNext.Rdp/RdpNext.Rdp.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RdpNext.App.Tests/RdpNext.App.Tests.csproj" />
     <Project Path="tests/RdpNext.Core.Tests/RdpNext.Core.Tests.csproj" />
+    <Project Path="tests/RdpNext.Rdp.Tests/RdpNext.Rdp.Tests.csproj" />
   </Folder>
 </Solution>

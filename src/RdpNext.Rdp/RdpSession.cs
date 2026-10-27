@@ -1,0 +1,148 @@
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+
+namespace RdpNext.Rdp;
+
+// FreeRDP oturumu: bağlanma ve olay döngüsü kendi iş parçacığında döner. Fare, klavye gibi istekler
+// kuyruğa girer ve aynı iş parçacığında gönderilir; FreeRDP nesnesine iki iş parçacığı aynı anda dokunmaz.
+public sealed unsafe class RdpSession : IRdpSession
+{
+    private const int PumpTimeoutMs = 100;
+    private static readonly TimeSpan DisposeWait = TimeSpan.FromSeconds(5);
+
+    private readonly object _gate = new();
+    private readonly ConcurrentQueue<Action<IntPtr>> _requests = new();
+    private GCHandle _self;
+    private Thread? _thread;
+    private IntPtr _ctx;
+    private volatile bool _stopping;
+
+    public event Action? Connected;
+
+    public event Action<RdpFrame>? Frame;
+
+    public event Action<RdpEndReason, string?>? Ended;
+
+    // C katmanı ve FreeRDP bu makinede yüklenebiliyor mu.
+    public static bool IsAvailable { get; } =
+        NativeLibrary.TryLoad(NativeMethods.Library, typeof(RdpSession).Assembly, null, out _);
+
+    public void Start(RdpConnectOptions options)
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_stopping, this);
+            if (_thread is not null)
+                throw new InvalidOperationException("Session already started.");
+            _self = GCHandle.Alloc(this);
+            _thread = new Thread(() => Run(options)) { IsBackground = true, Name = "rdp " + options.Host };
+            _thread.Start();
+        }
+    }
+
+    public void SendMouse(RdpMouseFlags flags, int x, int y) =>
+        _requests.Enqueue(ctx => NativeMethods.Mouse(ctx, (ushort)flags, (ushort)Math.Max(0, x), (ushort)Math.Max(0, y)));
+
+    public void Dispose()
+    {
+        Thread? thread;
+        lock (_gate)
+        {
+            if (_stopping)
+                return;
+            _stopping = true;
+            if (_ctx != IntPtr.Zero)
+                NativeMethods.Abort(_ctx);
+            thread = _thread;
+        }
+        if (thread is not null && thread != Thread.CurrentThread)
+            thread.Join(DisposeWait);
+    }
+
+    private void Run(RdpConnectOptions options)
+    {
+        var callbacks = new RnCallbacks { Frame = &OnFrame };
+        var ctx = NativeMethods.Create(&callbacks, GCHandle.ToIntPtr(_self));
+        lock (_gate)
+        {
+            if (ctx == IntPtr.Zero || _stopping)
+            {
+                Release(ctx);
+                if (ctx == IntPtr.Zero)
+                    Ended?.Invoke(RdpEndReason.ConnectFailed, null);
+                return;
+            }
+            _ctx = ctx;
+        }
+
+        var error = Connect(ctx, options);
+        if (error != 0)
+        {
+            var reason = RdpErrors.Classify(error, NativeMethods.EndReason(ctx), wasConnected: false);
+            Finish(ctx, reason);
+            return;
+        }
+
+        Connected?.Invoke();
+        while (!_stopping)
+        {
+            while (_requests.TryDequeue(out var request))
+                request(ctx);
+            if (NativeMethods.Pump(ctx, PumpTimeoutMs) == 0)
+                break;
+        }
+        Finish(ctx, RdpErrors.Classify(NativeMethods.LastError(ctx), NativeMethods.EndReason(ctx), wasConnected: true));
+    }
+
+    private static uint Connect(IntPtr ctx, RdpConnectOptions o)
+    {
+        var host = Marshal.StringToCoTaskMemUTF8(o.Host);
+        var user = Marshal.StringToCoTaskMemUTF8(o.Username);
+        var domain = o.Domain is null ? IntPtr.Zero : Marshal.StringToCoTaskMemUTF8(o.Domain);
+        var password = Marshal.StringToCoTaskMemUTF8(o.Password);
+        try
+        {
+            var native = new RnOptions
+            {
+                Host = host, Port = o.Port, Username = user, Domain = domain, Password = password,
+                Width = o.Width, Height = o.Height,
+            };
+            return NativeMethods.Connect(ctx, &native);
+        }
+        finally
+        {
+            Marshal.ZeroFreeCoTaskMemUTF8(password);
+            Marshal.FreeCoTaskMem(host);
+            Marshal.FreeCoTaskMem(user);
+            Marshal.FreeCoTaskMem(domain);
+        }
+    }
+
+    // Kapatılırken (Dispose) sebep bildirilmez; sekme zaten gidiyor.
+    private void Finish(IntPtr ctx, RdpEndReason reason)
+    {
+        bool stopping;
+        lock (_gate)
+        {
+            stopping = _stopping;
+            _ctx = IntPtr.Zero;
+            Release(ctx);
+        }
+        if (!stopping)
+            Ended?.Invoke(reason, null);
+    }
+
+    private void Release(IntPtr ctx)
+    {
+        if (ctx != IntPtr.Zero)
+            NativeMethods.Free(ctx);
+        if (_self.IsAllocated)
+            _self.Free();
+    }
+
+    private static RdpSession? From(IntPtr user) => GCHandle.FromIntPtr(user).Target as RdpSession;
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void OnFrame(IntPtr user, IntPtr buffer, int width, int height, int stride, int x, int y, int w, int h) =>
+        From(user)?.Frame?.Invoke(new RdpFrame(buffer, width, height, stride, x, y, w, h));
+}

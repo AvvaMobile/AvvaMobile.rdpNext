@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="RdpNext.Rdp.Tests" />
+  </ItemGroup>
+  <!-- macOS'ta C katmanı Homebrew'deki FreeRDP'ye karşı derlenir ve çıktıya kopyalanır. -->
+  <Target Name="BuildNativeShim" BeforeTargets="BeforeBuild" Condition="$([MSBuild]::IsOSPlatform('OSX'))"
+          Inputs="..\..\native\rdpnext_shim\rdpnext_shim.c;..\..\native\rdpnext_shim\rdpnext_shim.h;..\..\native\build-mac.sh"
+          Outputs="..\..\native\out\osx-arm64\librdpnext_shim.dylib">
+    <Exec Command="../../native/build-mac.sh" />
+  </Target>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <None Include="..\..\native\out\osx-arm64\librdpnext_shim.dylib" Link="librdpnext_shim.dylib"
+          CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+</Project>
