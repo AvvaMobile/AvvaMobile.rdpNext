@@ -12,11 +12,9 @@ namespace RdpNext.App.Tests;
 
 public class TreeActionsTests
 {
-    private sealed class FakeConfirm(bool answer, string? text = null) : IConfirmService
+    private sealed class FakeConfirm(bool answer) : IConfirmService
     {
         public string? LastMessage { get; private set; }
-
-        public Task<string?> AskTextAsync(string message, string confirmText) => Task.FromResult(text);
 
         public Task<bool> ConfirmAsync(string message, string confirmText)
         {
@@ -27,9 +25,9 @@ public class TreeActionsTests
 
     private readonly string _path = TestWindows.SampleFile();
 
-    private (MainWindowViewModel Vm, FakeConfirm Confirm) Create(bool answer = true, string? text = null)
+    private (MainWindowViewModel Vm, FakeConfirm Confirm) Create(bool answer = true)
     {
-        var confirm = new FakeConfirm(answer, text);
+        var confirm = new FakeConfirm(answer);
         return (new MainWindowViewModel(new ConnectionStore(_path), new InMemorySecretStore(), confirm), confirm);
     }
 
@@ -128,32 +126,22 @@ public class TreeActionsTests
     }
 
     [Fact]
-    public async Task NewFolderAsksOnlyNameAndAddsAtRoot()
+    public void NewFolderOpensEditorTabAndAddsAtRoot()
     {
-        var (vm, _) = Create(text: "  Muhasebe ");
+        var (vm, _) = Create();
         vm.Tree.Selected = Folder(vm, "Üretim");
-        var tabsBefore = vm.Sessions.Tabs.Count;
 
-        await vm.NewFolderCommand.ExecuteAsync(null);
+        vm.NewFolderCommand.Execute(null);
+        var editor = Assert.IsType<FolderEditorViewModel>(vm.Sessions.Selected);
+        Assert.True(editor.IsNew);
+        Assert.False(editor.SaveCommand.CanExecute(null));
+
+        editor.Name = "  Muhasebe ";
+        editor.SaveCommand.Execute(null);
 
         var root = Reload();
         Assert.Contains(root.Children, n => n is Group { Name: "Muhasebe" });
         Assert.DoesNotContain(root.Children.OfType<Group>().Single(g => g.Name == "Üretim").Children, n => n is Group);
-        Assert.Equal(tabsBefore, vm.Sessions.Tabs.Count);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("   ")]
-    public async Task NewFolderCancelledOrBlankAddsNothing(string? answer)
-    {
-        var (vm, _) = Create(text: answer);
-        vm.Tree.Selected = null;
-        var before = vm.Tree.Roots.Count;
-
-        await vm.NewFolderCommand.ExecuteAsync(null);
-
-        Assert.Equal(before, vm.Tree.Roots.Count);
     }
 
     [Fact]

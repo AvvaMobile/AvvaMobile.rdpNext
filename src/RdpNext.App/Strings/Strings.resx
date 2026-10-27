@@ -39,7 +39,6 @@
   <data name="DeleteFolderConfirm" xml:space="preserve"><value>{0} ve içindeki {1} sunucu silinsin mi?</value></data>
   <data name="CopyName" xml:space="preserve"><value>{0} kopya</value></data>
   <data name="KeychainError" xml:space="preserve"><value>Anahtar zincirine erişilemedi, şifre okunamadı ya da kaydedilmedi.</value></data>
-  <data name="FolderNamePrompt" xml:space="preserve"><value>Klasör adı</value></data>
   <data name="Add" xml:space="preserve"><value>Ekle</value></data>
   <data name="Settings" xml:space="preserve"><value>Ayarlar</value></data>
   <data name="File" xml:space="preserve"><value>File</value></data>

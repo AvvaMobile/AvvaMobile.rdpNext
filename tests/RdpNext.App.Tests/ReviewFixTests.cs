@@ -10,8 +10,6 @@ public class ReviewFixTests
     private sealed class Yes : IConfirmService
     {
         public Task<bool> ConfirmAsync(string message, string confirmText) => Task.FromResult(true);
-
-        public Task<string?> AskTextAsync(string message, string confirmText) => Task.FromResult<string?>("Yeni");
     }
 
     private sealed class DeniedKeychain : ISecretStore

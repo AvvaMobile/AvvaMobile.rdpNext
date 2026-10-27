@@ -10,14 +10,12 @@ public class FolderEditorTests
     private readonly string _path = TestWindows.SampleFile();
     private readonly MainWindowViewModel _vm;
 
-    private sealed class Answer(string name) : IConfirmService
+    private sealed class Answer : IConfirmService
     {
         public Task<bool> ConfirmAsync(string message, string confirmText) => Task.FromResult(true);
-
-        public Task<string?> AskTextAsync(string message, string confirmText) => Task.FromResult<string?>(name);
     }
 
-    public FolderEditorTests() => _vm = new MainWindowViewModel(new ConnectionStore(_path), new InMemorySecretStore(), new Answer("Web"));
+    public FolderEditorTests() => _vm = new MainWindowViewModel(new ConnectionStore(_path), new InMemorySecretStore(), new Answer());
 
     private GroupNodeViewModel Folder(string name) => _vm.Tree.Node<GroupNodeViewModel>(
         _vm.Tree.Root.Children.OfType<Group>().First(g => g.Name == name).Id);

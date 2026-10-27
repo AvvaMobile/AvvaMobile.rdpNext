@@ -39,7 +39,6 @@
   <data name="DeleteFolderConfirm" xml:space="preserve"><value>Delete {0} and the {1} servers in it?</value></data>
   <data name="CopyName" xml:space="preserve"><value>{0} copy</value></data>
   <data name="KeychainError" xml:space="preserve"><value>Could not access the keychain, the password was not read or saved.</value></data>
-  <data name="FolderNamePrompt" xml:space="preserve"><value>Folder name</value></data>
   <data name="Add" xml:space="preserve"><value>Add</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="File" xml:space="preserve"><value>File</value></data>
