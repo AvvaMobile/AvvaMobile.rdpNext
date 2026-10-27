@@ -50,6 +50,10 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     partial void OnStateChanged(SessionState value) => Server.State = value;
 
+    // Sunucunun imleç şekli; null ise sistemin oku.
+    [ObservableProperty]
+    private RdpPointer? _pointer;
+
     // Kullanıcı ya da şifre bulunamazsa bağlanmadan kopmuş sayılır.
     public void Connect(IRdpSession session, ResolvedCredentials credentials, Size size)
     {
@@ -64,6 +68,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
         session.Connected += () => OnUi(session, () => State = SessionState.Connected);
         session.Ended += (_, _) => OnUi(session, () => State = SessionState.Disconnected);
         session.Frame += Screen.CopyFrame;
+        session.PointerChanged += pointer => OnUi(session, () => Pointer = pointer);
         session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, credentials.Username, credentials.Domain,
             credentials.Password, (int)size.Width, (int)size.Height));
     }

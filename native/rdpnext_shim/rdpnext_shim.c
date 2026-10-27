@@ -4,7 +4,16 @@
 #include <freerdp/client.h>
 #include <freerdp/gdi/gdi.h>
 #include <freerdp/input.h>
+#include <freerdp/graphics.h>
+#include <freerdp/scancode.h>
+#include <freerdp/codec/color.h>
 #include <winpr/synch.h>
+
+typedef struct
+{
+	rdpPointer pointer;
+	uint8_t* bgra;
+} rnPointer;
 
 typedef struct
 {
@@ -45,6 +54,57 @@ static BOOL rn_desktop_resize(rdpContext* context)
 	return TRUE;
 }
 
+/* Sunucunun imleç şekli BGRA'ya çevrilip .NET'e verilir; gizli imleç bgra NULL, genişlik 0. */
+static BOOL rn_pointer_new(rdpContext* context, rdpPointer* pointer)
+{
+	rnPointer* p = (rnPointer*)pointer;
+	size_t size = (size_t)pointer->width * pointer->height * 4;
+	p->bgra = calloc(1, size ? size : 1);
+	if (!p->bgra)
+		return FALSE;
+	return freerdp_image_copy_from_pointer_data(p->bgra, PIXEL_FORMAT_BGRA32, pointer->width * 4, 0, 0, pointer->width,
+	                                            pointer->height, pointer->xorMaskData, pointer->lengthXorMask, pointer->andMaskData,
+	                                            pointer->lengthAndMask, pointer->xorBpp, &context->gdi->palette);
+}
+
+static void rn_pointer_free(rdpContext* context, rdpPointer* pointer)
+{
+	rnPointer* p = (rnPointer*)pointer;
+	free(p->bgra);
+	p->bgra = NULL;
+}
+
+static BOOL rn_pointer_set(rdpContext* context, rdpPointer* pointer)
+{
+	rnContext* rc = (rnContext*)context;
+	rnPointer* p = (rnPointer*)pointer;
+	if (rc->callbacks.pointer)
+		rc->callbacks.pointer(rc->user, p->bgra, (int)pointer->width, (int)pointer->height, (int)pointer->xPos, (int)pointer->yPos);
+	return TRUE;
+}
+
+static BOOL rn_pointer_set_null(rdpContext* context)
+{
+	rnContext* rc = (rnContext*)context;
+	if (rc->callbacks.pointer)
+		rc->callbacks.pointer(rc->user, NULL, 0, 0, 0, 0);
+	return TRUE;
+}
+
+/* Varsayılan ok: bgra NULL, genişlik -1. */
+static BOOL rn_pointer_set_default(rdpContext* context)
+{
+	rnContext* rc = (rnContext*)context;
+	if (rc->callbacks.pointer)
+		rc->callbacks.pointer(rc->user, NULL, -1, 0, 0, 0);
+	return TRUE;
+}
+
+static BOOL rn_pointer_set_position(rdpContext* context, UINT32 x, UINT32 y)
+{
+	return TRUE;
+}
+
 static BOOL rn_pre_connect(freerdp* instance)
 {
 #ifdef _WIN32
@@ -63,6 +123,16 @@ static BOOL rn_post_connect(freerdp* instance)
 	update->BeginPaint = rn_begin_paint;
 	update->EndPaint = rn_end_paint;
 	update->DesktopResize = rn_desktop_resize;
+
+	rdpPointer pointer = { 0 };
+	pointer.size = sizeof(rnPointer);
+	pointer.New = rn_pointer_new;
+	pointer.Free = rn_pointer_free;
+	pointer.Set = rn_pointer_set;
+	pointer.SetNull = rn_pointer_set_null;
+	pointer.SetDefault = rn_pointer_set_default;
+	pointer.SetPosition = rn_pointer_set_position;
+	graphics_register_pointer(instance->context->graphics, &pointer);
 	return TRUE;
 }
 
@@ -168,6 +238,16 @@ void rn_abort(rdpContext* ctx)
 void rn_mouse(rdpContext* ctx, uint16_t flags, uint16_t x, uint16_t y)
 {
 	freerdp_input_send_mouse_event(ctx->input, flags, x, y);
+}
+
+void rn_key(rdpContext* ctx, uint16_t code, int extended, int down)
+{
+	freerdp_input_send_keyboard_event_ex(ctx->input, down ? TRUE : FALSE, FALSE, MAKE_RDP_SCANCODE(code, extended));
+}
+
+void rn_unicode(rdpContext* ctx, uint16_t code, int down)
+{
+	freerdp_input_send_unicode_keyboard_event(ctx->input, down ? 0 : KBD_FLAGS_RELEASE, code);
 }
 
 void rn_free(rdpContext* ctx)

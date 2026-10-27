@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RdpNext.App.ViewModels"
              x:Class="RdpNext.App.Views.SessionView"
-             x:DataType="vm:SessionTabViewModel">
+             x:DataType="vm:SessionTabViewModel"
+             Focusable="True">
   <Border Background="{StaticResource SessionBrush}" ClipToBounds="True">
     <Image x:Name="Screen" Source="{Binding Screen.Bitmap}" Stretch="None"
            HorizontalAlignment="Left" VerticalAlignment="Top" />

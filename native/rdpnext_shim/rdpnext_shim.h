@@ -47,6 +47,8 @@ RN_API uint32_t rn_last_error(rdpContext* ctx);
 /* Başka iş parçacığından çağrılabilir: süren bağlanmayı ya da bekleyen pump'ı keser. */
 RN_API void rn_abort(rdpContext* ctx);
 RN_API void rn_mouse(rdpContext* ctx, uint16_t flags, uint16_t x, uint16_t y);
+RN_API void rn_key(rdpContext* ctx, uint16_t code, int extended, int down);
+RN_API void rn_unicode(rdpContext* ctx, uint16_t code, int down);
 RN_API void rn_free(rdpContext* ctx);
 
 #endif

@@ -14,6 +14,12 @@ public enum RdpEndReason
     ConnectFailed,
 }
 
+// Sunucunun imleç şekli, BGRA32. Width 0 ise imleç gizli.
+public sealed record RdpPointer(byte[] Bgra, int Width, int Height, int HotX, int HotY)
+{
+    public static RdpPointer Hidden { get; } = new([], 0, 0, 0, 0);
+}
+
 // FreeRDP PTR_FLAGS_* değerleri.
 [Flags]
 public enum RdpMouseFlags : ushort
@@ -37,8 +43,19 @@ public interface IRdpSession : IDisposable
 
     event Action<RdpEndReason, string?>? Ended;
 
+    // null: sistemin varsayılan oku.
+    event Action<RdpPointer?>? PointerChanged;
+
     // Hemen döner; bağlanma arka planda sürer.
     void Start(RdpConnectOptions options);
 
     void SendMouse(RdpMouseFlags flags, int x, int y);
+
+    // Tekerlek; bir çentik 120, yukarı ve sağ artı.
+    void SendWheel(int delta, bool horizontal, int x, int y);
+
+    void SendKey(ushort code, bool extended, bool down);
+
+    // Klavye düzeninden bağımsız karakter (UTF-16 birimi), basılıp bırakılır.
+    void SendUnicode(char c);
 }
