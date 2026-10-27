@@ -58,6 +58,8 @@ public sealed unsafe class RdpSession : IRdpSession
         return (horizontal ? RdpMouseFlags.HWheel : RdpMouseFlags.Wheel) | (RdpMouseFlags)(value & 0x1FF);
     }
 
+    public void Resize(int width, int height) => _requests.Enqueue(ctx => NativeMethods.Resize(ctx, width, height));
+
     public void SendKey(ushort code, bool extended, bool down) =>
         _requests.Enqueue(ctx => NativeMethods.Key(ctx, code, extended ? 1 : 0, down ? 1 : 0));
 

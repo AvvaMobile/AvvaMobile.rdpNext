@@ -22,6 +22,7 @@ public partial class SessionView : UserControl
     {
         InitializeComponent();
         DetachedFromVisualTree += (_, _) => Watch(null);
+        SizeChanged += (_, e) => _tab?.ViewSizeChanged(e.NewSize.Width, e.NewSize.Height);
     }
 
     private IRdpSession? Session => _tab?.Session;
@@ -73,10 +74,19 @@ public partial class SessionView : UserControl
                 new PixelSize(pointer.Width, pointer.Height), new Vector(96, 96), pointer.Width * 4);
     }
 
+    // Görünümdeki nokta sunucu ekranındaki piksele; görüntü küçültülmüşse ölçeklenir.
+    private (int X, int Y) Remote(PointerEventArgs e)
+    {
+        var p = e.GetPosition(Screen);
+        if (_tab?.Screen.Bitmap is { } bitmap && Screen.Bounds.Width > 0 && Screen.Bounds.Height > 0)
+            p = new Point(p.X * bitmap.PixelSize.Width / Screen.Bounds.Width, p.Y * bitmap.PixelSize.Height / Screen.Bounds.Height);
+        return ((int)p.X, (int)p.Y);
+    }
+
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        var p = e.GetPosition(Screen);
+        var p = Remote(e);
         Session?.SendMouse(RdpMouseFlags.Move, (int)p.X, (int)p.Y);
     }
 
@@ -109,14 +119,14 @@ public partial class SessionView : UserControl
         };
         if (flags is not { } f)
             return;
-        var p = e.GetPosition(Screen);
+        var p = Remote(e);
         Session?.SendMouse(f, (int)p.X, (int)p.Y);
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         base.OnPointerWheelChanged(e);
-        var p = e.GetPosition(Screen);
+        var p = Remote(e);
         if (e.Delta.Y != 0)
             Session?.SendWheel((int)Math.Round(e.Delta.Y * 120), false, (int)p.X, (int)p.Y);
         if (e.Delta.X != 0)

@@ -51,4 +51,36 @@ public class SessionInputTests
         Assert.Contains((RdpMouseFlags.Down | RdpMouseFlags.Button2, 10, 20), _sessions[0].Mouse);
         Assert.Contains((RdpMouseFlags.Button2, 10, 20), _sessions[0].Mouse);
     }
+
+    // Sunucu çözünürlüğü değiştirmezse görüntü alana küçültülür; tıklama sunucu pikseline çevrilir.
+    [AvaloniaFact]
+    public void ClickIsMappedWhenScaled()
+    {
+        var (window, view) = OpenSession();
+        _sessions[0].RaiseConnected();
+        _sessions[0].RaiseFrame(new byte[4000 * 3000 * 4], 4000, 3000);
+        Dispatcher.UIThread.RunJobs();
+        var screen = view.Named<Image>("Screen");
+        var scale = 4000 / screen.Bounds.Width;
+        var point = screen.TranslatePoint(new Point(100, 50), window)!.Value;
+
+        window.MouseDown(point, MouseButton.Left);
+
+        Assert.Contains((RdpMouseFlags.Down | RdpMouseFlags.Button1, (int)(100 * scale), (int)(50 * scale)), _sessions[0].Mouse);
+    }
+
+    [AvaloniaFact]
+    public void ViewResizeReachesSession()
+    {
+        var (window, _) = OpenSession();
+        _sessions[0].RaiseConnected();
+        Dispatcher.UIThread.RunJobs();
+
+        window.Width -= 100;
+        Dispatcher.UIThread.RunJobs();
+        Thread.Sleep(400);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.NotEmpty(_sessions[0].Resizes);
+    }
 }

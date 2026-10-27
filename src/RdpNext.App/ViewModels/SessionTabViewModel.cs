@@ -18,9 +18,16 @@ public enum SessionState
 // eski bir oturumdan geç gelen olay yok sayılır.
 public sealed partial class SessionTabViewModel : TabViewModel
 {
-    public SessionTabViewModel(ServerNodeViewModel server)
+    private static readonly TimeSpan ResizeDelay = TimeSpan.FromMilliseconds(300);
+    private readonly TimeProvider _time;
+    private readonly object _resizeGate = new();
+    private ITimer? _resizeTimer;
+    private (int Width, int Height) _pendingSize;
+
+    public SessionTabViewModel(ServerNodeViewModel server, TimeProvider? time = null)
     {
         Server = server;
+        _time = time ?? TimeProvider.System;
         server.State = SessionState.Connecting;
         // Sunucunun adı, rengi ya da ikonu değişince sekme de güncellenir.
         server.PropertyChanged += (_, e) =>
@@ -73,6 +80,32 @@ public sealed partial class SessionTabViewModel : TabViewModel
             credentials.Password, (int)size.Width, (int)size.Height));
     }
 
+    // Oturum alanı boyut değiştirdi: son değişiklikten 300 ms sonra sunucudan bu çözünürlük istenir.
+    public void ViewSizeChanged(double width, double height)
+    {
+        if (State != SessionState.Connected || Session is not { } session)
+            return;
+        lock (_resizeGate)
+        {
+            _pendingSize = RemoteSize(width, height);
+            _resizeTimer?.Dispose();
+            _resizeTimer = _time.CreateTimer(_ => SendResize(session), null, ResizeDelay, Timeout.InfiniteTimeSpan);
+        }
+    }
+
+    private void SendResize(IRdpSession session)
+    {
+        (int Width, int Height) size;
+        lock (_resizeGate)
+            size = _pendingSize;
+        if (Session == session)
+            session.Resize(size.Width, size.Height);
+    }
+
+    // RDP'nin kabul ettiği çözünürlük: genişlik çift, ikisi de 200..8192.
+    private static (int Width, int Height) RemoteSize(double width, double height) =>
+        (Math.Clamp((int)width & ~1, 200, 8192), Math.Clamp((int)height, 200, 8192));
+
     private void OnUi(IRdpSession from, Action action) => Dispatcher.UIThread.Post(() =>
     {
         if (Session == from)
@@ -81,6 +114,8 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     public override void OnClosed()
     {
+        lock (_resizeGate)
+            _resizeTimer?.Dispose();
         Session?.Dispose();
         Session = null;
         Server.State = null;

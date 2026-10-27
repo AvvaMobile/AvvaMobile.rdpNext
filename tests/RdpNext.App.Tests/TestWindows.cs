@@ -32,9 +32,11 @@ public static class TestWindows
     }
 
     // Bağlanınca gerçek RDP yerine sahte oturum açılır; açılanlar istenirse sessions listesine eklenir.
-    public static MainWindowViewModel ViewModel(string? path = null, List<FakeRdpSession>? sessions = null, bool? confirm = null) =>
+    public static MainWindowViewModel ViewModel(string? path = null, List<FakeRdpSession>? sessions = null, bool? confirm = null,
+        TimeProvider? time = null) =>
         new(new ConnectionStore(path ?? SampleFile()), new InMemorySecretStore(),
             confirm is { } sure ? new FixedConfirm(sure) : null,
+            time: time,
             rdp: () =>
             {
                 var session = new FakeRdpSession();

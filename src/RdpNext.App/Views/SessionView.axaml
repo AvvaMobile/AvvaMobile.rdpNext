@@ -5,7 +5,8 @@
              x:DataType="vm:SessionTabViewModel"
              Focusable="True">
   <Border Background="{StaticResource SessionBrush}" ClipToBounds="True">
-    <Image x:Name="Screen" Source="{Binding Screen.Bitmap}" Stretch="None"
+    <!-- Sunucu çözünürlüğü alana uymazsa (dinamik çözünürlük yoksa) görüntü küçültülür, büyütülmez. -->
+    <Image x:Name="Screen" Source="{Binding Screen.Bitmap}" Stretch="Uniform" StretchDirection="DownOnly"
            HorizontalAlignment="Left" VerticalAlignment="Top" />
   </Border>
 </UserControl>
