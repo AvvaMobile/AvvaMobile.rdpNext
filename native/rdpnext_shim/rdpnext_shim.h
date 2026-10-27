@@ -22,6 +22,7 @@ typedef struct
 	int (*verify_certificate)(void* user, const char* subject, const char* issuer, const char* fingerprint, int changed);
 	/* bgra NULL ise imleç gizli. */
 	void (*pointer)(void* user, const uint8_t* bgra, int width, int height, int hot_x, int hot_y);
+	/* text NULL ise sunucuda metin dışı bir şey kopyalandı. */
 	void (*clipboard_text)(void* user, const char* text);
 } rn_callbacks;
 

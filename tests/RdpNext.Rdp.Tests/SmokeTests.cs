@@ -82,4 +82,58 @@ public class SmokeTests
 
         Assert.Equal(RdpEndReason.AuthFailed, await ended.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken));
     }
+
+    // Pano iki yönde: Mac'teki metin sunucuda Çalıştır kutusuna yapıştırılır, oradan kopyalanıp geri gelir.
+    // Sunucuda yalnız Win+R kutusu açılıp Esc ile kapanır; hiçbir şey çalıştırılmaz.
+    [Fact]
+    public async Task ClipboardRoundTrip()
+    {
+        var options = SmokeServer.Options();
+        Assert.SkipWhen(options is null, "RDPNEXT_SMOKE ayarlı değil");
+        using var session = new RdpSession { VerifyCertificate = _ => Task.FromResult(true) };
+        var connected = new TaskCompletionSource();
+        var back = new TaskCompletionSource<string>();
+        var token = "rdpNext-pano-" + Guid.NewGuid().ToString("N")[..8];
+        session.Connected += () => connected.TrySetResult();
+        session.RemoteClipboardText += text =>
+        {
+            if (text?.Contains(token) == true)
+                back.TrySetResult(text!);
+        };
+        var ct = TestContext.Current.CancellationToken;
+        void Tap(ushort code, bool extended = false)
+        {
+            session.SendKey(code, extended, true);
+            session.SendKey(code, extended, false);
+        }
+        void Ctrl(ushort code)
+        {
+            session.SendKey(0x1D, false, true);
+            Tap(code);
+            session.SendKey(0x1D, false, false);
+        }
+
+        session.Start(options!);
+        await connected.Task.WaitAsync(TimeSpan.FromSeconds(20), ct);
+        await Task.Delay(3000, ct);
+        session.SetLocalClipboardText(token);
+        await Task.Delay(500, ct);
+        session.SendKey(0x5B, true, true);
+        Tap(0x13);
+        session.SendKey(0x5B, true, false);
+        await Task.Delay(1500, ct);
+        Ctrl(0x2F);
+        await Task.Delay(800, ct);
+        Ctrl(0x1E);
+        Ctrl(0x2E);
+        try
+        {
+            Assert.Contains(token, await back.Task.WaitAsync(TimeSpan.FromSeconds(10), ct));
+        }
+        finally
+        {
+            Tap(0x01);
+            await Task.Delay(500, ct);
+        }
+    }
 }

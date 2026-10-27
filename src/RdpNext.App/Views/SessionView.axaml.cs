@@ -28,9 +28,12 @@ public partial class SessionView : UserControl
         // Oturuma dönülünce bu bilgisayarın panosundaki metin sunucuya duyurulur.
         GotFocus += async (_, _) =>
         {
-            if (Session is { } session && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard
-                && await clipboard.TryGetTextAsync() is { } text)
+            if (Session is { } session && _tab is { } tab && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard
+                && await clipboard.TryGetTextAsync() is { } text && text != tab.SharedClipboardText)
+            {
+                tab.SharedClipboardText = text;
                 session.SetLocalClipboardText(text);
+            }
         };
     }
 
@@ -62,10 +65,19 @@ public partial class SessionView : UserControl
 
     private void Redraw() => Screen.InvalidateVisual();
 
-    private async void OnRemoteClipboardText(string text)
+    // Sunucuda kopyalandı. Metinse Mac panosuna yazılır; metin dışıysa (dosya) Mac'teki metin "bilinen" sayılır,
+    // böylece sonraki odakta sunucuya duyurulup sunucudaki kopyanın üstüne yazmaz.
+    private async void OnRemoteClipboardText(string? text)
     {
-        if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-            await clipboard.SetTextAsync(text);
+        if (_tab is not { } tab || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard)
+            return;
+        if (text is null)
+        {
+            tab.SharedClipboardText = await clipboard.TryGetTextAsync();
+            return;
+        }
+        tab.SharedClipboardText = text;
+        await clipboard.SetTextAsync(text);
     }
 
     private void OnTabChanged(object? sender, PropertyChangedEventArgs e)

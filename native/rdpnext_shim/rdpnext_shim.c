@@ -89,6 +89,9 @@ static UINT rn_clip_server_format_list(CliprdrClientContext* clip, const CLIPRDR
 		request.requestedFormatId = CF_UNICODETEXT;
 		return clip->ClientFormatDataRequest(clip, &request);
 	}
+	rnContext* rc = (rnContext*)clip->custom;
+	if (rc->callbacks.clipboard_text)
+		rc->callbacks.clipboard_text(rc->user, NULL);
 	return CHANNEL_RC_OK;
 }
 

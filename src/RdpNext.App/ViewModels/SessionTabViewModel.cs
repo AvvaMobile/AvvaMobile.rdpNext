@@ -82,8 +82,12 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     private TaskCompletionSource<bool>? _certificateAnswer;
 
+    // İki tarafın da bildiği son pano metni (sunucuya duyurulan ya da sunucudan gelen). Mac panosu bundan farklıysa
+    // sunucuya duyurulur; aynısıysa duyurulmaz, yoksa sunucuda yapılan kopyalamanın üstüne yazılır.
+    public string? SharedClipboardText { get; set; }
+
     // Sunucuda kopyalanan metin; görünüm bunu bu bilgisayarın panosuna yazar.
-    public event Action<string>? RemoteClipboardText;
+    public event Action<string?>? RemoteClipboardText;
 
     // Sunucunun imleç şekli; null ise sistemin oku.
     [ObservableProperty]

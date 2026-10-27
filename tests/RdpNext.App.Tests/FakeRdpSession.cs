@@ -23,7 +23,7 @@ public sealed class FakeRdpSession : IRdpSession
 
     public Func<RdpCertificate, Task<bool>>? VerifyCertificate { get; set; }
 
-    public event Action<string>? RemoteClipboardText;
+    public event Action<string?>? RemoteClipboardText;
 
     public event Action<RdpPointer?>? PointerChanged;
 
@@ -45,11 +45,17 @@ public sealed class FakeRdpSession : IRdpSession
 
     public void Resize(int width, int height) => Resizes.Add((width, height));
 
-    public void SetLocalClipboardText(string text) => LocalClipboard = text;
+    public int LocalClipboardSets { get; private set; }
+
+    public void SetLocalClipboardText(string text)
+    {
+        LocalClipboard = text;
+        LocalClipboardSets++;
+    }
 
     public void Dispose() => Disposed = true;
 
-    public void RaiseClipboardText(string text) => RemoteClipboardText?.Invoke(text);
+    public void RaiseClipboardText(string? text) => RemoteClipboardText?.Invoke(text);
 
     public void RaisePointer(RdpPointer? pointer) => PointerChanged?.Invoke(pointer);
 

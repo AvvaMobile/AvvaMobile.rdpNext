@@ -46,8 +46,8 @@ public interface IRdpSession : IDisposable
 
     event Action<RdpEndReason, string?>? Ended;
 
-    // Sunucuda kopyalanan metin.
-    event Action<string>? RemoteClipboardText;
+    // Sunucuda kopyalanan metin; null ise sunucuda metin dışı bir şey (dosya gibi) kopyalandı.
+    event Action<string?>? RemoteClipboardText;
 
     // null: sistemin varsayılan oku.
     event Action<RdpPointer?>? PointerChanged;

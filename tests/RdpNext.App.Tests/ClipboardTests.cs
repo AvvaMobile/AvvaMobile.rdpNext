@@ -47,4 +47,75 @@ public class ClipboardTests
 
         Assert.Equal("merhaba", _sessions[0].LocalClipboard);
     }
+
+    // Başka uygulamada kopyalayıp pencereye dönünce (oturum zaten odaktayken) yeni metin sunucuya gider.
+    [AvaloniaFact]
+    public async Task ReturningToWindowSendsNewLocalText()
+    {
+        var (window, view) = OpenSession();
+        view.Focus();
+        Dispatcher.UIThread.RunJobs();
+        await window.Clipboard!.SetTextAsync("yeni metin");
+
+        var other = new Window();
+        other.Show();
+        other.Activate();
+        Dispatcher.UIThread.RunJobs();
+        window.Activate();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal("yeni metin", _sessions[0].LocalClipboard);
+    }
+
+    // Mac panosu değişmediyse sunucuya yeniden duyurulmaz; yoksa Windows içindeki kopyalamanın üstüne yazar.
+    [AvaloniaFact]
+    public async Task UnchangedLocalTextIsNotSentAgain()
+    {
+        var (window, view) = OpenSession();
+        await window.Clipboard!.SetTextAsync("aynı");
+        window.Named<TextBox>("SearchBox").Focus();
+        view.Focus();
+        Dispatcher.UIThread.RunJobs();
+
+        window.Named<TextBox>("SearchBox").Focus();
+        view.Focus();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(1, _sessions[0].LocalClipboardSets);
+    }
+
+    // Sunucudan gelip Mac panosuna yazılan metin sunucuya geri duyurulmaz.
+    [AvaloniaFact]
+    public void RemoteTextIsNotSentBack()
+    {
+        var (window, view) = OpenSession();
+        _sessions[0].RaiseClipboardText("sunucudan");
+        Dispatcher.UIThread.RunJobs();
+        var before = _sessions[0].LocalClipboardSets;
+
+        window.Named<TextBox>("SearchBox").Focus();
+        view.Focus();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(before, _sessions[0].LocalClipboardSets);
+    }
+
+    // Sunucuda metin dışı bir şey (dosya) kopyalandı: Mac'teki eski metin sunucuya duyurulup onun üstüne yazmaz.
+    [AvaloniaFact]
+    public async Task ServerFileCopyIsNotOverwritten()
+    {
+        var (window, view) = OpenSession();
+        await window.Clipboard!.SetTextAsync("eski");
+        view.Focus();
+        Dispatcher.UIThread.RunJobs();
+        var before = _sessions[0].LocalClipboardSets;
+
+        _sessions[0].RaiseClipboardText(null);
+        Dispatcher.UIThread.RunJobs();
+        window.Named<TextBox>("SearchBox").Focus();
+        view.Focus();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(before, _sessions[0].LocalClipboardSets);
+    }
 }
