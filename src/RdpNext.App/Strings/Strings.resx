@@ -4,7 +4,8 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="AddServer" xml:space="preserve"><value>+ Sunucu ekle</value></data>
+  <data name="AddServer" xml:space="preserve"><value>Sunucu ekle</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Klasör ekle</value></data>
   <data name="Search" xml:space="preserve"><value>Ara</value></data>
   <data name="CorruptFileNotice" xml:space="preserve"><value>Bağlantı dosyası okunamadı, eski dosya yedeklendi: {0}</value></data>
   <data name="CloseTab" xml:space="preserve"><value>Kapat</value></data>

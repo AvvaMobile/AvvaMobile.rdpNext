@@ -14,7 +14,20 @@
                  Foreground="{StaticResource NoticeBrush}"
                  FontSize="{StaticResource SecondaryFontSize}"
                  TextWrapping="Wrap" />
-      <Button x:Name="AddServerButton" Classes="accent-wide" Content="{x:Static s:Strings.AddServer}" />
+      <Grid ColumnDefinitions="*,8,*">
+        <Button x:Name="AddServerButton" Classes="add">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Data="{StaticResource ServerIcon}" Fill="White" Width="14" Height="14" Stretch="Uniform" />
+            <TextBlock Text="{x:Static s:Strings.AddServer}" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="AddFolderButton" Grid.Column="2" Classes="add">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Data="{StaticResource FolderIcon}" Fill="White" Width="14" Height="14" Stretch="Uniform" />
+            <TextBlock Text="{x:Static s:Strings.AddFolder}" />
+          </StackPanel>
+        </Button>
+      </Grid>
       <TextBox x:Name="SearchBox" Classes="search" Watermark="{x:Static s:Strings.Search}" Text="{Binding Tree.Query}">
         <TextBox.KeyBindings>
           <KeyBinding Gesture="Enter" Command="{Binding ConnectFirstMatchCommand}" />

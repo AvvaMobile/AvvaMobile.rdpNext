@@ -55,5 +55,6 @@
 
   <StreamGeometry x:Key="WindowsLogo">M0,0 H7.4 V7.4 H0 Z M8.6,0 H16 V7.4 H8.6 Z M0,8.6 H7.4 V16 H0 Z M8.6,8.6 H16 V16 H8.6 Z</StreamGeometry>
   <StreamGeometry x:Key="FolderIcon">M1,3.5 C1,2.7 1.7,2 2.5,2 H6.1 L7.7,3.8 H13.5 C14.3,3.8 15,4.5 15,5.3 V12.5 C15,13.3 14.3,14 13.5,14 H2.5 C1.7,14 1,13.3 1,12.5 Z</StreamGeometry>
+  <StreamGeometry x:Key="ServerIcon">M2,1.5 H14 A1,1 0 0 1 15,2.5 V6.5 A1,1 0 0 1 14,7.5 H2 A1,1 0 0 1 1,6.5 V2.5 A1,1 0 0 1 2,1.5 Z M2,8.5 H14 A1,1 0 0 1 15,9.5 V13.5 A1,1 0 0 1 14,14.5 H2 A1,1 0 0 1 1,13.5 V9.5 A1,1 0 0 1 2,8.5 Z</StreamGeometry>
   <StreamGeometry x:Key="SearchIcon">M10.5,3 A7.5,7.5 0 1 1 10.49,3 Z M16,16 L21,21</StreamGeometry>
 </ResourceDictionary>

@@ -56,12 +56,20 @@ public class SidebarTests
     }
 
     [AvaloniaFact]
-    public void AddServerButtonPresent()
+    public void AddServerAndFolderButtonsSideBySide()
     {
         var (window, _) = TestWindows.Open();
+        var server = window.Named<Button>("AddServerButton");
+        var folder = window.Named<Button>("AddFolderButton");
 
-        Assert.Contains(window.GetVisualDescendants().OfType<Button>(), b => b.Content as string == Strings.Strings.AddServer);
-        Assert.Equal("+ Sunucu ekle", Strings.Strings.AddServer);
+        Assert.Equal(("Sunucu ekle", "Klasör ekle"), (Strings.Strings.AddServer, Strings.Strings.AddFolder));
+        Assert.Contains(server.Texts(), t => t.Text == "Sunucu ekle");
+        Assert.Contains(folder.Texts(), t => t.Text == "Klasör ekle");
+        Assert.NotEmpty(server.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
+        Assert.NotEmpty(folder.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
+        Assert.Equal(server.Bounds.Y, folder.Bounds.Y);
+        Assert.True(folder.Bounds.X > server.Bounds.Right);
+        Assert.True(server.Bounds.Height <= 40, $"{server.Bounds.Height}");
     }
 
     [AvaloniaFact]
