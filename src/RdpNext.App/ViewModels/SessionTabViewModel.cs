@@ -77,31 +77,95 @@ public sealed partial class SessionTabViewModel : TabViewModel
     [ObservableProperty]
     private RdpPointer? _pointer;
 
-    // Kullanıcı ya da şifre bulunamazsa bağlanmadan kopmuş sayılır.
-    public void Connect(IRdpSession session, ResolvedCredentials credentials, Size size)
+    private Func<IRdpSession>? _newSession;
+    private Size _size;
+    private (string Username, string? Domain) _lastSignIn;
+
+    // Kullanıcı adı ve şifre soruluyor (bulunamadı ya da sunucu reddetti).
+    [ObservableProperty]
+    private bool _isAskingCredentials;
+
+    [ObservableProperty]
+    private string _promptUsername = "";
+
+    [ObservableProperty]
+    private string _promptPassword = "";
+
+    [ObservableProperty]
+    private string _promptDomain = "";
+
+    [ObservableProperty]
+    private bool _promptSave;
+
+    public string SignInTitle => string.Format(Strings.Strings.SignInTo, Title);
+
+    // "Save" işaretliyken girilen kullanıcı, şifre ve domain; sunucuya yazılmalı.
+    public event Action<string, string, string?>? CredentialsSaved;
+
+    // Kullanıcı ya da şifre bulunamazsa bağlanmadan önce sorulur.
+    public void Connect(Func<IRdpSession> newSession, ResolvedCredentials credentials, Size size)
+    {
+        _newSession = newSession;
+        _size = size;
+        if (credentials.Username is null || credentials.Password is null)
+            AskCredentials(credentials.Username, credentials.Domain);
+        else
+            Start(credentials.Username, credentials.Password, credentials.Domain);
+    }
+
+    private void Start(string username, string password, string? domain)
     {
         Session?.Dispose();
+        var session = _newSession!();
         Session = session;
         State = SessionState.Connecting;
-        if (credentials.Username is null || credentials.Password is null)
-        {
-            State = SessionState.Disconnected;
-            return;
-        }
+        _lastSignIn = (username, domain);
         session.VerifyCertificate = certificate => AskCertificate(session, certificate);
         session.Connected += () => OnUi(session, () => State = SessionState.Connected);
         session.Ended += (reason, _) => OnUi(session, () => Ended(reason));
         session.Frame += Screen.CopyFrame;
         session.PointerChanged += pointer => OnUi(session, () => Pointer = pointer);
         session.RemoteClipboardText += text => OnUi(session, () => RemoteClipboardText?.Invoke(text));
-        session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, credentials.Username, credentials.Domain,
-            credentials.Password, (int)size.Width, (int)size.Height));
+        var (width, height) = RemoteSize(_size.Width, _size.Height);
+        session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, username, domain, password, width, height));
+    }
+
+    private void AskCredentials(string? username, string? domain)
+    {
+        PromptUsername = username ?? "";
+        PromptDomain = domain ?? "";
+        PromptPassword = "";
+        PromptSave = false;
+        IsAskingCredentials = true;
+    }
+
+    [RelayCommand]
+    private void SignIn()
+    {
+        if (string.IsNullOrWhiteSpace(PromptUsername) || PromptPassword.Length == 0)
+            return;
+        var (username, password) = (PromptUsername.Trim(), PromptPassword);
+        var domain = string.IsNullOrWhiteSpace(PromptDomain) ? null : PromptDomain.Trim();
+        IsAskingCredentials = false;
+        PromptPassword = "";
+        if (PromptSave)
+            CredentialsSaved?.Invoke(username, password, domain);
+        Start(username, password, domain);
+    }
+
+    [RelayCommand]
+    private void CancelSignIn()
+    {
+        IsAskingCredentials = false;
+        CloseRequested?.Invoke();
     }
 
     private void Ended(RdpEndReason reason)
     {
         if (reason == RdpEndReason.CertificateRejected)
             CloseRequested?.Invoke();
+        else if (reason == RdpEndReason.AuthFailed)
+            AskCredentials(_lastSignIn.Username, _lastSignIn.Domain);
         else
             State = SessionState.Disconnected;
     }
@@ -149,6 +213,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
     // Oturum alanı boyut değiştirdi: son değişiklikten 300 ms sonra sunucudan bu çözünürlük istenir.
     public void ViewSizeChanged(double width, double height)
     {
+        _size = new Size(width, height);
         if (State != SessionState.Connected || Session is not { } session)
             return;
         lock (_resizeGate)

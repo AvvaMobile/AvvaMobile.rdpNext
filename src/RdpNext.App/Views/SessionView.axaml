@@ -35,5 +35,34 @@
         </StackPanel>
       </Border>
     </Panel>
+
+    <!-- Kullanıcı adı ve şifre sorusu (docs/tasarim/rdp-oturumu.png, b). -->
+    <Panel IsVisible="{Binding IsAskingCredentials}">
+      <Border Background="#99000000" />
+      <Border x:Name="CredentialsCard" Classes="session-card">
+        <StackPanel Spacing="14">
+          <TextBlock Classes="card-title" Text="{Binding SignInTitle}" />
+          <Grid ColumnDefinitions="*,10,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
+              <TextBox x:Name="PromptUserBox" Classes="field" Text="{Binding PromptUsername}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Password}" />
+              <TextBox x:Name="PromptPasswordBox" Classes="field" PasswordChar="•" Text="{Binding PromptPassword}" />
+            </StackPanel>
+          </Grid>
+          <StackPanel>
+            <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
+            <TextBox Classes="field" Text="{Binding PromptDomain}" />
+          </StackPanel>
+          <CheckBox Content="{x:Static s:Strings.Save}" IsChecked="{Binding PromptSave}" />
+          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+            <Button Classes="secondary" Content="{x:Static s:Strings.Cancel}" Command="{Binding CancelSignInCommand}" IsCancel="True" />
+            <Button Classes="primary" Content="{x:Static s:Strings.Connect}" Command="{Binding SignInCommand}" IsDefault="True" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Panel>
   </Panel>
 </UserControl>
