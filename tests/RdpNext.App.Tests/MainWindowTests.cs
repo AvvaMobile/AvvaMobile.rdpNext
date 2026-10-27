@@ -272,7 +272,7 @@ public class MainWindowTests
         }
     }
 
-    // Gerçek fareyle: üçüncü sekmeyi tutup en başa sürükle.
+    // Gerçek fareyle: üçüncü sekmeyi tutup en başa sürükle; sürüklerken çizgi görünür, sıra bırakınca değişir.
     [AvaloniaFact]
     public void DraggingTabReordersTabs()
     {
@@ -291,9 +291,15 @@ public class MainWindowTests
         window.MouseDown(start, MouseButton.Left);
         window.MouseMove(start - new Point(10, 0), RawInputModifiers.LeftMouseButton);
         window.MouseMove(target, RawInputModifiers.LeftMouseButton);
+        Dispatcher.UIThread.RunJobs();
+        var line = window.Named<Border>("TabDropLine");
+        Assert.True(line.IsVisible);
+        Assert.Equal(["web-01", "sql-01", "api-01"], vm.Sessions.Tabs.Select(t => t.Title));
+
         window.MouseUp(target, MouseButton.Left);
         Dispatcher.UIThread.RunJobs();
 
+        Assert.False(line.IsVisible);
         Assert.Equal(["api-01", "web-01", "sql-01"], vm.Sessions.Tabs.Select(t => t.Title));
     }
 
