@@ -21,6 +21,8 @@ public partial class App : Application
             Languages.Apply(Languages.Resolve(settings.Load().Language, CultureInfo.CurrentUICulture));
             var vm = new MainWindowViewModel(new ConnectionStore(ConnectionStore.DefaultPath()), SecretStores.ForCurrentPlatform(), settings: settings);
             desktop.MainWindow = new MainWindow { DataContext = vm };
+            if (OperatingSystem.IsMacOS())
+                Platform.MacDockIcon.Set(new Uri("avares://rdpNext/Assets/rdpNext.png"));
         }
         base.OnFrameworkInitializationCompleted();
     }
