@@ -4,7 +4,7 @@ using RdpNext.Core.Model;
 
 namespace RdpNext.App.Views;
 
-// Sunucu kutucuğundaki ikon: Windows logosu, renkli penguen ya da siyah terminal.
+// Sunucu kutucuğundaki beyaz ikon: Windows logosu, penguen ya da terminal.
 public partial class ServerIconView : UserControl
 {
     public static readonly StyledProperty<ServerIcon> IconProperty =
