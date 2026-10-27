@@ -5,6 +5,7 @@
              xmlns:s="using:RdpNext.App.Strings"
              x:Class="RdpNext.App.Views.TabStripView"
              x:DataType="vm:MainWindowViewModel">
+  <Panel>
   <ListBox x:Name="TabStrip" VerticalAlignment="Center" Classes="tabs" ItemsSource="{Binding Sessions.Tabs}"
              SelectedItem="{Binding Sessions.Selected}" Background="Transparent"
              ScrollViewer.HorizontalScrollBarVisibility="Hidden">
@@ -43,5 +44,10 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+    <!-- Sürükle-bırak göstergesi: sekmeler arasına mavi çizgi. -->
+    <Canvas IsHitTestVisible="False">
+      <Border x:Name="TabDropLine" Width="2" CornerRadius="1" Background="{DynamicResource AccentBrush}" IsVisible="False" />
+    </Canvas>
+  </Panel>
 
 </UserControl>

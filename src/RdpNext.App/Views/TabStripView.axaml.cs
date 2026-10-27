@@ -14,6 +14,7 @@ public partial class TabStripView : UserControl
     private TabViewModel? _dragged;
     private Point _pressPoint;
     private bool _dragging;
+    private int? _dropIndex;
 
     public TabStripView()
     {
@@ -34,7 +35,7 @@ public partial class TabStripView : UserControl
         _pressPoint = e.GetPosition(TabStrip);
     }
 
-    // Sürüklerken sekme anında yerine kayar: imlecin solunda ortası kalan sekme sayısı yeni sıradır.
+    // Sürüklerken sekmeler yerinde kalır, bırakılacak yere çizgi çıkar: imlecin solunda ortası kalan sekme sayısı yeni sıradır.
     private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
         if (_dragged is null || DataContext is not MainWindowViewModel vm || !e.GetCurrentPoint(TabStrip).Properties.IsLeftButtonPressed)
@@ -47,16 +48,37 @@ public partial class TabStripView : UserControl
             _dragging = true;
             e.Pointer.Capture(TabStrip);
         }
-        var index = vm.Sessions.Tabs.Where(t => t != _dragged)
-            .Count(t => TabStrip.ContainerFromItem(t) is { } item
-                        && item.TranslatePoint(new Point(item.Bounds.Width / 2, 0), TabStrip)?.X < x);
-        vm.Sessions.MoveTab(_dragged, index);
+        var others = vm.Sessions.Tabs.Where(t => t != _dragged)
+            .Select(t => TabStrip.ContainerFromItem(t) is { } item && item.TranslatePoint(new Point(0, 0), TabStrip) is { } p
+                ? new Rect(p, item.Bounds.Size) : (Rect?)null)
+            .OfType<Rect>().ToList();
+        _dropIndex = others.Count(r => r.Center.X < x);
+        ShowLine(vm.Sessions.Tabs.IndexOf(_dragged), others);
+    }
+
+    // Çizgi iki sekme arasındaki boşluğun ortasına, en sona bırakırken son sekmenin sağına konur.
+    private void ShowLine(int from, List<Rect> others)
+    {
+        TabDropLine.IsVisible = false;
+        if (_dropIndex is not { } index || index == from || others.Count == 0)
+            return;
+        var gap = ((StackPanel?)TabStrip.ItemsPanelRoot)?.Spacing ?? 0;
+        var anchor = index < others.Count ? others[index] : others[^1];
+        var x = index < others.Count ? anchor.Left - gap / 2 : anchor.Right + gap / 2;
+        Canvas.SetLeft(TabDropLine, x - TabDropLine.Width / 2);
+        Canvas.SetTop(TabDropLine, anchor.Top);
+        TabDropLine.Height = anchor.Height;
+        TabDropLine.IsVisible = true;
     }
 
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (_dragging)
+        {
             e.Handled = true;
+            if (_dragged is not null && _dropIndex is { } index && DataContext is MainWindowViewModel vm)
+                vm.Sessions.MoveTab(_dragged, index);
+        }
         e.Pointer.Capture(null);
         EndDrag();
     }
@@ -65,5 +87,7 @@ public partial class TabStripView : UserControl
     {
         _dragged = null;
         _dragging = false;
+        _dropIndex = null;
+        TabDropLine.IsVisible = false;
     }
 }
