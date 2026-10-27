@@ -15,6 +15,8 @@ public sealed class FakeRdpSession : IRdpSession
 
     public List<(int Delta, bool Horizontal)> Wheel { get; } = [];
 
+    public List<(int Width, int Height)> Resizes { get; } = [];
+
     public bool Disposed { get; private set; }
 
     public event Action<RdpPointer?>? PointerChanged;
@@ -34,6 +36,8 @@ public sealed class FakeRdpSession : IRdpSession
     public void SendUnicode(char c) => Text.Add(c);
 
     public void SendWheel(int delta, bool horizontal, int x, int y) => Wheel.Add((delta, horizontal));
+
+    public void Resize(int width, int height) => Resizes.Add((width, height));
 
     public void Dispose() => Disposed = true;
 

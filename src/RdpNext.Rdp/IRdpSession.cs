@@ -56,6 +56,9 @@ public interface IRdpSession : IDisposable
 
     void SendKey(ushort code, bool extended, bool down);
 
+    // Sunucudan yeni çözünürlük ister (disp kanalı). Sunucu desteklemiyorsa görüntü aynı kalır.
+    void Resize(int width, int height);
+
     // Klavye düzeninden bağımsız karakter (UTF-16 birimi), basılıp bırakılır.
     void SendUnicode(char c);
 }

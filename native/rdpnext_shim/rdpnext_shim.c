@@ -7,6 +7,10 @@
 #include <freerdp/graphics.h>
 #include <freerdp/scancode.h>
 #include <freerdp/codec/color.h>
+#include <freerdp/event.h>
+#include <freerdp/client/disp.h>
+#include <freerdp/channels/disp.h>
+#include <string.h>
 #include <winpr/synch.h>
 
 typedef struct
@@ -20,7 +24,27 @@ typedef struct
 	rdpClientContext common;
 	rn_callbacks callbacks;
 	void* user;
+	DispClientContext* disp;
 } rnContext;
+
+/* disp kanalının bağlamı saklanır; diğer kanallar (rdpgfx vb.) FreeRDP'nin ortak işleyicisine gider. */
+static void rn_channel_connected(void* context, const ChannelConnectedEventArgs* e)
+{
+	rnContext* rc = (rnContext*)context;
+	if (strcmp(e->name, DISP_DVC_CHANNEL_NAME) == 0)
+		rc->disp = (DispClientContext*)e->pInterface;
+	else
+		freerdp_client_OnChannelConnectedEventHandler(context, e);
+}
+
+static void rn_channel_disconnected(void* context, const ChannelDisconnectedEventArgs* e)
+{
+	rnContext* rc = (rnContext*)context;
+	if (strcmp(e->name, DISP_DVC_CHANNEL_NAME) == 0)
+		rc->disp = NULL;
+	else
+		freerdp_client_OnChannelDisconnectedEventHandler(context, e);
+}
 
 static void rn_send_frame(rdpContext* context, int x, int y, int w, int h)
 {
@@ -112,7 +136,9 @@ static BOOL rn_pre_connect(freerdp* instance)
 #else
 	freerdp_settings_set_uint32(instance->context->settings, FreeRDP_OsMajorType, OSMAJORTYPE_MACINTOSH);
 #endif
-	return TRUE;
+	PubSub_SubscribeChannelConnected(instance->context->pubSub, rn_channel_connected);
+	PubSub_SubscribeChannelDisconnected(instance->context->pubSub, rn_channel_disconnected);
+	return freerdp_client_load_channels(instance);
 }
 
 static BOOL rn_post_connect(freerdp* instance)
@@ -202,6 +228,9 @@ uint32_t rn_connect(rdpContext* ctx, const rn_options* o)
 	freerdp_settings_set_uint32(s, FreeRDP_DesktopHeight, (UINT32)o->height);
 	freerdp_settings_set_uint32(s, FreeRDP_ColorDepth, 32);
 	freerdp_settings_set_bool(s, FreeRDP_SoftwareGdi, TRUE);
+	freerdp_settings_set_bool(s, FreeRDP_SupportDisplayControl, TRUE);
+	freerdp_settings_set_bool(s, FreeRDP_DynamicResolutionUpdate, TRUE);
+	freerdp_settings_set_bool(s, FreeRDP_SupportGraphicsPipeline, TRUE);
 	if (freerdp_connect(ctx->instance))
 		return 0;
 	uint32_t error = freerdp_get_last_error(ctx);
@@ -238,6 +267,20 @@ void rn_abort(rdpContext* ctx)
 void rn_mouse(rdpContext* ctx, uint16_t flags, uint16_t x, uint16_t y)
 {
 	freerdp_input_send_mouse_event(ctx->input, flags, x, y);
+}
+
+int rn_resize(rdpContext* ctx, int width, int height)
+{
+	rnContext* rc = (rnContext*)ctx;
+	if (!rc->disp)
+		return 0;
+	DISPLAY_CONTROL_MONITOR_LAYOUT layout = { 0 };
+	layout.Flags = DISPLAY_CONTROL_MONITOR_PRIMARY;
+	layout.Width = (UINT32)width;
+	layout.Height = (UINT32)height;
+	layout.DesktopScaleFactor = 100;
+	layout.DeviceScaleFactor = 100;
+	return rc->disp->SendMonitorLayout(rc->disp, 1, &layout) == CHANNEL_RC_OK;
 }
 
 void rn_key(rdpContext* ctx, uint16_t code, int extended, int down)

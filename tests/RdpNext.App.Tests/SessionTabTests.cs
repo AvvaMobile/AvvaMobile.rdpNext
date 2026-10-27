@@ -1,4 +1,5 @@
 using Avalonia.Headless.XUnit;
+using Microsoft.Extensions.Time.Testing;
 using Avalonia.Threading;
 using RdpNext.App.ViewModels;
 using RdpNext.Rdp;
@@ -8,9 +9,64 @@ namespace RdpNext.App.Tests;
 public class SessionTabTests
 {
     private readonly List<FakeRdpSession> _sessions = [];
+    private readonly FakeTimeProvider _time = new();
     private readonly MainWindowViewModel _vm;
 
-    public SessionTabTests() => _vm = TestWindows.ViewModel(sessions: _sessions);
+    public SessionTabTests() => _vm = TestWindows.ViewModel(sessions: _sessions, time: _time);
+
+    private SessionTabViewModel Connected(string name)
+    {
+        GiveUretimCredentials();
+        var tab = Connect(name);
+        _sessions[^1].RaiseConnected();
+        Dispatcher.UIThread.RunJobs();
+        return tab;
+    }
+
+    // Pencere boyutu değişirken sunucuya son değişiklikten 300 ms sonra tek istek gider.
+    [AvaloniaFact]
+    public void ResizeIsDebounced()
+    {
+        var tab = Connected("web-01");
+
+        tab.ViewSizeChanged(1000, 700);
+        _time.Advance(TimeSpan.FromMilliseconds(100));
+        tab.ViewSizeChanged(1100, 700);
+        _time.Advance(TimeSpan.FromMilliseconds(100));
+        tab.ViewSizeChanged(1200, 700);
+        _time.Advance(TimeSpan.FromMilliseconds(299));
+        Assert.Empty(_sessions[0].Resizes);
+
+        _time.Advance(TimeSpan.FromMilliseconds(1));
+        Assert.Equal([(1200, 700)], _sessions[0].Resizes);
+    }
+
+    // RDP: genişlik 200..8192 ve çift, yükseklik 200..8192.
+    [AvaloniaTheory]
+    [InlineData(1001, 150, 1000, 200)]
+    [InlineData(9000, 9000, 8192, 8192)]
+    [InlineData(0, 0, 200, 200)]
+    public void ResizeIsClampedAndEven(double width, double height, int expectedWidth, int expectedHeight)
+    {
+        var tab = Connected("web-01");
+
+        tab.ViewSizeChanged(width, height);
+        _time.Advance(TimeSpan.FromMilliseconds(300));
+
+        Assert.Equal([(expectedWidth, expectedHeight)], _sessions[0].Resizes);
+    }
+
+    [AvaloniaFact]
+    public void ResizeBeforeConnectedIsIgnored()
+    {
+        GiveUretimCredentials();
+        var tab = Connect("web-01");
+
+        tab.ViewSizeChanged(1000, 700);
+        _time.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.Empty(_sessions[0].Resizes);
+    }
 
     private ServerNodeViewModel Server(string name) => _vm.Tree.Node<ServerNodeViewModel>(
         _vm.Tree.Root.AllServers().First(s => s.Name == name).Id);

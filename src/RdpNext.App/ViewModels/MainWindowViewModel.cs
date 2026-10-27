@@ -13,9 +13,10 @@ namespace RdpNext.App.ViewModels;
 public sealed partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null, IFileDialogService? files = null, SettingsStore? settings = null,
-        Func<IRdpSession>? rdp = null)
+        Func<IRdpSession>? rdp = null, TimeProvider? time = null)
     {
         _rdp = rdp ?? (() => new RdpSession());
+        Sessions = new SessionsViewModel(time);
         Store = store;
         Settings = settings ?? new SettingsStore(SettingsStore.Beside(store.FilePath));
         Secrets = new GuardedSecretStore(secrets, message => Notice = message);
@@ -59,7 +60,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string? _notice;
 
-    public SessionsViewModel Sessions { get; } = new();
+    public SessionsViewModel Sessions { get; }
 
     [ObservableProperty]
     private bool _isSidebarVisible = true;

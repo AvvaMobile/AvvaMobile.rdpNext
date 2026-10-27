@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace RdpNext.App.ViewModels;
 
-public sealed partial class SessionsViewModel : ObservableObject
+public sealed partial class SessionsViewModel(TimeProvider? time = null) : ObservableObject
 {
     public ObservableCollection<TabViewModel> Tabs { get; } = [];
 
@@ -15,7 +15,7 @@ public sealed partial class SessionsViewModel : ObservableObject
         var tab = Find<SessionTabViewModel>(t => t.Server == server);
         if (tab is null)
         {
-            tab = new SessionTabViewModel(server);
+            tab = new SessionTabViewModel(server, time);
             Tabs.Add(tab);
         }
         Selected = tab;
