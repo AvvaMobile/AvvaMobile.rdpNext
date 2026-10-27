@@ -14,9 +14,9 @@ public class ReviewFixTests
 
     private sealed class DeniedKeychain : ISecretStore
     {
-        public string? GetPassword(Guid nodeId) => throw new InvalidOperationException("Anahtar zinciri hatası: -128");
-        public void SetPassword(Guid nodeId, string password) => throw new InvalidOperationException("Anahtar zinciri hatası: -128");
-        public void DeletePassword(Guid nodeId) => throw new InvalidOperationException("Anahtar zinciri hatası: -128");
+        public string? GetPassword(Guid nodeId) => throw new InvalidOperationException("Keychain error: -128");
+        public void SetPassword(Guid nodeId, string password) => throw new InvalidOperationException("Keychain error: -128");
+        public void DeletePassword(Guid nodeId) => throw new InvalidOperationException("Keychain error: -128");
     }
 
     private sealed class CountingStore : ISecretStore
@@ -109,7 +109,7 @@ public class ReviewFixTests
         editor.SaveCommand.Execute(null);
 
         Assert.Contains(Reload().AllServers(), s => s.Name == "web-01b");
-        Assert.StartsWith("Anahtar zincirine erişilemedi", vm.Notice);
+        Assert.StartsWith("Could not access the keychain", vm.Notice);
     }
 
     [Fact]

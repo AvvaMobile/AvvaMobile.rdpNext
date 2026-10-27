@@ -185,7 +185,7 @@ public class SettingsTests
         window.Named<Button>("SettingsButton").Command!.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Equal("Ayarlar", vm.Sessions.Selected?.Title);
+        Assert.Equal("Settings", vm.Sessions.Selected?.Title);
         var view = window.GetVisualDescendants().OfType<Views.SettingsView>().Single();
         var settings = (SettingsViewModel)vm.Sessions.Selected!;
 

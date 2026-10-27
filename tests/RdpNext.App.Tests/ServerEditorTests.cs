@@ -29,7 +29,7 @@ public class ServerEditorTests
     public void NewServerSavesToTreeFileAndKeychain()
     {
         var editor = NewIn("Üretim");
-        Assert.Equal("Yeni sunucu", editor.Title);
+        Assert.Equal("New server", editor.Title);
         editor.Name = "web-02";
         editor.Host = "10.0.1.50";
         editor.Password = "pw";
@@ -41,7 +41,7 @@ public class ServerEditorTests
         Assert.Equal("pw", _vm.Secrets.GetPassword(saved.Id));
         Assert.DoesNotContain("\"pw\"", File.ReadAllText(_path));
         Assert.Contains(Folder("Üretim").Children, n => n.Name == "web-02");
-        Assert.Equal("web-02 ayarları", editor.Title);
+        Assert.Equal("web-02 settings", editor.Title);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class ServerEditorTests
     {
         _vm.EditServer(Server("web-01"));
         var editor = Assert.IsType<ServerEditorViewModel>(_vm.Sessions.Selected);
-        Assert.Equal("web-01 ayarları", editor.Title);
+        Assert.Equal("web-01 settings", editor.Title);
         editor.Name = "web-01-yeni";
         editor.Folder = editor.Folders.First(f => f.Group?.Name == "Test");
 
@@ -134,9 +134,9 @@ public class ServerEditorTests
 
         var editor = NewIn("Üretim");
 
-        Assert.Equal(("admin", "Üretim'den"), (editor.UsernameHint, editor.UsernameSource));
-        Assert.Equal(("AVVA", "Üretim'den"), (editor.DomainHint, editor.DomainSource));
-        Assert.Equal(("••••••", "Üretim'den"), (editor.PasswordHint, editor.PasswordSource));
+        Assert.Equal(("admin", "from Üretim"), (editor.UsernameHint, editor.UsernameSource));
+        Assert.Equal(("AVVA", "from Üretim"), (editor.DomainHint, editor.DomainSource));
+        Assert.Equal(("••••••", "from Üretim"), (editor.PasswordHint, editor.PasswordSource));
 
         editor.Folder = editor.Folders.First(f => f.Group?.Name == "Test");
         Assert.Null(editor.UsernameHint);
@@ -151,7 +151,7 @@ public class ServerEditorTests
         _vm.EditServer(Server("web-01"));
 
         Assert.Equal(2, _vm.Sessions.Tabs.OfType<ServerEditorViewModel>().Count());
-        Assert.Equal("web-01 ayarları", _vm.Sessions.Selected?.Title);
+        Assert.Equal("web-01 settings", _vm.Sessions.Selected?.Title);
     }
 
     [Fact]
@@ -174,20 +174,11 @@ public class ServerEditorTests
         _vm.NewServer();
         var editor = Assert.IsType<ServerEditorViewModel>(_vm.Sessions.Selected);
         Assert.Null(editor.Folder.Group);
-        Assert.Equal("En üstte", editor.Folder.Label);
+        Assert.Equal("Top level", editor.Folder.Label);
         editor.Host = "10.9.9.9";
 
         editor.SaveCommand.Execute(null);
 
         Assert.Contains(Reload().Children, n => n is Server { Host: "10.9.9.9" });
     }
-
-    [Theory]
-    [InlineData("Üretim", "Üretim'den")]
-    [InlineData("Test", "Test'ten")]
-    [InlineData("Muhasebe", "Muhasebe'den")]
-    [InlineData("Ankara", "Ankara'dan")]
-    [InlineData("Satış", "Satış'tan")]
-    public void AblativeFollowsVowelHarmony(string name, string expected) =>
-        Assert.Equal(expected, TurkishText.From(name));
 }

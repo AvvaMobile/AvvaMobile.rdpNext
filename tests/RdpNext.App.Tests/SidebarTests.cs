@@ -62,9 +62,9 @@ public class SidebarTests
         var server = window.Named<Button>("AddServerButton");
         var folder = window.Named<Button>("AddFolderButton");
 
-        Assert.Equal(("Sunucu ekle", "Klasör ekle"), (Strings.Strings.AddServer, Strings.Strings.AddFolder));
-        Assert.Contains(server.Texts(), t => t.Text == "Sunucu ekle");
-        Assert.Contains(folder.Texts(), t => t.Text == "Klasör ekle");
+        Assert.Equal(("Add server", "Add folder"), (Strings.Strings.AddServer, Strings.Strings.AddFolder));
+        Assert.Contains(server.Texts(), t => t.Text == "Add server");
+        Assert.Contains(folder.Texts(), t => t.Text == "Add folder");
         Assert.NotEmpty(server.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
         Assert.NotEmpty(folder.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
         Assert.Equal(server.Bounds.Y, folder.Bounds.Y);
@@ -77,11 +77,11 @@ public class SidebarTests
     {
         var (broken, brokenVm) = TestWindows.Open(TestWindows.SampleFile("{ yarım"));
         Assert.NotNull(brokenVm.Notice);
-        Assert.Contains(broken.Texts(), t => t.Text == brokenVm.Notice && t.Text!.StartsWith("Bağlantı dosyası okunamadı"));
+        Assert.Contains(broken.Texts(), t => t.Text == brokenVm.Notice && t.Text!.StartsWith("The connections file could not be read"));
 
         var (normal, normalVm) = TestWindows.Open();
         Assert.Null(normalVm.Notice);
-        Assert.DoesNotContain(normal.Texts(), t => t.Text?.StartsWith("Bağlantı dosyası okunamadı") == true);
+        Assert.DoesNotContain(normal.Texts(), t => t.Text?.StartsWith("The connections file could not be read") == true);
     }
 
     [AvaloniaFact]

@@ -18,7 +18,7 @@ public sealed class WindowsCredentialSecretStore(string prefix = "rdpNext:") : I
         {
             if (Marshal.GetLastWin32Error() == NotFound)
                 return null;
-            throw new InvalidOperationException($"Kimlik bilgisi okunamadı: {Marshal.GetLastWin32Error()}");
+            throw new InvalidOperationException($"Could not read credential: {Marshal.GetLastWin32Error()}");
         }
         try
         {
@@ -52,7 +52,7 @@ public sealed class WindowsCredentialSecretStore(string prefix = "rdpNext:") : I
                 UserName = "rdpNext",
             };
             if (!CredWriteW(ref credential, 0))
-                throw new InvalidOperationException($"Kimlik bilgisi yazılamadı: {Marshal.GetLastWin32Error()}");
+                throw new InvalidOperationException($"Could not write credential: {Marshal.GetLastWin32Error()}");
         }
         finally
         {

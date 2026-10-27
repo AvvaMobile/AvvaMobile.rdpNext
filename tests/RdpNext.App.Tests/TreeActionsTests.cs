@@ -48,7 +48,7 @@ public class TreeActionsTests
 
         await vm.DeleteNodeCommand.ExecuteAsync(node);
 
-        Assert.Equal("web-01 silinsin mi?", confirm.LastMessage);
+        Assert.Equal("Delete web-01?", confirm.LastMessage);
         Assert.DoesNotContain(Reload().AllServers(), s => s.Name == "web-01");
         Assert.DoesNotContain(Folder(vm, "Üretim").Children, n => n.Name == "web-01");
         Assert.Null(vm.Secrets.GetPassword(node.Server.Id));
@@ -90,7 +90,7 @@ public class TreeActionsTests
 
         await vm.DeleteNodeCommand.ExecuteAsync(folder);
 
-        Assert.Equal("Üretim ve içindeki 3 sunucu silinsin mi?", confirm.LastMessage);
+        Assert.Equal("Delete Üretim and the 3 servers in it?", confirm.LastMessage);
         Assert.DoesNotContain(Reload().Children, n => n.Name == "Üretim");
         Assert.Null(vm.Secrets.GetPassword(web.Server.Id));
         Assert.Null(vm.Secrets.GetPassword(folder.Group.Id));
@@ -106,11 +106,11 @@ public class TreeActionsTests
 
         vm.CopyServerCommand.Execute(web);
 
-        var copy = Reload().AllServers().Single(s => s.Name == "web-01 kopya");
+        var copy = Reload().AllServers().Single(s => s.Name == "web-01 copy");
         Assert.Equal(("10.0.1.11", "Üretim"), (copy.Host, copy.Parent!.Name));
         Assert.Equal("pw", vm.Secrets.GetPassword(copy.Id));
         var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
-        Assert.Equal("web-01 kopya ayarları", editor.Title);
+        Assert.Equal("web-01 copy settings", editor.Title);
     }
 
     [Fact]
@@ -160,13 +160,13 @@ public class TreeActionsTests
         var row = window.Text("web-01").GetVisualAncestors().OfType<Control>().First(c => c.ContextMenu is not null);
         var items = row.ContextMenu!.Items.OfType<MenuItem>().ToList();
 
-        Assert.Equal(["Bağlan", "Düzenle", "Kopyala", "Sil"], items.Select(i => i.Header as string));
+        Assert.Equal(["Connect", "Edit", "Duplicate", "Delete"], items.Select(i => i.Header as string));
         var edit = items[1];
         row.ContextMenu.Open(row);
         edit.Command!.Execute(edit.CommandParameter);
         row.ContextMenu.Close();
 
-        Assert.Equal("web-01 ayarları", vm.Sessions.Selected?.Title);
+        Assert.Equal("web-01 settings", vm.Sessions.Selected?.Title);
     }
 
     [AvaloniaFact]
@@ -175,7 +175,7 @@ public class TreeActionsTests
         var (window, _) = TestWindows.Open(_path);
         var row = window.Text("Üretim").GetVisualAncestors().OfType<Control>().First(c => c.ContextMenu is not null);
 
-        Assert.Equal(["Sunucu ekle", "Düzenle", "Sil"],
+        Assert.Equal(["Add server", "Edit", "Delete"],
             row.ContextMenu!.Items.OfType<MenuItem>().Select(i => i.Header as string));
     }
 

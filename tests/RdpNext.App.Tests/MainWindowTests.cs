@@ -29,7 +29,7 @@ public class MainWindowTests
 
         Assert.Null(NativeMenu.GetMenu(window));
         var items = NativeMenu.GetMenu(Application.Current!)!.Items.OfType<NativeMenuItem>().Where(i => i is not NativeMenuItemSeparator).ToList();
-        Assert.Equal(["rdpNext Hakkında", "Sunucu ekle", "Klasör ekle", "Ayarlar"], items.Select(i => i.Header));
+        Assert.Equal(["About rdpNext", "Add server", "Add folder", "Settings"], items.Select(i => i.Header));
         Assert.Equal([vm.NewServerCommand, vm.NewFolderCommand, vm.OpenSettingsCommand], items.Skip(1).Select(i => i.Command));
         Assert.NotNull(items[0].Command);
     }
@@ -41,7 +41,7 @@ public class MainWindowTests
         about.Show();
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Equal(["rdpNext", "Sürüm 1.0.0", "© 2026 Avva Mobile Enterprise Solutions"], about.Texts().Select(t => t.Text));
+        Assert.Equal(["rdpNext", "Version 1.0.0", "© 2026 Avva Mobile Enterprise Solutions"], about.Texts().Select(t => t.Text));
         Assert.NotNull(about.Named<Image>("AppIcon").Source);
     }
 
@@ -196,10 +196,10 @@ public class MainWindowTests
 
         var labels = editor.Texts().Where(t => t.Classes.Contains("label")).Select(t => t.Text).ToList();
 
-        Assert.Equal(["Görünen ad", "Klasör", "Renk", "Host/IP", "Port", "Kullanıcı", "Şifre", "Domain"], labels);
-        Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Bağlan");
-        Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Kaydet");
-        Assert.Contains(window.Named<Control>("TabStrip").Texts(), t => t.Text == "Yeni sunucu");
+        Assert.Equal(["Display name", "Folder", "Color", "Host/IP", "Port", "User", "Password", "Domain"], labels);
+        Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Connect");
+        Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Save");
+        Assert.Contains(window.Named<Control>("TabStrip").Texts(), t => t.Text == "New server");
     }
 
     [AvaloniaFact]
