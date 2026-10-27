@@ -205,6 +205,15 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
+    public void AppNameIsRdpNext()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.Equal("rdpNext", Application.Current!.Name);
+        Assert.Equal("rdpNext", window.Title);
+    }
+
+    [AvaloniaFact]
     public void SidebarButtonHidesAndShowsSidebar()
     {
         var (window, _) = TestWindows.Open();
