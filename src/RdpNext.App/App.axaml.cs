@@ -17,6 +17,7 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var settings = new SettingsStore(SettingsStore.DefaultPath());
+            Themes.Apply(settings.Load().Theme);
             var vm = new MainWindowViewModel(new ConnectionStore(ConnectionStore.DefaultPath()), SecretStores.ForCurrentPlatform(), settings: settings);
             desktop.MainWindow = new MainWindow { DataContext = vm };
             if (OperatingSystem.IsMacOS())

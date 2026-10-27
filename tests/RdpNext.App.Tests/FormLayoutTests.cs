@@ -17,12 +17,17 @@ public class FormLayoutTests
         Dispatcher.UIThread.RunJobs();
         var folderName = window.Named<TextBox>("FolderNameBox").Bounds.Width;
 
+        vm.OpenSettingsCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var theme = window.Named<ComboBox>("ThemeBox").Bounds.Width;
+
         vm.NewServer();
         Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected).ShowAdvanced = true;
         Dispatcher.UIThread.RunJobs();
         var screen = window.Named<ComboBox>("ScreenBox").Bounds.Width;
 
         Assert.True(folderName > 300, $"{folderName}");
+        Assert.Equal(folderName, theme, 0.5);
         Assert.Equal(folderName, screen, 0.5);
     }
 }
