@@ -43,6 +43,24 @@ public static class TestWindows
         return (window, vm);
     }
 
+    // Klasörler açılışta kapalı gelir; sunucu satırlarıyla çalışan testler hepsini açar.
+    public static (MainWindow Window, MainWindowViewModel Vm) OpenExpanded(string? path = null)
+    {
+        var (window, vm) = Open(path);
+        Expand(vm.Tree.Roots);
+        Dispatcher.UIThread.RunJobs();
+        return (window, vm);
+    }
+
+    private static void Expand(IEnumerable<TreeNodeViewModel> nodes)
+    {
+        foreach (var group in nodes.OfType<GroupNodeViewModel>())
+        {
+            group.IsExpanded = true;
+            Expand(group.Children);
+        }
+    }
+
     public static IEnumerable<TextBlock> Texts(this Visual root) =>
         root.GetVisualDescendants().OfType<TextBlock>().Where(t => t.IsEffectivelyVisible);
 

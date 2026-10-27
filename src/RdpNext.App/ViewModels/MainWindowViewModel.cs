@@ -17,6 +17,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Confirm = confirm ?? new DialogConfirmService();
         Files = files ?? new FileDialogService();
         var loaded = store.Load();
+        // Uygulama açılınca klasörler kapalı gelir; oturum içinde açılıp kapananlar arama sonrası korunur.
+        Collapse(loaded.Root);
         Tree = new TreeViewModel(loaded.Root);
         _notice = loaded.CorruptBackupPath is { } backup
             ? string.Format(Strings.Strings.CorruptFileNotice, backup)
@@ -24,6 +26,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public ConnectionStore Store { get; }
+
+    private static void Collapse(Group group)
+    {
+        foreach (var child in group.Children.OfType<Group>())
+        {
+            child.IsExpanded = false;
+            Collapse(child);
+        }
+    }
 
     public SettingsStore Settings { get; }
 

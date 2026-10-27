@@ -156,7 +156,7 @@ public class TreeActionsTests
     [AvaloniaFact]
     public void ServerRowMenuHasApprovedItemsAndEditWorks()
     {
-        var (window, vm) = TestWindows.Open(_path);
+        var (window, vm) = TestWindows.OpenExpanded(_path);
         var row = window.Text("web-01").GetVisualAncestors().OfType<Control>().First(c => c.ContextMenu is not null);
         var items = row.ContextMenu!.Items.OfType<MenuItem>().ToList();
 
@@ -182,7 +182,7 @@ public class TreeActionsTests
     [AvaloniaFact]
     public void ClickingTreeRowSelectsIt()
     {
-        var (window, vm) = TestWindows.Open(_path);
+        var (window, vm) = TestWindows.OpenExpanded(_path);
         var row = window.Text("sql-01");
         var point = row.TranslatePoint(new Avalonia.Point(5, 5), window)!.Value;
 

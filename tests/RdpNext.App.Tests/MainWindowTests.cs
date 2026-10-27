@@ -56,7 +56,7 @@ public class MainWindowTests
     [AvaloniaFact]
     public void DoubleClickOnServerOpensTab()
     {
-        var (window, vm) = TestWindows.Open();
+        var (window, vm) = TestWindows.OpenExpanded();
         var row = window.Text("web-01");
         var point = row.TranslatePoint(new Point(5, 5), window)!.Value;
 
