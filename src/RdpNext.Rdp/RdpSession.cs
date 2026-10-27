@@ -29,7 +29,7 @@ public sealed unsafe class RdpSession : IRdpSession
 
     public event Action<RdpPointer?>? PointerChanged;
 
-    public event Action<string>? RemoteClipboardText;
+    public event Action<string?>? RemoteClipboardText;
 
     // C katmanı ve FreeRDP bu makinede yüklenebiliyor mu.
     public static bool IsAvailable { get; } =
@@ -217,8 +217,7 @@ public sealed unsafe class RdpSession : IRdpSession
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     private static void OnClipboardText(IntPtr user, IntPtr text)
     {
-        if (Marshal.PtrToStringUTF8(text) is { } value)
-            From(user)?.RemoteClipboardText?.Invoke(value);
+        From(user)?.RemoteClipboardText?.Invoke(Marshal.PtrToStringUTF8(text));
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
