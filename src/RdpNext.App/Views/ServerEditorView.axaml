@@ -39,7 +39,7 @@
                   <DataTemplate DataType="m:ServerIcon">
                     <Border Width="30" Height="30" CornerRadius="8"
                             Background="{Binding $parent[v:ServerEditorView].((vm:ServerEditorViewModel)DataContext).Color, Converter={x:Static v:Converters.ServerColorBrush}}">
-                      <Path Data="{Binding Converter={x:Static v:Converters.ServerIconGeometry}}" Fill="White" Width="15" Height="15" Stretch="Uniform" />
+                      <v:ServerIconView Icon="{Binding}" Width="15" Height="15" />
                     </Border>
                   </DataTemplate>
                 </ListBox.ItemTemplate>
