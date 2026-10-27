@@ -71,8 +71,6 @@
   <Style Selector="StackPanel.form">
     <Setter Property="Spacing" Value="18" />
     <Setter Property="Margin" Value="28,22" />
-    <Setter Property="MaxWidth" Value="820" />
-    <Setter Property="HorizontalAlignment" Value="Left" />
   </Style>
   <Style Selector="TextBlock.label">
     <Setter Property="FontSize" Value="{StaticResource SecondaryFontSize}" />

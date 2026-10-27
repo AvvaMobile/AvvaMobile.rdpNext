@@ -8,6 +8,11 @@
   <TabControl Classes="editor">
     <TabItem Header="{x:Static s:Strings.General}">
       <ScrollViewer>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1000*" MaxWidth="876" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
         <StackPanel Classes="form">
           <Grid ColumnDefinitions="*,12,*">
             <StackPanel>
@@ -54,6 +59,7 @@
                     Content="{x:Static s:Strings.Delete}" Command="{Binding DeleteCommand}" IsVisible="{Binding !IsNew}" />
           </Grid>
         </StackPanel>
+        </Grid>
       </ScrollViewer>
     </TabItem>
   </TabControl>
