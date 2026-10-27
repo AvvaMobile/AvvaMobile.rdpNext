@@ -57,7 +57,7 @@ Onaylı çizim: `docs/tasarim/gorsel-stil.png` (kaynak HTML: `docs/tasarim/gorse
 2. Sol panel (~310 px):
    1. En üstte "+ Sunucu ekle" butonu (vurgu rengi, tam genişlik).
    2. Altında arama kutusu. Yazdıkça ağaç ad ve adrese göre süzülür; Enter ilk sonuca bağlanır.
-   3. Gruplu ağaç. Grup satırı: aç/kapa oku, klasör kutucuğu, grup adı, sağda sunucu sayısı. Sunucu satırı: renkli ikon kutucuğu, ad, altında adres; bağlı olanın sağında yeşil nokta. Seçili satır yuvarlak köşeli zeminle vurgulanır.
+   3. Gruplu ağaç. Grup satırı: aç/kapa oku, klasör kutucuğu, grup adı (sunucu sayısı gösterilmez, Murat kaldırttı). Sunucu satırı: renkli ikon kutucuğu, ad, altında adres; bağlı olanın sağında yeşil nokta. Seçili satır yuvarlak köşeli zeminle vurgulanır.
    4. Gruplar iç içe olabilir (mRemoteNG'de klasörler iç içe; içe aktarma bunu korumalı).
 3. Sağ alan: seçili sekmenin RDP oturumu, yuvarlak köşeli bir alan içinde. Hiç sekme yokken bu alan boş durur (yazı yok; uygulamanın simgesi soluk durabilir).
 4. Görsel dil: Termius tadı. Yuvarlak köşeler (10-12 px), renkli ikon kutucukları, hap şeklinde butonlar, ferah boşluklar, Inter ya da sistem yazı tipi.

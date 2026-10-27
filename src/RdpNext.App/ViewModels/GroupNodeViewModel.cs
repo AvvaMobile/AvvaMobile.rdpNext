@@ -9,15 +9,12 @@ public sealed partial class GroupNodeViewModel : TreeNodeViewModel
     {
         Group = group;
         Children = new(group.Children.Select(Create));
-        ServerCount = group.AllServers().Count();
         IsExpanded = group.IsExpanded;
     }
 
     public Group Group { get; }
 
     public ObservableCollection<TreeNodeViewModel> Children { get; }
-
-    public int ServerCount { get; }
 
     private bool _showingFilter;
 
