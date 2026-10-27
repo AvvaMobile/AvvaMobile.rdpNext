@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; padding:28px; background:#d9dce4; font-family:Inter,-apple-system,"Segoe UI",sans-serif; font-size:15px; }
+  h2 { font-size:15px; font-weight:600; color:#333; margin:0 0 10px; }
+  .grid { display:grid; grid-template-columns:repeat(2, 560px); gap:28px; }
+  .th { --win:#eef0f5; --side:#f7f8fb; --card:#ffffff; --hover:#e6e9f1; --tx:#1b1e2b; --tx2:#6b7085; --line:#dfe2ea; --btn:#5b5bd6; --sess:#0f1424; }
+  .th.dark { --win:#151827; --side:#1a1d2e; --card:#252839; --hover:#2b2f43; --tx:#e8eaf2; --tx2:#8d92a8; --line:#262a3c; --btn:#6e6ade; }
+  .frame { background:var(--win); color:var(--tx); border-radius:14px; border:1px solid var(--line); overflow:hidden; height:340px; position:relative; }
+  .session { position:absolute; inset:10px; border-radius:12px; background:var(--sess); overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .desk { position:absolute; inset:0; background:radial-gradient(120% 90% at 30% 20%,#2a6fc9 0%,#123d78 45%,#0a2147 100%); }
+  .desk.dim { filter:grayscale(.6) brightness(.45); }
+  .dialog { position:relative; width:400px; background:var(--card); border-radius:14px; padding:22px; box-shadow:0 20px 50px rgba(0,0,0,.35); display:flex; flex-direction:column; gap:14px; }
+  .dialog b { font-size:17px; font-weight:600; }
+  .kv { display:grid; grid-template-columns:90px 1fr; gap:6px 10px; font-size:14px; }
+  .kv span { color:var(--tx2); } .mono { font-family:"SF Mono",Menlo,monospace; font-size:13px; word-break:break-all; }
+  label { display:block; font-size:14px; color:var(--tx2); margin-bottom:6px; }
+  .fld { background:var(--side); border:1px solid var(--line); border-radius:9px; padding:9px 12px; min-height:18px; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .chk { display:flex; align-items:center; gap:8px; } .chk i { width:16px; height:16px; border-radius:4px; background:var(--btn); display:block; }
+  .acts { display:flex; justify-content:flex-end; gap:10px; margin-top:4px; }
+  .b { padding:8px 18px; border-radius:8px; font-weight:500; font-size:13px; }
+  .b.p { background:var(--btn); color:#fff; } .b.s { background:var(--hover); color:var(--tx); }
+  .state { position:relative; display:flex; flex-direction:column; align-items:center; gap:14px; color:#e8eaf2; }
+  .spin { width:28px; height:28px; border-radius:50%; border:3px solid rgba(255,255,255,.2); border-top-color:#fff; }
+  .tree { padding:16px 12px; background:var(--side); height:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:4px; }
+  .row { display:flex; align-items:center; gap:12px; padding:8px 10px 8px 32px; border-radius:12px; }
+  .row .t2 { color:var(--tx2); font-size:14px; }
+  .tile { width:34px; height:34px; border-radius:10px; background:#2d6cdf; flex:none; }
+  .dot { width:8px; height:8px; border-radius:50%; margin-left:auto; }
+  .ring { width:10px; height:10px; border-radius:50%; margin-left:auto; border:2px solid rgba(47,191,113,.3); border-top-color:#2fbf71; box-sizing:border-box; }
+  .note { font-size:13px; color:var(--tx2); margin-left:auto; }
+</style></head><body>
+<div class="grid">
+  <script>
+    const panels = [
+      ['a. Sertifika sorusu', `<div class="session"><div class="desk dim"></div>
+        <div class="dialog"><b>Untrusted certificate</b>
+          <div class="kv"><span>Server</span><div>Web Server</div><span>Issued to</span><div>CN=ARSAVEV-WEB</div><span>Issued by</span><div>CN=ARSAVEV-WEB</div>
+          <span>Fingerprint</span><div class="mono">sha256 4F:1A:9C:...:7B:E2</div></div>
+          <div class="acts"><div class="b s">Cancel</div><div class="b p">Trust</div></div></div></div>`],
+      ['b. Kullanıcı adı ve şifre sorusu', `<div class="session"><div class="desk dim"></div>
+        <div class="dialog"><b>Sign in to Web Server</b>
+          <div class="two"><div><label>User</label><div class="fld">Administrator</div></div><div><label>Password</label><div class="fld">••••••••</div></div></div>
+          <div><label>Domain</label><div class="fld"></div></div>
+          <div class="chk"><i></i>Save</div>
+          <div class="acts"><div class="b s">Cancel</div><div class="b p">Connect</div></div></div></div>`],
+      ['c. Bağlanıyor', `<div class="session"><div class="state"><div class="spin"></div><div>Connecting to Web Server</div></div></div>`],
+      ['d. Bağlantı koptu', `<div class="session"><div class="desk dim"></div>
+        <div class="state"><div>Connection lost</div><div class="b p">Reconnect</div></div></div>`],
+      ['e. Ağaçta durum (bağlanıyor, bağlı, koptu)', `<div class="tree">
+        <div class="row"><div class="tile"></div><div><div>Web Server</div><div class="t2">141.98.205.90</div></div><div class="ring"></div></div>
+        <div class="row"><div class="tile" style="background:#12a594"></div><div><div>ZESWEBPROD</div><div class="t2">10.184.54.60</div></div><div class="dot" style="background:#2fbf71"></div></div>
+        <div class="row"><div class="tile" style="background:#e5673a"></div><div><div>Mail Server</div><div class="t2">10.0.1.20</div></div><div class="dot" style="background:#e5673a"></div></div>
+      </div>`],
+    ];
+    for (const [title, html] of panels)
+      for (const theme of ['dark', 'light'])
+        document.write(`<div><h2>${title} (${theme === 'dark' ? 'koyu' : 'açık'})</h2><div class="th ${theme} frame">${html}</div></div>`);
+  </script>
+</div>
+</body></html>
