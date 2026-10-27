@@ -28,7 +28,7 @@ Bu sürüm herkese açık repoda (`AvvaMobile/AvvaMobile.rdpNext`), MIT lisansl�
 
 ## Hedef olmayanlar (bu sürümde yok)
 
-1. SSH, VNC ya da RDP dışındaki protokoller.
+1. SSH, VNC ya da RDP dışındaki protokoller. SSH ilk sürümden sonra eklenecek; bu yüzden sunucu kaydı baştan bir protokol alanı taşır (şimdilik yalnız RDP).
 2. Bulut, hesap, ekip paylaşımı, yetki. Bunlar sonraki sürüm; ama veri modeli ileride buluta taşınmayı zorlaştırmamalı (bkz. "Sonraki sürüme hazırlık").
 3. RD Gateway, yazıcı yönlendirme, çoklu monitör, yerel diski sunucuya bağlama.
 4. Linux.

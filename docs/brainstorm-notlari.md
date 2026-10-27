@@ -25,6 +25,7 @@ Asıl dert: herkes bağlantılarını kendi PC'sinde tutuyor, PC giderse hepsi k
 13. Windows dağıtımı: ilk sürüm imzasız çıkar. Kod imzalama sertifikası sonra alınacak (aday: Certum bulut imza, ~108 $/yıl, teyit edilmedi; Azure Artifact Signing Türkiye'ye muhtemelen kapalı).
 14. Lisans ve ürün: bu ilk sürüm herkese açık repoda, MIT lisanslı "Community Edition" olarak tamamlanıp verilir. Bulut sürümü sonra ayrı ve ücretli satılır. (Repo bir ara private yapıldı, aynı gün geri public yapıldı; LICENSE yerinde.)
 15. Güncelleme: uygulama açılışta bu reponun GitHub sürümlerine bakar; yeni sürüm varsa "Güncelle" gösterir, basınca indirip kurar (indirip kurma kısmı Claude önerisi).
+16. SSH de eklenecek ama ilk sürümde şart değil; veri yapısı baştan protokol alanıyla kurulur.
 
 ## Sonraki sürüm (ilk sürümde yok)
 
