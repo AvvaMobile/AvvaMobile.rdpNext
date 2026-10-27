@@ -21,8 +21,6 @@ public class SettingsTests
             Asked.Add(message);
             return Task.FromResult(sure);
         }
-
-        public Task<string?> AskTextAsync(string message, string confirmText) => Task.FromResult<string?>(null);
     }
 
     private sealed class FakeFiles(string? path) : IFileDialogService

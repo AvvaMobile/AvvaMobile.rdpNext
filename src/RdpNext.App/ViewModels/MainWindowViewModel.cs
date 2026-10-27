@@ -64,16 +64,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Sessions.Find<FolderEditorViewModel>(e => e.Existing == node.Group)
         ?? new FolderEditorViewModel(this, node.Group, null));
 
-    // Yeni klasörde yalnız ad sorulur; klasörler hep en üste eklenir, iç içe klasör yok.
+    // Yeni klasör, sunucu gibi sekmede açılır; klasörler hep en üste eklenir, iç içe klasör yok.
     [RelayCommand]
-    private async Task NewFolder()
-    {
-        var name = await Confirm.AskTextAsync(Strings.Strings.FolderNamePrompt, Strings.Strings.Add);
-        if (string.IsNullOrWhiteSpace(name))
-            return;
-        Tree.AddGroup(new Group { Name = name.Trim() }, null);
-        Persist();
-    }
+    private void NewFolder() => Sessions.OpenTab(new FolderEditorViewModel(this, null, null));
 
     [RelayCommand]
     private void OpenSettings() => Sessions.OpenTab(Sessions.Find<SettingsViewModel>(_ => true) ?? new SettingsViewModel(this));
