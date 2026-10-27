@@ -30,12 +30,18 @@ public sealed class Group : Node
         }
     }
 
-    public void Add(Node child)
+    public void Add(Node child) => Insert(child, null);
+
+    // Verilen kardeşin önüne koyar; kardeş yoksa (null) sona.
+    public void Insert(Node child, Node? before)
     {
         if (child is Group group && IsInside(group))
             throw new InvalidOperationException("Klasör kendi içine taşınamaz.");
+        if (before == child)
+            return;
         child.Parent?.Remove(child);
-        _children.Add(child);
+        var index = before is null ? -1 : _children.IndexOf(before);
+        _children.Insert(index < 0 ? _children.Count : index, child);
         child.Parent = this;
     }
 
