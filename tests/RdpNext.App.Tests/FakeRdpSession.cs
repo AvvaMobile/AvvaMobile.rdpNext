@@ -21,6 +21,8 @@ public sealed class FakeRdpSession : IRdpSession
 
     public bool Disposed { get; private set; }
 
+    public Func<RdpCertificate, Task<bool>>? VerifyCertificate { get; set; }
+
     public event Action<string>? RemoteClipboardText;
 
     public event Action<RdpPointer?>? PointerChanged;

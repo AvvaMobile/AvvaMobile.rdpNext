@@ -14,6 +14,9 @@ public enum RdpEndReason
     ConnectFailed,
 }
 
+// Doğrulanamayan sunucu sertifikası. Changed: daha önce başka bir sertifika görülmüştü.
+public sealed record RdpCertificate(string Subject, string Issuer, string Fingerprint, bool Changed);
+
 // Sunucunun imleç şekli, BGRA32. Width 0 ise imleç gizli.
 public sealed record RdpPointer(byte[] Bgra, int Width, int Height, int HotX, int HotY)
 {
@@ -48,6 +51,9 @@ public interface IRdpSession : IDisposable
 
     // null: sistemin varsayılan oku.
     event Action<RdpPointer?>? PointerChanged;
+
+    // Sertifika doğrulanamazsa oturum iş parçacığından çağrılır ve cevap beklenir; null ise reddedilir.
+    Func<RdpCertificate, Task<bool>>? VerifyCertificate { get; set; }
 
     // Hemen döner; bağlanma arka planda sürer.
     void Start(RdpConnectOptions options);

@@ -21,4 +21,9 @@ public class ServerCopyTests
             ("web-01 kopya", "10.0.1.11", 3390, "ali", "AVVA", ServerColor.Teal, ScreenMode.FullScreen, ServerIcon.Linux, Protocol.Rdp),
             (copy.Name, copy.Host, copy.Port, copy.Username, copy.Domain, copy.Color, copy.Screen, copy.Icon, copy.Protocol));
     }
+
+    // Kopya başka bir makineye işaret edebilir; güvenilen sertifika kopyalanmaz.
+    [Fact]
+    public void CopyDoesNotCopyFingerprint() =>
+        Assert.Null(new Server { CertificateFingerprint = "sha256 AA" }.CopyWithNewId("x").CertificateFingerprint);
 }

@@ -18,7 +18,7 @@ typedef struct
 {
 	/* Değişen dikdörtgen; buf yalnız çağrı süresince geçerli, BGRA32. */
 	void (*frame)(void* user, const uint8_t* buf, int width, int height, int stride, int x, int y, int w, int h);
-	/* 1 kabul, 0 ret. NULL ise bu oturum için kabul edilir. */
+	/* 1 kabul (yalnız bu oturum), 0 ret. NULL ise bu oturum için kabul edilir. */
 	int (*verify_certificate)(void* user, const char* subject, const char* issuer, const char* fingerprint, int changed);
 	/* bgra NULL ise imleç gizli. */
 	void (*pointer)(void* user, const uint8_t* bgra, int width, int height, int hot_x, int hot_y);
