@@ -22,10 +22,30 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
         <StackPanel Classes="form">
-          <StackPanel>
-            <TextBlock Classes="label" Text="{x:Static s:Strings.DisplayName}" />
-            <TextBox Classes="field" Text="{Binding Name}" PlaceholderText="{Binding Host}" />
-          </StackPanel>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.DisplayName}" />
+              <TextBox Classes="field" Text="{Binding Name}" PlaceholderText="{Binding Host}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Icon}" />
+              <ListBox x:Name="IconBox" Classes="swatches" ItemsSource="{Binding Icons}" SelectedItem="{Binding Icon}">
+                <ListBox.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                  </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                  <DataTemplate DataType="m:ServerIcon">
+                    <Border Width="30" Height="30" CornerRadius="8"
+                            Background="{Binding $parent[v:ServerEditorView].((vm:ServerEditorViewModel)DataContext).Color, Converter={x:Static v:Converters.ServerColorBrush}}">
+                      <Path Data="{Binding Converter={x:Static v:Converters.ServerIconGeometry}}" Fill="White" Width="15" Height="15" Stretch="Uniform" />
+                    </Border>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+          </Grid>
           <Grid ColumnDefinitions="*,12,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Folder}" />

@@ -11,6 +11,8 @@ public abstract class TabViewModel : ObservableObject
     // Oturum sekmesinde sunucunun rengi; düzenleme sekmesinde null (dişli ikonu).
     public virtual ServerColor? Color => null;
 
+    public virtual ServerIcon Icon => ServerIcon.Windows;
+
     public bool IsEditor => Color is null;
 
     public virtual void OnClosed()

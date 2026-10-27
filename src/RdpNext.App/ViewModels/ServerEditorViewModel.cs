@@ -25,6 +25,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             _domain = existing.Domain ?? "";
             _password = _savedPassword = owner.Secrets.GetPassword(existing.Id) ?? "";
             _color = existing.Color;
+            _icon = existing.Icon;
             _screen = existing.Screen;
             folder = existing.Parent;
         }
@@ -47,6 +48,8 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     private IReadOnlyList<FolderOption> _folders;
 
     public IReadOnlyList<ServerColor> Colors { get; } = Enum.GetValues<ServerColor>();
+
+    public IReadOnlyList<ServerIcon> Icons { get; } = Enum.GetValues<ServerIcon>();
 
     [ObservableProperty]
     private string _name = "";
@@ -90,6 +93,9 @@ public sealed partial class ServerEditorViewModel : TabViewModel
 
     [ObservableProperty]
     private ServerColor _color = ServerColor.Blue;
+
+    [ObservableProperty]
+    private ServerIcon _icon = ServerIcon.Windows;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ScreenIndex))]
@@ -156,6 +162,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         server.Username = Blank(Username);
         server.Domain = Blank(Domain);
         server.Color = Color;
+        server.Icon = Icon;
         server.Screen = Screen;
 
         ServerNodeViewModel node;

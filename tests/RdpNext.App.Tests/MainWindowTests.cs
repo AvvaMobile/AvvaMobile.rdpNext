@@ -186,6 +186,26 @@ public class MainWindowTests
         Assert.Equal(WindowState.Maximized, window.WindowState);
     }
 
+    // Sunucunun ikonu kenar çubuğunda ve sekmede aynı.
+    [AvaloniaFact]
+    public void LinuxIconShowsInSidebarAndTab()
+    {
+        var (window, vm) = TestWindows.OpenExpanded(TestWindows.SampleFile());
+        var web = vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == "web-01").Id);
+        vm.EditCommand.Execute(web);
+        var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
+        editor.Icon = ServerIcon.Linux;
+        editor.SaveCommand.Execute(null);
+        vm.ConnectCommand.Execute(web);
+        Dispatcher.UIThread.RunJobs();
+
+        var linux = Application.Current!.FindResource("LinuxLogo");
+        Assert.NotNull(linux);
+        bool Shows(string name) => window.Named<Control>(name).GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Any(p => p.Data == linux);
+        Assert.True(Shows("Tree"));
+        Assert.True(Shows("TabStrip"));
+    }
+
     [AvaloniaFact]
     public void EditorShowsFieldsInApprovedOrder()
     {
@@ -196,7 +216,7 @@ public class MainWindowTests
 
         var labels = editor.Texts().Where(t => t.Classes.Contains("label")).Select(t => t.Text).ToList();
 
-        Assert.Equal(["Display name", "Folder", "Color", "Host/IP", "Port", "User", "Password", "Domain"], labels);
+        Assert.Equal(["Display name", "Icon", "Folder", "Color", "Host/IP", "Port", "User", "Password", "Domain"], labels);
         Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Connect");
         Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Save");
         Assert.Contains(window.Named<Control>("TabStrip").Texts(), t => t.Text == "New server");

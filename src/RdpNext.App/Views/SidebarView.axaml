@@ -93,7 +93,7 @@
               </ContextMenu>
             </Grid.ContextMenu>
             <Border Classes="tile" Background="{Binding Color, Converter={x:Static v:Converters.ServerColorBrush}}">
-              <Path Data="{StaticResource WindowsLogo}" Fill="White" Width="15" Height="15" Stretch="Uniform" />
+              <Path Data="{Binding Icon, Converter={x:Static v:Converters.ServerIconGeometry}}" Fill="White" Width="15" Height="15" Stretch="Uniform" />
             </Border>
             <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
               <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" />

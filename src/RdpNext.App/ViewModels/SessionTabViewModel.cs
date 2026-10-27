@@ -8,11 +8,12 @@ public sealed class SessionTabViewModel : TabViewModel
     public SessionTabViewModel(ServerNodeViewModel server)
     {
         Server = server;
-        // Sunucunun adı ya da rengi değişince sekme de güncellenir.
+        // Sunucunun adı, rengi ya da ikonu değişince sekme de güncellenir.
         server.PropertyChanged += (_, _) =>
         {
             TitleChanged();
             OnPropertyChanged(nameof(Color));
+            OnPropertyChanged(nameof(Icon));
         };
     }
 
@@ -21,6 +22,8 @@ public sealed class SessionTabViewModel : TabViewModel
     public override string Title => Server.Name;
 
     public override ServerColor? Color => Server.Color;
+
+    public override ServerIcon Icon => Server.Icon;
 
     public override void OnClosed() => Server.IsConnected = false;
 }
