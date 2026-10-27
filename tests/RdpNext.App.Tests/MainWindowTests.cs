@@ -183,4 +183,24 @@ public class MainWindowTests
 
         Assert.Contains(window.Named<Control>("Tree").Texts(), t => t.Text == "10.0.5.5");
     }
+
+    [AvaloniaFact]
+    public void SessionAndEditorOpenInTheSameFrame()
+    {
+        var (window, vm) = TestWindows.Open();
+        var frame = window.Named<Border>("ContentFrame");
+        Assert.Equal(new CornerRadius(12), frame.CornerRadius);
+        Assert.True(frame.ClipToBounds);
+
+        vm.Tree.Query = "web-01";
+        vm.ConnectFirstMatchCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var session = frame.GetVisualDescendants().OfType<Views.SessionPlaceholderView>().Single().Bounds;
+
+        vm.NewServer();
+        Dispatcher.UIThread.RunJobs();
+        var editor = frame.GetVisualDescendants().OfType<Views.ServerEditorView>().Single().Bounds;
+
+        Assert.Equal(session, editor);
+    }
 }
