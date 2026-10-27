@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AddServer" xml:space="preserve"><value>Add server</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Add folder</value></data>
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="CorruptFileNotice" xml:space="preserve"><value>The connections file could not be read, the old file was backed up: {0}</value></data>
+  <data name="CloseTab" xml:space="preserve"><value>Close</value></data>
+  <data name="CloseOtherTabs" xml:space="preserve"><value>Close others</value></data>
+  <data name="NewServer" xml:space="preserve"><value>New server</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>{0} settings</value></data>
+  <data name="TopLevel" xml:space="preserve"><value>Top level</value></data>
+  <data name="Address" xml:space="preserve"><value>Host/IP</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="User" xml:space="preserve"><value>User</value></data>
+  <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Domain" xml:space="preserve"><value>Domain</value></data>
+  <data name="Folder" xml:space="preserve"><value>Folder</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display name</value></data>
+  <data name="Color" xml:space="preserve"><value>Color</value></data>
+  <data name="General" xml:space="preserve"><value>General</value></data>
+  <data name="Advanced" xml:space="preserve"><value>Advanced</value></data>
+  <data name="Screen" xml:space="preserve"><value>Screen</value></data>
+  <data name="FitToWindow" xml:space="preserve"><value>Fit to window</value></data>
+  <data name="FullScreen" xml:space="preserve"><value>Full screen</value></data>
+  <data name="Connect" xml:space="preserve"><value>Connect</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Copy" xml:space="preserve"><value>Duplicate</value></data>
+  <data name="NewFolder" xml:space="preserve"><value>New folder</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="ParentFolder" xml:space="preserve"><value>Parent folder</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="DeleteFolderConfirm" xml:space="preserve"><value>Delete {0} and the {1} servers in it?</value></data>
+  <data name="CopyName" xml:space="preserve"><value>{0} copy</value></data>
+  <data name="KeychainError" xml:space="preserve"><value>Could not access the keychain, the password was not read or saved.</value></data>
+  <data name="FolderNamePrompt" xml:space="preserve"><value>Folder name</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="File" xml:space="preserve"><value>File</value></data>
+  <data name="ExportHint" xml:space="preserve"><value>Your whole server and folder list is saved to a single .json file. You can keep this file as a backup and restore it later with Import. Passwords are not written to the file for security.</value></data>
+  <data name="ImportHint" xml:space="preserve"><value>Choose a .json file you exported earlier. The servers and folders in the file are added to your current list; entries already in the list are not added again.</value></data>
+  <data name="Export" xml:space="preserve"><value>Export</value></data>
+  <data name="Import" xml:space="preserve"><value>Import</value></data>
+  <data name="ExportDone" xml:space="preserve"><value>Saved: {0}</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Could not save the file: {0}</value></data>
+  <data name="ImportDone" xml:space="preserve"><value>Backup restored, {0} servers.</value></data>
+  <data name="ImportFailed" xml:space="preserve"><value>Could not read the file: {0}</value></data>
+  <data name="ImportAdded" xml:space="preserve"><value>Imported, {0} new servers added.</value></data>
+  <data name="DeleteOld" xml:space="preserve"><value>Delete all existing entries</value></data>
+  <data name="ImportDeleteConfirm" xml:space="preserve"><value>All current servers and folders will be deleted. Are you sure?</value></data>
+  <data name="DeleteAndImport" xml:space="preserve"><value>Delete and import</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="RestartToApply" xml:space="preserve"><value>Takes effect after restart.</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>from {0}</value></data>
+  <data name="BackupFileName" xml:space="preserve"><value>rdpNext-backup-{0}.json</value></data>
+</root>

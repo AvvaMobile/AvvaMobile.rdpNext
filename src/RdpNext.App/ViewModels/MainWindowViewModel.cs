@@ -9,9 +9,10 @@ namespace RdpNext.App.ViewModels;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
-    public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null, IFileDialogService? files = null)
+    public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null, IFileDialogService? files = null, SettingsStore? settings = null)
     {
         Store = store;
+        Settings = settings ?? new SettingsStore(SettingsStore.Beside(store.FilePath));
         Secrets = new GuardedSecretStore(secrets, message => Notice = message);
         Confirm = confirm ?? new DialogConfirmService();
         Files = files ?? new FileDialogService();
@@ -23,6 +24,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public ConnectionStore Store { get; }
+
+    public SettingsStore Settings { get; }
 
     public ISecretStore Secrets { get; }
 

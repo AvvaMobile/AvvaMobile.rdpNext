@@ -17,6 +17,8 @@ public sealed class ConnectionStore(string filePath)
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
+    public string FilePath => filePath;
+
     private sealed record ConnectionFile(int Version, Group Root);
 
     public static string DefaultPath() => Path.Combine(
