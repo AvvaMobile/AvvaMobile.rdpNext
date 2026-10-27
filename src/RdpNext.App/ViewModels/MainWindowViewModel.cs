@@ -17,6 +17,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         _rdp = rdp ?? (() => new RdpSession());
         Sessions = new SessionsViewModel(time);
+        // Tam ekrandaki oturum kapanınca tam ekrandan çıkılır.
+        Sessions.Tabs.CollectionChanged += (_, _) =>
+        {
+            if (FullScreenSession is { } session && !Sessions.Tabs.Contains(session))
+                FullScreenSession = null;
+        };
         Store = store;
         Settings = settings ?? new SettingsStore(SettingsStore.Beside(store.FilePath));
         Secrets = new GuardedSecretStore(secrets, message => Notice = message);
@@ -63,7 +69,22 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public SessionsViewModel Sessions { get; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowSidebar))]
     private bool _isSidebarVisible = true;
+
+    // Tam ekranda yalnız bu oturum görünür; kenar çubuğu ve sekme şeridi gizlenir.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFullScreen), nameof(ShowSidebar))]
+    private SessionTabViewModel? _fullScreenSession;
+
+    public bool IsFullScreen => FullScreenSession is not null;
+
+    public bool ShowSidebar => IsSidebarVisible && !IsFullScreen;
+
+    // Yalnız oturum sekmesi tam ekran olur.
+    [RelayCommand]
+    private void ToggleFullScreen() =>
+        FullScreenSession = FullScreenSession is null ? Sessions.Selected as SessionTabViewModel : null;
 
     [RelayCommand]
     private void ToggleSidebar() => IsSidebarVisible = !IsSidebarVisible;
@@ -131,8 +152,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void Connect(ServerNodeViewModel server)
     {
         var tab = Sessions.Open(server);
-        if (tab.Session is null)
-            tab.Connect(_rdp(), CredentialResolver.Resolve(server.Server, Secrets), SessionAreaSize);
+        if (tab.Session is not null)
+            return;
+        tab.Connect(_rdp(), CredentialResolver.Resolve(server.Server, Secrets), SessionAreaSize);
+        if (server.Server.Screen == ScreenMode.FullScreen)
+            FullScreenSession = tab;
     }
 
     // Uygulama kapanırken açık oturumların hepsi kapatılır.

@@ -16,6 +16,7 @@
   </Window.KeyBindings>
   <DockPanel>
     <Border x:Name="TitleBar" DockPanel.Dock="Top" Height="52" Background="{DynamicResource WindowBrush}"
+            IsVisible="{Binding !IsFullScreen}"
             BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1"
             DoubleTapped="OnTitleBarDoubleTapped">
       <DockPanel x:Name="TitleContent" Margin="14,0">
@@ -26,9 +27,9 @@
         <v:TabStripView x:Name="Tabs" Margin="12,0,0,0" />
       </DockPanel>
     </Border>
-    <v:SidebarView x:Name="Sidebar" DockPanel.Dock="Left" Width="310" IsVisible="{Binding IsSidebarVisible}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0" />
+    <v:SidebarView x:Name="Sidebar" DockPanel.Dock="Left" Width="310" IsVisible="{Binding ShowSidebar}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0" />
     <!-- Sağ taraftaki tek çerçeve: oturum da düzenleme formu da hep bunun içinde açılır. -->
-    <Border x:Name="ContentFrame" Classes="content-frame">
+    <Border x:Name="ContentFrame" Classes="content-frame" Classes.fullscreen="{Binding IsFullScreen}">
       <ContentControl x:Name="SessionArea" Content="{Binding Sessions.Selected}">
         <ContentControl.DataTemplates>
           <DataTemplate DataType="vm:SessionTabViewModel">
