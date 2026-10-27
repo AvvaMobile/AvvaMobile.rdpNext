@@ -105,6 +105,7 @@ public sealed partial class FolderEditorViewModel : TabViewModel
             _savedPassword = Password;
         }
         TitleChanged();
+        _owner.ShowToast(Strings.Strings.Saved);
     }
 
     private void RebuildFolders()

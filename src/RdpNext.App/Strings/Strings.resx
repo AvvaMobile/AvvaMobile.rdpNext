@@ -24,8 +24,9 @@
   <data name="General" xml:space="preserve"><value>General</value></data>
   <data name="Advanced" xml:space="preserve"><value>Advanced</value></data>
   <data name="Screen" xml:space="preserve"><value>Screen</value></data>
-  <data name="FitToWindow" xml:space="preserve"><value>Fit to window</value></data>
-  <data name="FullScreen" xml:space="preserve"><value>Full screen</value></data>
+  <data name="FullScreen" xml:space="preserve"><value>Full Screen</value></data>
+  <data name="Windowed" xml:space="preserve"><value>Windowed</value></data>
+  <data name="Saved" xml:space="preserve"><value>Saved</value></data>
   <data name="Connect" xml:space="preserve"><value>Connect</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="Delete" xml:space="preserve"><value>Delete</value></data>

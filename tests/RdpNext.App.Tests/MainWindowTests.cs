@@ -223,7 +223,7 @@ public class MainWindowTests
         vm.EditCommand.Execute(web);
         var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
         editor.ShowAdvanced = true;
-        editor.ScreenIndex = 1;
+        editor.ScreenIndex = 0;
         Dispatcher.UIThread.RunJobs();
 
         var save = window.Named<Control>("SessionArea").GetVisualDescendants().OfType<Button>()

@@ -201,6 +201,18 @@
       </Animation>
     </Style.Animations>
   </Style>
+  <Style Selector="Border.toast">
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="Margin" Value="0,64,24,0" />
+    <Setter Property="Padding" Value="18,10" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="0 8 24 0 #33000000" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+  </Style>
   <Style Selector="TextBlock.card-title">
     <Setter Property="FontSize" Value="17" />
     <Setter Property="FontWeight" Value="SemiBold" />

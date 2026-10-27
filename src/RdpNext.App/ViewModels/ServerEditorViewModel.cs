@@ -101,11 +101,11 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     [NotifyPropertyChangedFor(nameof(ScreenIndex))]
     private ScreenMode _screen = ScreenMode.FitToWindow;
 
-    // Ekran seçicisindeki sıra: 0 pencereye sığdır, 1 tam ekran.
+    // Ekran seçicisindeki sıra: 0 Full Screen, 1 Windowed.
     public int ScreenIndex
     {
-        get => (int)Screen;
-        set => Screen = (ScreenMode)value;
+        get => Screen == ScreenMode.FullScreen ? 0 : 1;
+        set => Screen = value == 0 ? ScreenMode.FullScreen : ScreenMode.FitToWindow;
     }
 
     // Gruptan gelen değer alanda soluk görünür, kaynağı ("Üretim'den") alanın sağında.
@@ -142,7 +142,11 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         !string.IsNullOrWhiteSpace(Host) && int.TryParse(Port, out var port) && port is >= 1 and <= 65535;
 
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private void Save() => Store();
+    private void Save()
+    {
+        Store();
+        _owner.ShowToast(Strings.Strings.Saved);
+    }
 
     [RelayCommand]
     private Task Delete() => Existing is null
