@@ -14,14 +14,15 @@
   <Style Selector="Button.add">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
-    <Setter Property="Padding" Value="8" />
-    <Setter Property="CornerRadius" Value="10" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="6" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="Foreground" Value="White" />
-    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
   </Style>
   <Style Selector="Button.add:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="Opacity" Value="0.9" />
   </Style>
@@ -141,16 +142,17 @@
     <Setter Property="BorderThickness" Value="3" />
   </Style>
   <Style Selector="Button.primary, Button.secondary">
-    <Setter Property="Padding" Value="26,10" />
-    <Setter Property="CornerRadius" Value="10" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="18,7" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="Medium" />
   </Style>
   <Style Selector="Button.primary">
-    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
     <Setter Property="Foreground" Value="White" />
   </Style>
   <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="Opacity" Value="0.9" />
   </Style>
@@ -158,9 +160,10 @@
     <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
   </Style>
   <Style Selector="Button.danger">
-    <Setter Property="Padding" Value="26,10" />
-    <Setter Property="CornerRadius" Value="10" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="18,7" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="Background" Value="{StaticResource NoticeBrush}" />
     <Setter Property="Foreground" Value="White" />
   </Style>
@@ -212,7 +215,7 @@
   </Style>
   <!-- Pasif butonlar gri değil, kendi renginde soluk -->
   <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
     <Setter Property="Foreground" Value="White" />
   </Style>
   <Style Selector="Button.secondary:disabled /template/ ContentPresenter#PART_ContentPresenter">
