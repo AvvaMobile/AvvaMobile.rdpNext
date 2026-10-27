@@ -21,15 +21,17 @@
         </Grid.ColumnDefinitions>
         <Panel>
           <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}">
-            <StackPanel MaxWidth="400" HorizontalAlignment="Left">
-              <TextBlock Classes="label" Text="{x:Static s:Strings.Language}" />
-              <ComboBox x:Name="LanguageBox" Classes="field" SelectedIndex="{Binding LanguageIndex}">
-                <ComboBoxItem Content="Türkçe" />
-                <ComboBoxItem Content="English" />
-              </ComboBox>
-              <TextBlock x:Name="RestartNote" Classes="secondary hint" Text="{x:Static s:Strings.RestartToApply}" TextWrapping="Wrap"
-                         IsVisible="{Binding ShowRestartNote}" />
-            </StackPanel>
+            <Grid ColumnDefinitions="*,12,*">
+              <StackPanel>
+                <TextBlock Classes="label" Text="{x:Static s:Strings.Language}" />
+                <ComboBox x:Name="LanguageBox" Classes="field" SelectedIndex="{Binding LanguageIndex}">
+                  <ComboBoxItem Content="Türkçe" />
+                  <ComboBoxItem Content="English" />
+                </ComboBox>
+                <TextBlock x:Name="RestartNote" Classes="secondary hint" Text="{x:Static s:Strings.RestartToApply}" TextWrapping="Wrap"
+                           IsVisible="{Binding ShowRestartNote}" />
+              </StackPanel>
+            </Grid>
           </StackPanel>
           <StackPanel Classes="form" IsVisible="{Binding ShowExport}">
             <TextBlock x:Name="ExportHint" Text="{x:Static s:Strings.ExportHint}" TextWrapping="Wrap" />
