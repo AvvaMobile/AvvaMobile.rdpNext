@@ -4,7 +4,13 @@ public sealed class Server : Node
 {
     public Protocol Protocol { get; set; } = Protocol.Rdp;
 
-    public string Host { get; set; } = "";
+    private string _host = "";
+
+    public string Host
+    {
+        get => _host;
+        set => _host = value ?? "";
+    }
 
     public int Port { get; set; } = 3389;
 

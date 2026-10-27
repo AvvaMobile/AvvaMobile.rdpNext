@@ -33,7 +33,7 @@ public sealed class ConnectionStore(string filePath)
             if (file?.Root is not null)
                 return new LoadResult(file.Root, null);
         }
-        catch (JsonException)
+        catch (Exception e) when (e is JsonException or NotSupportedException)
         {
         }
 

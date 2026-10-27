@@ -118,6 +118,30 @@ public sealed class ConnectionStoreTests : IDisposable
         Assert.NotNull(result.CorruptBackupPath);
     }
 
+    [Theory]
+    [InlineData("""{ "version": 1, "root": { "kind": "group", "children": [ { "name": "türsüz" } ] } }""")]
+    [InlineData("""{ "version": 1, "root": { "kind": "group", "children": null } }""")]
+    [InlineData("""{ "version": 1, "root": { "kind": "group", "children": [ null ] } }""")]
+    public void MalformedFileIsBackedUpNotCrash(string content)
+    {
+        File.WriteAllText(_path, content);
+
+        var result = new ConnectionStore(_path).Load();
+
+        Assert.Empty(result.Root.Children);
+        Assert.NotNull(result.CorruptBackupPath);
+    }
+
+    [Fact]
+    public void NullNameAndHostLoadAsEmpty()
+    {
+        File.WriteAllText(_path, """{ "version": 1, "root": { "kind": "group", "children": [ { "kind": "server", "name": null, "host": null } ] } }""");
+
+        var server = Assert.IsType<Server>(Assert.Single(new ConnectionStore(_path).Load().Root.Children));
+
+        Assert.Equal(("", ""), (server.Name, server.Host));
+    }
+
     [Fact]
     public void SaveIsAtomic()
     {

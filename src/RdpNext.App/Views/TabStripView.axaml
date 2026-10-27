@@ -5,9 +5,10 @@
              xmlns:s="using:RdpNext.App.Strings"
              x:Class="RdpNext.App.Views.TabStripView"
              x:DataType="vm:MainWindowViewModel">
-  <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+  <v:TabStripPanel VerticalAlignment="Center">
     <ListBox x:Name="TabStrip" Classes="tabs" ItemsSource="{Binding Sessions.Tabs}"
-             SelectedItem="{Binding Sessions.Selected}" Background="Transparent">
+             SelectedItem="{Binding Sessions.Selected}" Background="Transparent"
+             ScrollViewer.HorizontalScrollBarVisibility="Hidden">
       <ListBox.ItemsPanel>
         <ItemsPanelTemplate>
           <StackPanel Orientation="Horizontal" Spacing="6" />
@@ -29,7 +30,8 @@
             <Border Classes="tile-small" Background="{Binding Color, Converter={x:Static v:Converters.ServerColorBrush}}">
               <Path Data="{StaticResource WindowsLogo}" Fill="White" Width="12" Height="12" Stretch="Uniform" />
             </Border>
-            <TextBlock Text="{Binding Title}" FontWeight="Medium" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Title}" FontWeight="Medium" VerticalAlignment="Center"
+                       MaxWidth="180" TextTrimming="CharacterEllipsis" />
             <Button Classes="tab-close" Content="×"
                     Command="{Binding $parent[v:TabStripView].((vm:MainWindowViewModel)DataContext).CloseTabCommand}"
                     CommandParameter="{Binding}" />
@@ -37,6 +39,6 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
-    <Button x:Name="NewTabButton" Classes="tab-plus" Content="+" Command="{Binding NewSessionCommand}" />
-  </StackPanel>
+    <Button x:Name="NewTabButton" Classes="tab-plus" Content="+" Command="{Binding NewSessionCommand}" Margin="6,0,0,0" />
+  </v:TabStripPanel>
 </UserControl>

@@ -9,7 +9,13 @@ public abstract class Node
 {
     public Guid Id { get; init; } = Guid.NewGuid();
 
-    public string Name { get; set; } = "";
+    private string _name = "";
+
+    public string Name
+    {
+        get => _name;
+        set => _name = value ?? "";
+    }
 
     [JsonIgnore]
     public Group? Parent { get; internal set; }

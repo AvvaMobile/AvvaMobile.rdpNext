@@ -26,7 +26,8 @@
       </TextBox>
     </StackPanel>
 
-    <TreeView x:Name="Tree" ItemsSource="{Binding Tree.Roots}" Margin="4,0,4,8" DoubleTapped="OnTreeDoubleTapped">
+    <TreeView x:Name="Tree" ItemsSource="{Binding Tree.Roots}" Margin="4,0,4,8" DoubleTapped="OnTreeDoubleTapped"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
       <TreeView.Styles>
         <Style Selector="TreeViewItem" x:DataType="vm:TreeNodeViewModel">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />

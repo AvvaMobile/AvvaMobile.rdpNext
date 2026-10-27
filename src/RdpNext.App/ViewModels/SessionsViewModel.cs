@@ -28,9 +28,11 @@ public sealed partial class SessionsViewModel : ObservableObject
         var index = Tabs.IndexOf(tab);
         if (index < 0)
             return;
+        // Sekme listeden çıkınca ekrandaki ListBox seçimi null yapabilir; önce bakılır.
+        var wasSelected = Selected == tab;
         Tabs.RemoveAt(index);
         tab.Server.IsConnected = false;
-        if (Selected == tab)
+        if (wasSelected)
             Selected = Tabs.Count == 0 ? null : Tabs[Math.Max(index - 1, 0)];
     }
 

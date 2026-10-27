@@ -51,6 +51,8 @@ public class SidebarTests
 
         Assert.Equal(TextTrimming.CharacterEllipsis, window.Text(longName).TextTrimming);
         Assert.Equal(TextTrimming.CharacterEllipsis, window.Text(longHost).TextTrimming);
+        Assert.True(window.Text(longName).Bounds.Width < 310, $"{window.Text(longName).Bounds.Width}");
+        Assert.True(window.Text(longHost).Bounds.Width < 310, $"{window.Text(longHost).Bounds.Width}");
     }
 
     [AvaloniaFact]

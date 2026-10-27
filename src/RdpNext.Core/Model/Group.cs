@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace RdpNext.Core.Model;
@@ -22,6 +23,8 @@ public sealed class Group : Node
         get => _children;
         set
         {
+            if (value is null || value.Contains(null!))
+                throw new JsonException("Grup çocukları boş olamaz.");
             foreach (var child in value)
                 Add(child);
         }
