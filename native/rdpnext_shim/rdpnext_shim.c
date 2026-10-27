@@ -349,6 +349,8 @@ uint32_t rn_connect(rdpContext* ctx, const rn_options* o)
 	freerdp_settings_set_bool(s, FreeRDP_DynamicResolutionUpdate, TRUE);
 	freerdp_settings_set_bool(s, FreeRDP_SupportGraphicsPipeline, TRUE);
 	freerdp_settings_set_bool(s, FreeRDP_RedirectClipboard, TRUE);
+	/* Sunucunun sesi bu bilgisayarda çalar (rdpsnd; Mac'te mac, Windows'ta winmm arka ucu). */
+	freerdp_settings_set_bool(s, FreeRDP_AudioPlayback, TRUE);
 	if (freerdp_connect(ctx->instance))
 		return 0;
 	uint32_t error = freerdp_get_last_error(ctx);
