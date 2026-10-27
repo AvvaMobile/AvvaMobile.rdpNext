@@ -59,13 +59,22 @@ public class LanguageTests
     }
 
     [AvaloniaFact]
-    public void GeneralShowsLanguagePickerAndRestartNote()
+    public void RestartNoteShowsOnlyWhenLanguageDiffers()
     {
         var (window, vm) = TestWindows.Open();
         vm.OpenSettingsCommand.Execute(null);
+        var settings = Assert.IsType<SettingsViewModel>(vm.Sessions.Selected);
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-
+        var note = window.Named<Avalonia.Controls.TextBlock>("RestartNote");
         Assert.True(window.Named<Avalonia.Controls.ComboBox>("LanguageBox").IsEffectivelyVisible);
-        window.Text(Strings.Strings.RestartToApply);
+        Assert.False(note.IsEffectivelyVisible);
+
+        settings.LanguageIndex = 1;
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.True(note.IsEffectivelyVisible);
+
+        settings.LanguageIndex = 0;
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.False(note.IsEffectivelyVisible);
     }
 }

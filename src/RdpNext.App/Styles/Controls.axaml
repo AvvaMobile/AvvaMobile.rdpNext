@@ -101,6 +101,10 @@
     <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
     <Setter Property="Margin" Value="0,0,0,6" />
   </Style>
+  <!-- Alanın altındaki açıklama; alana yapışmasın. -->
+  <Style Selector="TextBlock.hint">
+    <Setter Property="Margin" Value="2,8,0,0" />
+  </Style>
   <!-- Hazır temanın 14 px'i yerine bizim gövde boyutumuz (15 px). -->
   <Style Selector="TextBox, ComboBox, ComboBoxItem, Button, MenuItem">
     <Setter Property="FontSize" Value="{StaticResource BodyFontSize}" />
