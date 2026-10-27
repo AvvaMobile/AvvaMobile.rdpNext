@@ -147,6 +147,9 @@
                 </ComboBox>
               </StackPanel>
             </Grid>
+            <!-- Genel sekmesindeki Save ile aynı yer ve aynı komut. -->
+            <Button x:Name="AdvancedSaveButton" Classes="primary" HorizontalAlignment="Left" Margin="0,6,0,0"
+                    Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />
           </StackPanel>
         </Grid>
       </ScrollViewer>
