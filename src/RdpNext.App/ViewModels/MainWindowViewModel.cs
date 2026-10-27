@@ -9,11 +9,12 @@ namespace RdpNext.App.ViewModels;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
-    public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null)
+    public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null, IFileDialogService? files = null)
     {
         Store = store;
         Secrets = new GuardedSecretStore(secrets, message => Notice = message);
         Confirm = confirm ?? new DialogConfirmService();
+        Files = files ?? new FileDialogService();
         var loaded = store.Load();
         Tree = new TreeViewModel(loaded.Root);
         _notice = loaded.CorruptBackupPath is { } backup
@@ -26,6 +27,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public ISecretStore Secrets { get; }
 
     public IConfirmService Confirm { get; }
+
+    public IFileDialogService Files { get; }
 
     public TreeViewModel Tree { get; }
 
@@ -66,6 +69,17 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(name))
             return;
         Tree.AddGroup(new Group { Name = name.Trim() }, null);
+        Persist();
+    }
+
+    [RelayCommand]
+    private void OpenSettings() => Sessions.OpenTab(Sessions.Find<SettingsViewModel>(_ => true) ?? new SettingsViewModel(this));
+
+    // İçe aktarma: listenin tamamı değişir, eski düğümlere bağlı sekmeler kapanır.
+    public void ReplaceTree(Group root, TabViewModel keep)
+    {
+        Sessions.CloseOthers(keep);
+        Tree.Replace(root);
         Persist();
     }
 

@@ -83,6 +83,29 @@ public sealed class ConnectionStoreTests : IDisposable
         Assert.Equal("blue", jServer["color"]!.GetValue<string>());
     }
 
+    // İçe aktarma: okunamayan dosya kenara alınmaz, yerinde kalır.
+    [Theory]
+    [InlineData("{ yarım")]
+    [InlineData("""{ "version": 1, "root": { "kind": "group", "children": [ { "kind": "ssh", "name": "x" } ] } }""")]
+    public void ReadReturnsNullAndLeavesBadFile(string content)
+    {
+        File.WriteAllText(_path, content);
+
+        Assert.Null(ConnectionStore.Read(_path));
+        Assert.Equal(content, File.ReadAllText(_path));
+    }
+
+    [Fact]
+    public void ReadGivesSavedTree()
+    {
+        var root = new Group();
+        root.Add(new Group { Name = "Üretim" });
+        new ConnectionStore(_path).Save(root);
+
+        Assert.Equal("Üretim", Assert.Single(ConnectionStore.Read(_path)!.Children).Name);
+        Assert.Null(ConnectionStore.Read(Path.Combine(_dir, "yok.json")));
+    }
+
     [Fact]
     public void MissingFileGivesEmptyRoot()
     {
