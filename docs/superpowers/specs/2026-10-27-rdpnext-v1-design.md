@@ -53,7 +53,7 @@ Bu sürüm herkese açık repoda (`AvvaMobile/AvvaMobile.rdpNext`), MIT lisansl�
 
 Onaylı çizim: `docs/tasarim/gorsel-stil.png` (kaynak HTML: `docs/tasarim/gorsel-stil.html`). Aynı ekranın açık ve koyu hâli.
 
-1. Pencerenin üst şeridi: (Mac'te trafik ışıkları), ardından oturum sekmeleri. Her sekme: küçük renkli ikon kutucuğu + sunucu adı + kapatma (×). Sonda "+" (yeni oturum: ağaçta aramaya odaklanır).
+1. Pencerenin üst şeridi: (Mac'te trafik ışıkları), ardından oturum sekmeleri. Her sekme: küçük renkli ikon kutucuğu + sunucu adı + kapatma (×). Sekme şeridinde "+" yok (Murat kaldırttı; ileride hızlı bağlan gibi bir işle geri gelebilir). Şeridin boş yerine çift tık pencereyi ekrana sığdırır, tekrar çift tık eski boyuta döndürür.
 2. Sol panel (~310 px):
    1. En üstte "+ Sunucu ekle" butonu (vurgu rengi, tam genişlik).
    2. Altında arama kutusu. Yazdıkça ağaç ad ve adrese göre süzülür; Enter ilk sonuca bağlanır.

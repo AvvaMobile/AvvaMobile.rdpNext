@@ -28,8 +28,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     public SessionsViewModel Sessions { get; } = new();
 
-    public event Action? FocusSearchRequested;
-
     [RelayCommand]
     private void Connect(ServerNodeViewModel server) => Sessions.Open(server);
 
@@ -39,9 +37,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (Tree.FirstMatch is { } server)
             Sessions.Open(server);
     }
-
-    [RelayCommand]
-    private void NewSession() => FocusSearchRequested?.Invoke();
 
     [RelayCommand]
     private void CloseTab(SessionTabViewModel tab) => Sessions.Close(tab);
