@@ -77,6 +77,16 @@ public class SettingsTests
     }
 
     [Fact]
+    public async Task ExportSuggestsDatedName()
+    {
+        var vm = Create(null);
+
+        await OpenSettings(vm).ExportCommand.ExecuteAsync(null);
+
+        Assert.Equal($"rdpNext-{DateTime.Now:yyyy-MM-dd}.json", ((FakeFiles)vm.Files).SuggestedName);
+    }
+
+    [Fact]
     public async Task ExportCancelledWritesNothing()
     {
         var vm = Create(null);

@@ -17,6 +17,7 @@ public sealed class FileDialogService : IFileDialogService
         var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             SuggestedFileName = suggestedName,
+            SuggestedStartLocation = await owner.StorageProvider.TryGetWellKnownFolderAsync(WellKnownFolder.Downloads),
             DefaultExtension = "json",
             FileTypeChoices = [Json],
         });
