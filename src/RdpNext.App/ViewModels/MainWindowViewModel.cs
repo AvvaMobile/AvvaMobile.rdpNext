@@ -1,16 +1,21 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Avalonia;
 using RdpNext.App.Services;
+using RdpNext.Core.Credentials;
 using RdpNext.Core.Model;
 using RdpNext.Core.Secrets;
 using RdpNext.Core.Storage;
+using RdpNext.Rdp;
 
 namespace RdpNext.App.ViewModels;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
-    public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null, IFileDialogService? files = null, SettingsStore? settings = null)
+    public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null, IFileDialogService? files = null, SettingsStore? settings = null,
+        Func<IRdpSession>? rdp = null)
     {
+        _rdp = rdp ?? (() => new RdpSession());
         Store = store;
         Settings = settings ?? new SettingsStore(SettingsStore.Beside(store.FilePath));
         Secrets = new GuardedSecretStore(secrets, message => Notice = message);
@@ -26,6 +31,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public ConnectionStore Store { get; }
+
+    private readonly Func<IRdpSession> _rdp;
+
+    // Oturum alanının son boyutu; yeni oturum bu çözünürlükle açılır.
+    public Size SessionAreaSize { get; set; } = new(1280, 800);
 
     private static void Collapse(Group group)
     {
@@ -117,13 +127,25 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Connect(ServerNodeViewModel server) => Sessions.Open(server);
+    private void Connect(ServerNodeViewModel server)
+    {
+        var tab = Sessions.Open(server);
+        if (tab.Session is null)
+            tab.Connect(_rdp(), CredentialResolver.Resolve(server.Server, Secrets), SessionAreaSize);
+    }
+
+    // Uygulama kapanırken açık oturumların hepsi kapatılır.
+    public void Shutdown()
+    {
+        foreach (var tab in Sessions.Tabs.OfType<SessionTabViewModel>().ToList())
+            Sessions.Close(tab);
+    }
 
     [RelayCommand]
     private void ConnectFirstMatch()
     {
         if (Tree.FirstMatch is { } server)
-            Sessions.Open(server);
+            Connect(server);
     }
 
     [RelayCommand]

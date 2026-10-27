@@ -19,7 +19,7 @@ public class SessionsViewModelTests
         Assert.Same(tab, Assert.Single(_sessions.Tabs));
         Assert.Same(tab, _sessions.Selected);
         Assert.Equal(("a", ServerColor.Teal), (tab.Title, tab.Color));
-        Assert.True(_a.IsConnected);
+        Assert.Equal(SessionState.Connecting, _a.State);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class SessionsViewModelTests
 
         _sessions.Close(tab);
 
-        Assert.False(_a.IsConnected);
+        Assert.Null(_a.State);
     }
 
     [Fact]
@@ -86,9 +86,9 @@ public class SessionsViewModelTests
 
         Assert.Same(b, Assert.Single(_sessions.Tabs));
         Assert.Same(b, _sessions.Selected);
-        Assert.False(_a.IsConnected);
-        Assert.True(_b.IsConnected);
-        Assert.False(_c.IsConnected);
+        Assert.Null(_a.State);
+        Assert.NotNull(_b.State);
+        Assert.Null(_c.State);
     }
 
     private sealed class FakeTab(string title) : TabViewModel

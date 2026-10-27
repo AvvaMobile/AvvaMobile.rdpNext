@@ -13,5 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\RdpNext.Rdp\RdpNext.Rdp.csproj" />
+    <ProjectReference Include="..\..\src\RdpNext.Core\RdpNext.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -17,7 +17,6 @@ public sealed partial class SessionsViewModel : ObservableObject
         {
             tab = new SessionTabViewModel(server);
             Tabs.Add(tab);
-            server.IsConnected = true;
         }
         Selected = tab;
         return tab;

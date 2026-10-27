@@ -12,6 +12,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        // Yeni oturum, oturum alanının o anki boyutuyla açılır; pencere kapanınca oturumlar kapatılır.
+        SessionArea.SizeChanged += (_, e) =>
+        {
+            if (DataContext is MainWindowViewModel vm && e.NewSize.Width > 0 && e.NewSize.Height > 0)
+                vm.SessionAreaSize = e.NewSize;
+        };
+        Closing += (_, _) => (DataContext as MainWindowViewModel)?.Shutdown();
         // macOS'ta sol üstteki pencere düğmeleri sidebar düğmesinin ve sekmelerin üstüne binmesin.
         if (OperatingSystem.IsMacOS())
         {

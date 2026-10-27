@@ -31,8 +31,21 @@ public static class TestWindows
         return path;
     }
 
-    public static MainWindowViewModel ViewModel(string? path = null) =>
-        new(new ConnectionStore(path ?? SampleFile()), new InMemorySecretStore());
+    // Bağlanınca gerçek RDP yerine sahte oturum açılır; açılanlar istenirse sessions listesine eklenir.
+    public static MainWindowViewModel ViewModel(string? path = null, List<FakeRdpSession>? sessions = null, bool? confirm = null) =>
+        new(new ConnectionStore(path ?? SampleFile()), new InMemorySecretStore(),
+            confirm is { } sure ? new FixedConfirm(sure) : null,
+            rdp: () =>
+            {
+                var session = new FakeRdpSession();
+                sessions?.Add(session);
+                return session;
+            });
+
+    private sealed class FixedConfirm(bool sure) : Services.IConfirmService
+    {
+        public Task<bool> ConfirmAsync(string message, string confirmText) => Task.FromResult(sure);
+    }
 
     public static (MainWindow Window, MainWindowViewModel Vm) Open(string? path = null)
     {

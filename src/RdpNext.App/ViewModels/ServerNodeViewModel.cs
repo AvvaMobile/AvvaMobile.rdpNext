@@ -13,6 +13,10 @@ public sealed partial class ServerNodeViewModel(Server server) : TreeNodeViewMod
 
     public ServerIcon Icon => Server.Icon;
 
+    // Açık sekmesi yoksa null.
     [ObservableProperty]
-    private bool _isConnected;
+    [NotifyPropertyChangedFor(nameof(IsConnected))]
+    private SessionState? _state;
+
+    public bool IsConnected => State == SessionState.Connected;
 }
