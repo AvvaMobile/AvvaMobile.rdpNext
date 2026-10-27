@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
+using RdpNext.App.ViewModels;
 
 namespace RdpNext.App.Views;
 
@@ -20,6 +21,27 @@ public partial class MainWindow : Window
                     Platform.MacTitleBar.CenterTrafficLights(this);
             };
         }
+    }
+
+    // macOS üst menü çubuğundaki Dosya menüsü; diğer sistemlerde görünmez.
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (DataContext is not MainWindowViewModel vm)
+            return;
+        NativeMenu.SetMenu(this, new NativeMenu
+        {
+            new NativeMenuItem(Strings.Strings.File)
+            {
+                Menu = new NativeMenu
+                {
+                    new NativeMenuItem(Strings.Strings.AddServer) { Command = vm.NewServerCommand },
+                    new NativeMenuItem(Strings.Strings.AddFolder) { Command = vm.NewFolderCommand },
+                    new NativeMenuItemSeparator(),
+                    new NativeMenuItem(Strings.Strings.Settings) { Command = vm.OpenSettingsCommand },
+                },
+            },
+        });
     }
 
     // Başlık çubuğunun boş yerine çift tık: ekranı doldur ya da eski boyuta dön.

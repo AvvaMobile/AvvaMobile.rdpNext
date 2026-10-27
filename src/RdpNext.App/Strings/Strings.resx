@@ -42,6 +42,7 @@
   <data name="FolderNamePrompt" xml:space="preserve"><value>Klasör adı</value></data>
   <data name="Add" xml:space="preserve"><value>Ekle</value></data>
   <data name="Settings" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="File" xml:space="preserve"><value>Dosya</value></data>
   <data name="ExportHint" xml:space="preserve"><value>Tüm sunucu ve klasör listen tek bir .json dosyasına kaydedilir. Bu dosyayı yedek olarak saklayabilir, sonra İçe aktar ile geri yükleyebilirsin. Şifreler güvenlik için dosyaya yazılmaz.</value></data>
   <data name="ImportHint" xml:space="preserve"><value>Daha önce dışa aktardığın bir .json dosyasını seç. Dosyadaki sunucu ve klasörler mevcut listene eklenir; listede zaten olan kayıtlar tekrar eklenmez.</value></data>
   <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
