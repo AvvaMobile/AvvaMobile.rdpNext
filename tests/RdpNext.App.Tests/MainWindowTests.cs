@@ -219,6 +219,7 @@ public class MainWindowTests
         Assert.Equal(["Display name", "Icon", "Folder", "Color", "Host/IP", "Port", "User", "Password", "Domain"], labels);
         Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Connect");
         Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Save");
+        Assert.True(window.Named<Button>("SaveButton").Bounds.X < window.Named<Button>("ConnectButton").Bounds.X);
         Assert.Contains(window.Named<Control>("TabStrip").Texts(), t => t.Text == "New server");
     }
 
