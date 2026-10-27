@@ -153,4 +153,34 @@ public class MainWindowTests
 
         Assert.Equal(WindowState.Normal, window.WindowState);
     }
+
+    [AvaloniaFact]
+    public void EditorShowsFieldsInApprovedOrder()
+    {
+        var (window, vm) = TestWindows.Open();
+        vm.NewServer();
+        Dispatcher.UIThread.RunJobs();
+        var editor = window.Named<Control>("SessionArea").GetVisualDescendants().OfType<Views.ServerEditorView>().Single();
+
+        var labels = editor.Texts().Where(t => t.Classes.Contains("label")).Select(t => t.Text).ToList();
+
+        Assert.Equal(["Adres", "Port", "Kullanıcı", "Şifre", "Domain", "Klasör", "Görünen ad", "Renk"], labels);
+        Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Bağlan");
+        Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Kaydet");
+        Assert.Contains(window.Named<Control>("TabStrip").Texts(), t => t.Text == "Yeni sunucu");
+    }
+
+    [AvaloniaFact]
+    public void TypingInEditorAndSavingAddsServerToTree()
+    {
+        var (window, vm) = TestWindows.Open();
+        vm.NewServer();
+        Dispatcher.UIThread.RunJobs();
+        window.Named<TextBox>("HostBox").Focus();
+        window.KeyTextInput("10.0.5.5");
+        window.Named<Button>("SaveButton").Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Contains(window.Named<Control>("Tree").Texts(), t => t.Text == "10.0.5.5");
+    }
 }

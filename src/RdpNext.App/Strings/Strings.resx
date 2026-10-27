@@ -10,4 +10,33 @@
   <data name="CorruptFileNotice" xml:space="preserve"><value>Bağlantı dosyası okunamadı, eski dosya yedeklendi: {0}</value></data>
   <data name="CloseTab" xml:space="preserve"><value>Kapat</value></data>
   <data name="CloseOtherTabs" xml:space="preserve"><value>Diğerlerini kapat</value></data>
+  <data name="NewServer" xml:space="preserve"><value>Yeni sunucu</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>{0} ayarları</value></data>
+  <data name="TopLevel" xml:space="preserve"><value>En üstte</value></data>
+  <data name="Address" xml:space="preserve"><value>Adres</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="User" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="Password" xml:space="preserve"><value>Şifre</value></data>
+  <data name="Domain" xml:space="preserve"><value>Domain</value></data>
+  <data name="Folder" xml:space="preserve"><value>Klasör</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen ad</value></data>
+  <data name="Color" xml:space="preserve"><value>Renk</value></data>
+  <data name="General" xml:space="preserve"><value>Genel</value></data>
+  <data name="Advanced" xml:space="preserve"><value>Gelişmiş</value></data>
+  <data name="Screen" xml:space="preserve"><value>Ekran</value></data>
+  <data name="FitToWindow" xml:space="preserve"><value>Pencereye sığdır</value></data>
+  <data name="FullScreen" xml:space="preserve"><value>Tam ekran</value></data>
+  <data name="Connect" xml:space="preserve"><value>Bağlan</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Delete" xml:space="preserve"><value>Sil</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Copy" xml:space="preserve"><value>Kopyala</value></data>
+  <data name="NewFolder" xml:space="preserve"><value>Yeni klasör</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="ParentFolder" xml:space="preserve"><value>Üst klasör</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>{0} silinsin mi?</value></data>
+  <data name="DeleteFolderConfirm" xml:space="preserve"><value>{0} ve içindeki {1} sunucu silinsin mi?</value></data>
+  <data name="CopyName" xml:space="preserve"><value>{0} kopya</value></data>
+  <data name="KeychainError" xml:space="preserve"><value>Anahtar zincirine erişilemedi, şifre okunamadı ya da kaydedilmedi.</value></data>
 </root>

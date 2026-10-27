@@ -15,13 +15,13 @@
                  FontSize="{StaticResource SecondaryFontSize}"
                  TextWrapping="Wrap" />
       <Grid ColumnDefinitions="*,8,*">
-        <Button x:Name="AddServerButton" Classes="add">
+        <Button x:Name="AddServerButton" Classes="add" Command="{Binding NewServerCommand}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <Path Data="{StaticResource ServerIcon}" Fill="White" Width="14" Height="14" Stretch="Uniform" />
             <TextBlock Text="{x:Static s:Strings.AddServer}" />
           </StackPanel>
         </Button>
-        <Button x:Name="AddFolderButton" Grid.Column="2" Classes="add">
+        <Button x:Name="AddFolderButton" Grid.Column="2" Classes="add" Command="{Binding NewFolderCommand}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <Path Data="{StaticResource FolderIcon}" Fill="White" Width="14" Height="14" Stretch="Uniform" />
             <TextBlock Text="{x:Static s:Strings.AddFolder}" />
@@ -39,7 +39,7 @@
       </TextBox>
     </StackPanel>
 
-    <TreeView x:Name="Tree" ItemsSource="{Binding Tree.Roots}" Margin="4,0,4,8" DoubleTapped="OnTreeDoubleTapped"
+    <TreeView x:Name="Tree" ItemsSource="{Binding Tree.Roots}" SelectedItem="{Binding Tree.Selected}" Margin="4,0,4,8" DoubleTapped="OnTreeDoubleTapped"
               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
       <TreeView.Styles>
         <Style Selector="TreeViewItem" x:DataType="vm:TreeNodeViewModel">
@@ -51,7 +51,19 @@
       </TreeView.Styles>
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:GroupNodeViewModel" ItemsSource="{Binding Children}">
-          <Grid ColumnDefinitions="Auto,*" Margin="0,4">
+          <Grid ColumnDefinitions="Auto,*" Margin="0,4" Background="Transparent">
+            <Grid.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="{x:Static s:Strings.AddServer}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).NewServerInCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="{x:Static s:Strings.AddFolder}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).NewFolderInCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="{x:Static s:Strings.Edit}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).EditCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="{x:Static s:Strings.Delete}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).DeleteNodeCommand}" CommandParameter="{Binding}" />
+              </ContextMenu>
+            </Grid.ContextMenu>
             <Border Classes="tile-small" Background="{StaticResource GroupTileBrush}">
               <Path Data="{StaticResource FolderIcon}" Fill="White" Width="13" Height="13" Stretch="Uniform" />
             </Border>
@@ -60,7 +72,19 @@
           </Grid>
         </TreeDataTemplate>
         <DataTemplate DataType="vm:ServerNodeViewModel">
-          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,3">
+          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,3" Background="Transparent">
+            <Grid.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="{x:Static s:Strings.Connect}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).ConnectCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="{x:Static s:Strings.Edit}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).EditCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="{x:Static s:Strings.Copy}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).CopyServerCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="{x:Static s:Strings.Delete}"
+                          Command="{Binding $parent[v:SidebarView].((vm:MainWindowViewModel)DataContext).DeleteNodeCommand}" CommandParameter="{Binding}" />
+              </ContextMenu>
+            </Grid.ContextMenu>
             <Border Classes="tile" Background="{Binding Color, Converter={x:Static v:Converters.ServerColorBrush}}">
               <Path Data="{StaticResource WindowsLogo}" Fill="White" Width="15" Height="15" Stretch="Uniform" />
             </Border>

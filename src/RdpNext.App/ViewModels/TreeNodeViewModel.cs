@@ -22,6 +22,9 @@ public abstract partial class TreeNodeViewModel(Node model) : ObservableObject
     {
     }
 
+    // Modeldeki ad, adres ya da renk değişince ekranı günceller.
+    public void Refresh() => OnPropertyChanged(string.Empty);
+
     public static TreeNodeViewModel Create(Node node) => node switch
     {
         Group group => new GroupNodeViewModel(group),

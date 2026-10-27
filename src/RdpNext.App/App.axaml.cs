@@ -16,8 +16,7 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // İşletim sistemi anahtar zinciri Plan 3'te gelecek.
-            var vm = new MainWindowViewModel(new ConnectionStore(ConnectionStore.DefaultPath()), new InMemorySecretStore());
+            var vm = new MainWindowViewModel(new ConnectionStore(ConnectionStore.DefaultPath()), SecretStores.ForCurrentPlatform());
             desktop.MainWindow = new MainWindow { DataContext = vm };
         }
         base.OnFrameworkInitializationCompleted();

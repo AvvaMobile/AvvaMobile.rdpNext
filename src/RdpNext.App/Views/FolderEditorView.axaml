@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:s="using:RdpNext.App.Strings"
+             x:Class="RdpNext.App.Views.FolderEditorView"
+             x:DataType="vm:FolderEditorViewModel"
+             Background="{DynamicResource CardBrush}">
+  <TabControl Classes="editor">
+    <TabItem Header="{x:Static s:Strings.General}">
+      <ScrollViewer>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1000*" MaxWidth="876" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+        <StackPanel Classes="form">
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Name}" />
+              <TextBox x:Name="FolderNameBox" Classes="field" Text="{Binding Name}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.ParentFolder}" />
+              <ComboBox Classes="field" ItemsSource="{Binding Folders}" SelectedItem="{Binding Parent}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate DataType="vm:FolderOption">
+                    <TextBlock Text="{Binding Label}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
+              <TextBox Classes="field" Text="{Binding Username}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Password}" />
+              <TextBox Classes="field" Text="{Binding Password}" PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}">
+                <TextBox.InnerRightContent>
+                  <ToggleButton Classes="eye" IsChecked="{Binding IsPasswordVisible}">
+                    <Path Data="{StaticResource EyeIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.6"
+                          Width="16" Height="16" Stretch="Uniform" />
+                  </ToggleButton>
+                </TextBox.InnerRightContent>
+              </TextBox>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
+              <TextBox Classes="field" Text="{Binding Domain}" />
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
+            <Button x:Name="SaveFolderButton" Classes="primary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />
+            <Button Grid.Column="1" Classes="danger-text" HorizontalAlignment="Right"
+                    Content="{x:Static s:Strings.Delete}" Command="{Binding DeleteCommand}" IsVisible="{Binding !IsNew}" />
+          </Grid>
+        </StackPanel>
+        </Grid>
+      </ScrollViewer>
+    </TabItem>
+  </TabControl>
+</UserControl>

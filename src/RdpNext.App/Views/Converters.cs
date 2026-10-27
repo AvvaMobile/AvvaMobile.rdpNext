@@ -15,6 +15,11 @@ public static class Converters
         [ServerColor.Green] = new SolidColorBrush(Color.Parse("#2fbf71")),
     };
 
+    private static readonly IBrush EditorTile = new SolidColorBrush(Color.Parse("#8080a0"), 0.18);
+
+    public static readonly IValueConverter TabTileBrush =
+        new FuncValueConverter<ServerColor?, IBrush>(color => color is { } c ? ServerBrushes[c] : EditorTile);
+
     public static readonly IValueConverter ServerColorBrush =
         new FuncValueConverter<ServerColor, IBrush>(color => ServerBrushes[color]);
 }

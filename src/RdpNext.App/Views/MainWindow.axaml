@@ -20,6 +20,12 @@
         <DataTemplate DataType="vm:SessionTabViewModel">
           <v:SessionPlaceholderView />
         </DataTemplate>
+        <DataTemplate DataType="vm:ServerEditorViewModel">
+          <v:ServerEditorView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:FolderEditorViewModel">
+          <v:FolderEditorView />
+        </DataTemplate>
       </ContentControl.DataTemplates>
     </ContentControl>
   </DockPanel>
