@@ -52,7 +52,14 @@ public sealed partial class FolderEditorViewModel : TabViewModel
     [ObservableProperty]
     private string _domain = "";
 
+    public bool IsNew => Existing is null;
+
     private bool CanSave() => !string.IsNullOrWhiteSpace(Name);
+
+    [RelayCommand]
+    private Task Delete() => Existing is null
+        ? Task.CompletedTask
+        : _owner.DeleteNodeCommand.ExecuteAsync(_owner.Tree.Node<GroupNodeViewModel>(Existing.Id));
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
@@ -67,6 +74,7 @@ public sealed partial class FolderEditorViewModel : TabViewModel
         {
             tree.AddGroup(group, Parent.Group);
             Existing = group;
+            OnPropertyChanged(nameof(IsNew));
         }
         else
         {

@@ -103,6 +103,11 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Connect() => _owner.Sessions.Open(Store());
 
+    [RelayCommand]
+    private Task Delete() => Existing is null
+        ? Task.CompletedTask
+        : _owner.DeleteNodeCommand.ExecuteAsync(_owner.Tree.Node<ServerNodeViewModel>(Existing.Id));
+
     private ServerNodeViewModel Store()
     {
         var tree = _owner.Tree;

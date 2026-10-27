@@ -48,9 +48,11 @@
               <TextBox Classes="field" Text="{Binding Domain}" />
             </StackPanel>
           </Grid>
-          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+          <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
             <Button x:Name="SaveFolderButton" Classes="primary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />
-          </StackPanel>
+            <Button Grid.Column="1" Classes="danger-text" HorizontalAlignment="Right"
+                    Content="{x:Static s:Strings.Delete}" Command="{Binding DeleteCommand}" IsVisible="{Binding !IsNew}" />
+          </Grid>
         </StackPanel>
       </ScrollViewer>
     </TabItem>

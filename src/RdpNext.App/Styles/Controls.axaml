@@ -124,6 +124,18 @@
   <Style Selector="Button.secondary">
     <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
   </Style>
+  <Style Selector="Button.danger-text">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource NoticeBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.danger">
+    <Setter Property="Padding" Value="26,10" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Background" Value="{StaticResource NoticeBrush}" />
+    <Setter Property="Foreground" Value="White" />
+  </Style>
   <Style Selector="TabControl.editor">
     <Setter Property="Padding" Value="0" />
   </Style>

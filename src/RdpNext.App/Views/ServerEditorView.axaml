@@ -77,10 +77,12 @@
               </ListBox>
             </StackPanel>
           </Grid>
-          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+          <Grid ColumnDefinitions="Auto,10,Auto,*" Margin="0,6,0,0">
             <Button x:Name="ConnectButton" Classes="primary" Content="{x:Static s:Strings.Connect}" Command="{Binding ConnectCommand}" />
-            <Button x:Name="SaveButton" Classes="secondary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />
-          </StackPanel>
+            <Button x:Name="SaveButton" Grid.Column="2" Classes="secondary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />
+            <Button x:Name="DeleteButton" Grid.Column="3" Classes="danger-text" HorizontalAlignment="Right"
+                    Content="{x:Static s:Strings.Delete}" Command="{Binding DeleteCommand}" IsVisible="{Binding !IsNew}" />
+          </Grid>
         </StackPanel>
       </ScrollViewer>
     </TabItem>
