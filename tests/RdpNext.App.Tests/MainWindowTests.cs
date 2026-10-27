@@ -133,11 +133,12 @@ public class MainWindowTests
         var (window, _) = TestWindows.Open();
         var empty = new Point(window.Bounds.Width - 200, 26);
 
+        // Pencere ekranı doldurarak açılır; çift tık eski boyuta alır, tekrar çift tık doldurur.
         DoubleClick(window, empty);
-        Assert.Equal(WindowState.Maximized, window.WindowState);
+        Assert.Equal(WindowState.Normal, window.WindowState);
 
         DoubleClick(window, new Point(window.Bounds.Width - 200, 26));
-        Assert.Equal(WindowState.Normal, window.WindowState);
+        Assert.Equal(WindowState.Maximized, window.WindowState);
     }
 
     [AvaloniaFact]
@@ -151,7 +152,7 @@ public class MainWindowTests
 
         DoubleClick(window, tab.TranslatePoint(new Point(5, 5), window)!.Value);
 
-        Assert.Equal(WindowState.Normal, window.WindowState);
+        Assert.Equal(WindowState.Maximized, window.WindowState);
     }
 
     [AvaloniaFact]
@@ -263,6 +264,14 @@ public class MainWindowTests
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(["api-01", "web-01", "sql-01"], vm.Sessions.Tabs.Select(t => t.Title));
+    }
+
+    [AvaloniaFact]
+    public void WindowOpensFillingScreen()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.Equal(WindowState.Maximized, window.WindowState);
     }
 
     [AvaloniaFact]
