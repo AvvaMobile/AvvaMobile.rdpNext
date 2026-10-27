@@ -1,0 +1,44 @@
+namespace RdpNext.Rdp;
+
+public sealed record RdpConnectOptions(string Host, int Port, string Username, string? Domain, string Password, int Width, int Height);
+
+// Buffer yalnız olay süresince geçerli; BGRA32. X, Y, W, H değişen dikdörtgen.
+public readonly record struct RdpFrame(IntPtr Buffer, int Width, int Height, int Stride, int X, int Y, int W, int H);
+
+public enum RdpEndReason
+{
+    UserLogoff,
+    Disconnected,
+    AuthFailed,
+    CertificateRejected,
+    ConnectFailed,
+}
+
+// FreeRDP PTR_FLAGS_* değerleri.
+[Flags]
+public enum RdpMouseFlags : ushort
+{
+    WheelNegative = 0x0100,
+    Wheel = 0x0200,
+    HWheel = 0x0400,
+    Move = 0x0800,
+    Button1 = 0x1000,
+    Button2 = 0x2000,
+    Button3 = 0x4000,
+    Down = 0x8000,
+}
+
+// Tek bir RDP bağlantısı. Olaylar oturumun kendi iş parçacığından gelir.
+public interface IRdpSession : IDisposable
+{
+    event Action? Connected;
+
+    event Action<RdpFrame>? Frame;
+
+    event Action<RdpEndReason, string?>? Ended;
+
+    // Hemen döner; bağlanma arka planda sürer.
+    void Start(RdpConnectOptions options);
+
+    void SendMouse(RdpMouseFlags flags, int x, int y);
+}
