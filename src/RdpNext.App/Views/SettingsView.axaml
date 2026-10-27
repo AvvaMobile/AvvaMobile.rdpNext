@@ -32,6 +32,8 @@
                            IsVisible="{Binding ShowRestartNote}" />
               </StackPanel>
             </Grid>
+            <Button x:Name="SaveGeneralButton" Classes="primary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveGeneralCommand}"
+                    Margin="0,6,0,0" />
           </StackPanel>
           <StackPanel Classes="form" IsVisible="{Binding ShowExport}">
             <TextBlock x:Name="ExportHint" Text="{x:Static s:Strings.ExportHint}" TextWrapping="Wrap" />

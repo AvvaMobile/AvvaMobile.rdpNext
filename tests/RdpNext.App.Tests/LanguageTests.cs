@@ -44,36 +44,46 @@ public class LanguageTests
     }
 
     [AvaloniaFact]
-    public void ChoosingLanguageSavesIt()
+    public void LanguageIsSavedOnlyWithSaveButton()
     {
         var path = TestWindows.SampleFile();
         var vm = TestWindows.ViewModel(path);
+        var store = new SettingsStore(SettingsStore.Beside(path));
         vm.OpenSettingsCommand.Execute(null);
         var settings = Assert.IsType<SettingsViewModel>(vm.Sessions.Selected);
         Assert.Equal(0, settings.LanguageIndex);
+        Assert.False(settings.SaveGeneralCommand.CanExecute(null));
 
         settings.LanguageIndex = 1;
+        Assert.Null(store.Load().Language);
+        Assert.True(settings.SaveGeneralCommand.CanExecute(null));
 
-        var saved = new SettingsStore(Path.Combine(Path.GetDirectoryName(path)!, "settings.json")).Load();
-        Assert.Equal("en", saved.Language);
+        settings.SaveGeneralCommand.Execute(null);
+        Assert.Equal("en", store.Load().Language);
+        Assert.False(settings.SaveGeneralCommand.CanExecute(null));
     }
 
     [AvaloniaFact]
-    public void RestartNoteShowsOnlyWhenLanguageDiffers()
+    public void RestartNoteShowsAfterSavingOtherLanguage()
     {
         var (window, vm) = TestWindows.Open();
         vm.OpenSettingsCommand.Execute(null);
         var settings = Assert.IsType<SettingsViewModel>(vm.Sessions.Selected);
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         var note = window.Named<Avalonia.Controls.TextBlock>("RestartNote");
-        Assert.True(window.Named<Avalonia.Controls.ComboBox>("LanguageBox").IsEffectivelyVisible);
+        Assert.True(window.Named<Avalonia.Controls.Button>("SaveGeneralButton").IsEffectivelyVisible);
         Assert.False(note.IsEffectivelyVisible);
 
         settings.LanguageIndex = 1;
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.False(note.IsEffectivelyVisible);
+
+        settings.SaveGeneralCommand.Execute(null);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         Assert.True(note.IsEffectivelyVisible);
 
         settings.LanguageIndex = 0;
+        settings.SaveGeneralCommand.Execute(null);
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         Assert.False(note.IsEffectivelyVisible);
     }
