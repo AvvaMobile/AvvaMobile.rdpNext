@@ -14,29 +14,28 @@
                  Foreground="{StaticResource NoticeBrush}"
                  FontSize="{StaticResource SecondaryFontSize}"
                  TextWrapping="Wrap" />
-      <Grid ColumnDefinitions="*,8,*">
-        <Button x:Name="AddServerButton" Classes="add" Command="{Binding NewServerCommand}">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Path Data="{StaticResource ServerIcon}" Fill="White" Width="14" Height="14" Stretch="Uniform" />
-            <TextBlock Text="{x:Static s:Strings.AddServer}" />
-          </StackPanel>
+      <!-- Arama kutusu ve yanında, onunla aynı görünümde iki ikon düğme (sunucu ekle, klasör ekle). -->
+      <Grid ColumnDefinitions="*,8,Auto,6,Auto">
+        <TextBox x:Name="SearchBox" Classes="search" Watermark="{x:Static s:Strings.Search}" Text="{Binding Tree.Query}">
+          <TextBox.KeyBindings>
+            <KeyBinding Gesture="Enter" Command="{Binding ConnectFirstMatchCommand}" />
+          </TextBox.KeyBindings>
+          <TextBox.InnerLeftContent>
+            <Path Data="{StaticResource SearchIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="2"
+                  Width="14" Height="14" Stretch="Uniform" Margin="12,0,4,0" />
+          </TextBox.InnerLeftContent>
+        </TextBox>
+        <Button x:Name="AddServerButton" Grid.Column="2" Classes="tool" Command="{Binding NewServerCommand}"
+                ToolTip.Tip="{x:Static s:Strings.AddServer}">
+          <Path Data="{StaticResource AddServerIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.7"
+                StrokeLineCap="Round" StrokeJoin="Round" Width="19" Height="19" Stretch="Uniform" />
         </Button>
-        <Button x:Name="AddFolderButton" Grid.Column="2" Classes="add" Command="{Binding NewFolderCommand}">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Path Data="{StaticResource FolderIcon}" Fill="White" Width="14" Height="14" Stretch="Uniform" />
-            <TextBlock Text="{x:Static s:Strings.AddFolder}" />
-          </StackPanel>
+        <Button x:Name="AddFolderButton" Grid.Column="4" Classes="tool" Command="{Binding NewFolderCommand}"
+                ToolTip.Tip="{x:Static s:Strings.AddFolder}">
+          <Path Data="{StaticResource AddFolderIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.7"
+                StrokeLineCap="Round" StrokeJoin="Round" Width="19" Height="19" Stretch="Uniform" />
         </Button>
       </Grid>
-      <TextBox x:Name="SearchBox" Classes="search" Watermark="{x:Static s:Strings.Search}" Text="{Binding Tree.Query}">
-        <TextBox.KeyBindings>
-          <KeyBinding Gesture="Enter" Command="{Binding ConnectFirstMatchCommand}" />
-        </TextBox.KeyBindings>
-        <TextBox.InnerLeftContent>
-          <Path Data="{StaticResource SearchIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="2"
-                Width="14" Height="14" Stretch="Uniform" Margin="12,0,4,0" />
-        </TextBox.InnerLeftContent>
-      </TextBox>
     </StackPanel>
 
     <Button x:Name="SettingsButton" DockPanel.Dock="Bottom" Classes="sidebar-footer" Command="{Binding OpenSettingsCommand}">
