@@ -19,5 +19,18 @@ public sealed partial class GroupNodeViewModel : TreeNodeViewModel
 
     public int ServerCount { get; }
 
-    protected override void ExpandedChanged(bool value) => Group.IsExpanded = value;
+    private bool _showingFilter;
+
+    public void ShowExpanded(bool value)
+    {
+        _showingFilter = true;
+        IsExpanded = value;
+        _showingFilter = false;
+    }
+
+    protected override void ExpandedChanged(bool value)
+    {
+        if (!_showingFilter)
+            Group.IsExpanded = value;
+    }
 }

@@ -49,6 +49,9 @@ public static class TestWindows
     public static TextBlock Text(this Visual root, string text) =>
         root.Texts().First(t => t.Text == text);
 
+    public static T Named<T>(this Visual root, string name) where T : Control =>
+        root.GetVisualDescendants().OfType<T>().First(c => c.Name == name);
+
     public static TreeViewItem Item(this Visual root, string name) =>
         root.GetVisualDescendants().OfType<TreeViewItem>()
             .First(i => i.DataContext is TreeNodeViewModel n && n.Name == name);

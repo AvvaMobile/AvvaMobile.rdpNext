@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -71,6 +72,20 @@ public class SidebarTests
         var (normal, normalVm) = TestWindows.Open();
         Assert.Null(normalVm.Notice);
         Assert.DoesNotContain(normal.Texts(), t => t.Text?.StartsWith("Bağlantı dosyası okunamadı") == true);
+    }
+
+    [AvaloniaFact]
+    public void TypingInSearchBoxFilters()
+    {
+        var (window, _) = TestWindows.Open();
+        window.Named<TextBox>("SearchBox").Focus();
+
+        window.KeyTextInput("musteri");
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+        Assert.True(window.Item("Müşteriler").IsVisible);
+        Assert.False(window.Item("Üretim").IsVisible);
+        Assert.False(window.Item("Test").IsVisible);
     }
 
     [AvaloniaFact]
