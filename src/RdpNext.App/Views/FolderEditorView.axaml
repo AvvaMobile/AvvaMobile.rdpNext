@@ -26,7 +26,9 @@
               <TextBlock Classes="label" Text="{x:Static s:Strings.Name}" />
               <TextBox x:Name="FolderNameBox" Classes="field" Text="{Binding Name}" />
             </StackPanel>
-            <StackPanel Grid.Column="2">
+          </Grid>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Color}" />
               <ListBox Classes="swatches" ItemsSource="{Binding Colors}" SelectedItem="{Binding Color}">
                 <ListBox.ItemsPanel>
