@@ -23,15 +23,26 @@ public class MainWindowTests
         window.Named<Control>("TabStrip").Texts().Select(t => t.Text);
 
     [AvaloniaFact]
-    public void FileMenuHasAddAndSettings()
+    public void AppMenuHasAboutAddAndSettings()
     {
         var (window, vm) = TestWindows.Open();
 
-        var file = Assert.Single(NativeMenu.GetMenu(window)!.Items.OfType<NativeMenuItem>());
-        Assert.Equal("File", file.Header);
-        var items = file.Menu!.Items.OfType<NativeMenuItem>().Where(i => i is not NativeMenuItemSeparator).ToList();
-        Assert.Equal(["Sunucu ekle", "Klasör ekle", "Ayarlar"], items.Select(i => i.Header));
-        Assert.Equal([vm.NewServerCommand, vm.NewFolderCommand, vm.OpenSettingsCommand], items.Select(i => i.Command));
+        Assert.Null(NativeMenu.GetMenu(window));
+        var items = NativeMenu.GetMenu(Application.Current!)!.Items.OfType<NativeMenuItem>().Where(i => i is not NativeMenuItemSeparator).ToList();
+        Assert.Equal(["rdpNext Hakkında", "Sunucu ekle", "Klasör ekle", "Ayarlar"], items.Select(i => i.Header));
+        Assert.Equal([vm.NewServerCommand, vm.NewFolderCommand, vm.OpenSettingsCommand], items.Skip(1).Select(i => i.Command));
+        Assert.NotNull(items[0].Command);
+    }
+
+    [AvaloniaFact]
+    public void AboutShowsOnlyAppInfo()
+    {
+        var about = new Views.AboutWindow();
+        about.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(["rdpNext", "Sürüm 1.0.0", "© 2026 Avva Mobile Enterprise Solutions"], about.Texts().Select(t => t.Text));
+        Assert.NotNull(about.Named<Image>("AppIcon").Source);
     }
 
     [AvaloniaFact]

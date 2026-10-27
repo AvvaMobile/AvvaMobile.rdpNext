@@ -41,7 +41,6 @@
   <data name="KeychainError" xml:space="preserve"><value>Could not access the keychain, the password was not read or saved.</value></data>
   <data name="Add" xml:space="preserve"><value>Add</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
-  <data name="File" xml:space="preserve"><value>File</value></data>
   <data name="ExportHint" xml:space="preserve"><value>Your whole server and folder list is saved to a single .json file. You can keep this file as a backup and restore it later with Import. Passwords are not written to the file for security.</value></data>
   <data name="ImportHint" xml:space="preserve"><value>Choose a .json file you exported earlier. The servers and folders in the file are added to your current list; entries already in the list are not added again.</value></data>
   <data name="Export" xml:space="preserve"><value>Export</value></data>
@@ -58,4 +57,6 @@
   <data name="RestartToApply" xml:space="preserve"><value>Takes effect after restart.</value></data>
   <data name="InheritedFrom" xml:space="preserve"><value>from {0}</value></data>
   <data name="BackupFileName" xml:space="preserve"><value>rdpNext-backup-{0}.json</value></data>
+  <data name="About" xml:space="preserve"><value>About {0}</value></data>
+  <data name="Version" xml:space="preserve"><value>Version {0}</value></data>
 </root>
