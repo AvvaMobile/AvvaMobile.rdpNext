@@ -1,0 +1,143 @@
+using System.Text.Json.Nodes;
+using RdpNext.Core.Secrets;
+using RdpNext.Core.Storage;
+
+namespace RdpNext.Core.Tests;
+
+public sealed class ConnectionStoreTests : IDisposable
+{
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "rdpnext-tests-" + Guid.NewGuid());
+    private readonly string _path;
+
+    public ConnectionStoreTests()
+    {
+        Directory.CreateDirectory(_dir);
+        _path = Path.Combine(_dir, "connections.json");
+    }
+
+    public void Dispose() => Directory.Delete(_dir, recursive: true);
+
+    [Fact]
+    public void RoundTripKeepsEverything()
+    {
+        var root = new Group();
+        var uretim = new Group { Name = "Üretim", Username = "admin", Domain = "AVVA" };
+        var web = new Group { Name = "Web", IsExpanded = false };
+        var server = new Server
+        {
+            Name = "web-01", Host = "10.0.1.11", Port = 3390, Color = ServerColor.Violet,
+            Screen = ScreenMode.FullScreen, Username = "ali", Domain = "AVVA2",
+        };
+        root.Add(uretim);
+        uretim.Add(web);
+        web.Add(server);
+
+        new ConnectionStore(_path).Save(root);
+        var loaded = new ConnectionStore(_path).Load().Root;
+
+        var lUretim = Assert.IsType<Group>(Assert.Single(loaded.Children));
+        Assert.Equal((uretim.Id, "Üretim", "admin", "AVVA"), (lUretim.Id, lUretim.Name, lUretim.Username, lUretim.Domain));
+        var lWeb = Assert.IsType<Group>(Assert.Single(lUretim.Children));
+        Assert.False(lWeb.IsExpanded);
+        var lServer = Assert.IsType<Server>(Assert.Single(lWeb.Children));
+        Assert.Equal(
+            (server.Id, "web-01", "10.0.1.11", 3390, ServerColor.Violet, ScreenMode.FullScreen, "ali", "AVVA2", Protocol.Rdp),
+            (lServer.Id, lServer.Name, lServer.Host, lServer.Port, lServer.Color, lServer.Screen, lServer.Username, lServer.Domain, lServer.Protocol));
+        Assert.Same(lWeb, lServer.Parent);
+        Assert.Same(lUretim, lWeb.Parent);
+        Assert.Same(loaded, lUretim.Parent);
+    }
+
+    [Fact]
+    public void PasswordsNeverWritten()
+    {
+        var secrets = new InMemorySecretStore();
+        var root = new Group();
+        var server = new Server { Name = "web-01", Host = "10.0.1.11" };
+        secrets.SetPassword(server.Id, "Gizli123!");
+        root.Add(server);
+
+        new ConnectionStore(_path).Save(root);
+
+        Assert.DoesNotContain("Gizli123!", File.ReadAllText(_path));
+    }
+
+    [Fact]
+    public void FileHasVersionAndKinds()
+    {
+        var root = new Group();
+        var group = new Group { Name = "Üretim" };
+        root.Add(group);
+        group.Add(new Server { Name = "web-01" });
+
+        new ConnectionStore(_path).Save(root);
+
+        var json = JsonNode.Parse(File.ReadAllText(_path))!;
+        Assert.Equal(1, json["version"]!.GetValue<int>());
+        var jGroup = json["root"]!["children"]![0]!;
+        Assert.Equal("group", jGroup["kind"]!.GetValue<string>());
+        var jServer = jGroup["children"]![0]!;
+        Assert.Equal("server", jServer["kind"]!.GetValue<string>());
+        Assert.Equal("rdp", jServer["protocol"]!.GetValue<string>());
+        Assert.Equal("fitToWindow", jServer["screen"]!.GetValue<string>());
+        Assert.Equal("blue", jServer["color"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void MissingFileGivesEmptyRoot()
+    {
+        var result = new ConnectionStore(_path).Load();
+
+        Assert.Empty(result.Root.Children);
+        Assert.Null(result.CorruptBackupPath);
+        Assert.False(File.Exists(_path));
+    }
+
+    [Fact]
+    public void CorruptFileIsBackedUpNotOverwritten()
+    {
+        File.WriteAllText(_path, "{ yarım");
+
+        var result = new ConnectionStore(_path).Load();
+
+        Assert.Empty(result.Root.Children);
+        Assert.NotNull(result.CorruptBackupPath);
+        Assert.Matches(@"connections\.corrupt-\d{8}-\d{6}\.json$", result.CorruptBackupPath);
+        Assert.Equal("{ yarım", File.ReadAllText(result.CorruptBackupPath));
+        Assert.False(File.Exists(_path));
+    }
+
+    [Fact]
+    public void UnknownNodeKindIsBackedUpNotCrash()
+    {
+        File.WriteAllText(_path, """{ "version": 1, "root": { "kind": "group", "children": [ { "kind": "ssh", "name": "x" } ] } }""");
+
+        var result = new ConnectionStore(_path).Load();
+
+        Assert.Empty(result.Root.Children);
+        Assert.NotNull(result.CorruptBackupPath);
+    }
+
+    [Fact]
+    public void SaveIsAtomic()
+    {
+        var root = new Group();
+        root.Add(new Server { Name = "web-01" });
+
+        new ConnectionStore(_path).Save(root);
+
+        Assert.Equal(["connections.json"], Directory.GetFiles(_dir).Select(Path.GetFileName));
+    }
+
+    [Fact]
+    public void SampleFileLoads()
+    {
+        var sample = Path.Combine(AppContext.BaseDirectory, "connections.sample.json");
+
+        var root = new ConnectionStore(sample).Load().Root;
+
+        Assert.Equal(3, root.Children.Count);
+        var uretim = Assert.IsType<Group>(root.Children[0]);
+        Assert.Equal(3, uretim.Children.Count);
+    }
+}

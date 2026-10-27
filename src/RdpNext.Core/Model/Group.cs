@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace RdpNext.Core.Model;
 
 public sealed class Group : Node
@@ -10,7 +12,20 @@ public sealed class Group : Node
 
     public bool IsExpanded { get; set; } = true;
 
+    [JsonIgnore]
     public IReadOnlyList<Node> Children => _children;
+
+    [JsonInclude]
+    [JsonPropertyName("children")]
+    private List<Node> SerializedChildren
+    {
+        get => _children;
+        set
+        {
+            foreach (var child in value)
+                Add(child);
+        }
+    }
 
     public void Add(Node child)
     {

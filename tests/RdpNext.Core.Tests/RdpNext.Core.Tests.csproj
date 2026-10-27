@@ -13,6 +13,9 @@
     <Using Include="RdpNext.Core.Model" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\samples\connections.sample.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\RdpNext.Core\RdpNext.Core.csproj" />
   </ItemGroup>
 </Project>
