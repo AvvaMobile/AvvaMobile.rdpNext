@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:v="using:RdpNext.App.Views"
+             xmlns:m="using:RdpNext.Core.Model"
+             xmlns:s="using:RdpNext.App.Strings"
+             x:Class="RdpNext.App.Views.ServerEditorView"
+             x:DataType="vm:ServerEditorViewModel"
+             Background="{DynamicResource CardBrush}">
+  <TabControl Classes="editor">
+    <TabItem Header="{x:Static s:Strings.General}">
+      <ScrollViewer>
+        <StackPanel Classes="form">
+          <Grid ColumnDefinitions="*,12,140">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Address}" />
+              <TextBox x:Name="HostBox" Classes="field" Text="{Binding Host}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Port}" />
+              <TextBox Classes="field" Text="{Binding Port}" />
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
+              <TextBox Classes="field" Text="{Binding Username}" PlaceholderText="{Binding UsernameHint}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Password}" />
+              <TextBox Classes="field" Text="{Binding Password}" PlaceholderText="{Binding PasswordHint}"
+                       PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}">
+                <TextBox.InnerRightContent>
+                  <ToggleButton Classes="eye" IsChecked="{Binding IsPasswordVisible}">
+                    <Path Data="{StaticResource EyeIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.6"
+                          Width="16" Height="16" Stretch="Uniform" />
+                  </ToggleButton>
+                </TextBox.InnerRightContent>
+              </TextBox>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
+              <TextBox Classes="field" Text="{Binding Domain}" PlaceholderText="{Binding DomainHint}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Folder}" />
+              <ComboBox Classes="field" ItemsSource="{Binding Folders}" SelectedItem="{Binding Folder}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate DataType="vm:FolderOption">
+                    <TextBlock Text="{Binding Label}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.DisplayName}" />
+              <TextBox Classes="field" Text="{Binding Name}" PlaceholderText="{Binding Host}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Color}" />
+              <ListBox Classes="swatches" ItemsSource="{Binding Colors}" SelectedItem="{Binding Color}">
+                <ListBox.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                  </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                  <DataTemplate DataType="m:ServerColor">
+                    <Border Width="30" Height="30" CornerRadius="8"
+                            Background="{Binding Converter={x:Static v:Converters.ServerColorBrush}}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+            <Button x:Name="ConnectButton" Classes="primary" Content="{x:Static s:Strings.Connect}" Command="{Binding ConnectCommand}" />
+            <Button x:Name="SaveButton" Classes="secondary" Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+    <TabItem Header="{x:Static s:Strings.Advanced}">
+      <StackPanel Classes="form">
+        <StackPanel MaxWidth="400" HorizontalAlignment="Left">
+          <TextBlock Classes="label" Text="{x:Static s:Strings.Screen}" />
+          <ComboBox Classes="field" SelectedIndex="{Binding ScreenIndex}">
+            <ComboBoxItem Content="{x:Static s:Strings.FitToWindow}" />
+            <ComboBoxItem Content="{x:Static s:Strings.FullScreen}" />
+          </ComboBox>
+        </StackPanel>
+      </StackPanel>
+    </TabItem>
+  </TabControl>
+</UserControl>
