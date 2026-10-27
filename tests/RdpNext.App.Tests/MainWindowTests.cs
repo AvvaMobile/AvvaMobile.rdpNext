@@ -240,6 +240,31 @@ public class MainWindowTests
         }
     }
 
+    // Gerçek fareyle: üçüncü sekmeyi tutup en başa sürükle.
+    [AvaloniaFact]
+    public void DraggingTabReordersTabs()
+    {
+        var (window, vm) = TestWindows.Open();
+        foreach (var name in new[] { "web-01", "sql-01", "api-01" })
+            vm.ConnectCommand.Execute(vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == name).Id));
+        Dispatcher.UIThread.RunJobs();
+        Point Center(string title)
+        {
+            var text = window.Named<Control>("TabStrip").Texts().First(t => t.Text == title);
+            return text.TranslatePoint(new Point(text.Bounds.Width / 2, text.Bounds.Height / 2), window)!.Value;
+        }
+
+        var start = Center("api-01");
+        var target = Center("web-01") - new Point(30, 0);
+        window.MouseDown(start, MouseButton.Left);
+        window.MouseMove(start - new Point(10, 0), RawInputModifiers.LeftMouseButton);
+        window.MouseMove(target, RawInputModifiers.LeftMouseButton);
+        window.MouseUp(target, MouseButton.Left);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(["api-01", "web-01", "sql-01"], vm.Sessions.Tabs.Select(t => t.Title));
+    }
+
     [AvaloniaFact]
     public void AppNameIsRdpNext()
     {

@@ -30,6 +30,18 @@ public sealed partial class SessionsViewModel : ObservableObject
         Selected = tab;
     }
 
+    // Sekmeyi verilen sıraya taşır (sürükle-bırak); seçim değişmez.
+    public void MoveTab(TabViewModel tab, int index)
+    {
+        var from = Tabs.IndexOf(tab);
+        index = Math.Clamp(index, 0, Tabs.Count - 1);
+        if (from < 0 || from == index)
+            return;
+        var selected = Selected;
+        Tabs.Move(from, index);
+        Selected = selected;
+    }
+
     public T? Find<T>(Func<T, bool> match) where T : TabViewModel =>
         Tabs.OfType<T>().FirstOrDefault(match);
 
