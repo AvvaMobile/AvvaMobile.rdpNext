@@ -23,6 +23,7 @@ public partial class SessionView : UserControl
         InitializeComponent();
         DetachedFromVisualTree += (_, _) => Watch(null);
         SizeChanged += (_, e) => _tab?.ViewSizeChanged(e.NewSize.Width, e.NewSize.Height);
+        LostFocus += (_, _) => ReleaseKeys();
     }
 
     private IRdpSession? Session => _tab?.Session;
@@ -165,6 +166,9 @@ public partial class SessionView : UserControl
         }
         base.OnTextInput(e);
     }
+
+    // Sunucuda basılı kalmış tuşları bırakır.
+    public void ReleaseKeys() => Send(_keys.ReleaseAll());
 
     private void Send(IReadOnlyList<KeyAction> actions)
     {

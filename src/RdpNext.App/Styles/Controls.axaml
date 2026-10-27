@@ -173,6 +173,11 @@
     <Setter Property="Opacity" Value="0.9" />
   </Style>
 
+  <Style Selector="Border.content-frame.fullscreen">
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
   <Style Selector="Border.content-frame">
     <Setter Property="Margin" Value="12" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />

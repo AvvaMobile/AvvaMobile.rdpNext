@@ -22,9 +22,37 @@ public sealed class KeyboardTranslator(bool mac)
 
     private bool _altHeld;
     private bool _altSent;
+    private readonly HashSet<(ushort Code, bool Extended)> _pressed = [];
 
     // null: tuş işlenmiş sayılmaz (uygulamaya ya da karakter olayına kalır).
-    public IReadOnlyList<KeyAction>? KeyDown(PhysicalKey key, KeyModifiers modifiers)
+    public IReadOnlyList<KeyAction>? KeyDown(PhysicalKey key, KeyModifiers modifiers) => Track(Down(key, modifiers));
+
+    public IReadOnlyList<KeyAction> KeyUp(PhysicalKey key, KeyModifiers modifiers) => Track(Up(key, modifiers))!;
+
+    // Sunucuda basılı kalan tuşların hepsini bırakır (odak giderken, tam ekran kısayolundan sonra).
+    public IReadOnlyList<KeyAction> ReleaseAll()
+    {
+        var released = _pressed.Select(k => (KeyAction)new ScancodeAction(k.Code, k.Extended, false)).ToList();
+        _pressed.Clear();
+        _altHeld = _altSent = false;
+        return released;
+    }
+
+    private IReadOnlyList<KeyAction>? Track(IReadOnlyList<KeyAction>? actions)
+    {
+        foreach (var action in actions ?? [])
+        {
+            if (action is not ScancodeAction s)
+                continue;
+            if (s.Down)
+                _pressed.Add((s.Code, s.Extended));
+            else
+                _pressed.Remove((s.Code, s.Extended));
+        }
+        return actions;
+    }
+
+    private IReadOnlyList<KeyAction>? Down(PhysicalKey key, KeyModifiers modifiers)
     {
         if (!mac)
             return Scancode(key, down: true) is { } action ? [action] : null;
@@ -53,7 +81,7 @@ public sealed class KeyboardTranslator(bool mac)
         return [scancode];
     }
 
-    public IReadOnlyList<KeyAction> KeyUp(PhysicalKey key, KeyModifiers modifiers)
+    private IReadOnlyList<KeyAction> Up(PhysicalKey key, KeyModifiers modifiers)
     {
         if (!mac)
             return Scancode(key, down: false) is { } action ? [action] : [];

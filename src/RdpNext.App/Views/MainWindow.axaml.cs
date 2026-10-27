@@ -19,6 +19,8 @@ public partial class MainWindow : Window
                 vm.SessionAreaSize = e.NewSize;
         };
         Closing += (_, _) => (DataContext as MainWindowViewModel)?.Shutdown();
+        // Tam ekran kısayolu oturum klavyeyi tutarken de önce burada yakalanır.
+        AddHandler(KeyDownEvent, OnFullScreenGesture, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         // macOS'ta sol üstteki pencere düğmeleri sidebar düğmesinin ve sekmelerin üstüne binmesin.
         if (OperatingSystem.IsMacOS())
         {
@@ -38,6 +40,7 @@ public partial class MainWindow : Window
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
+        WatchFullScreen(DataContext as MainWindowViewModel);
         if (DataContext is not MainWindowViewModel vm || Application.Current is not { } app)
             return;
         var menu = NativeMenu.GetMenu(app);
@@ -59,6 +62,41 @@ public partial class MainWindow : Window
     }
 
     private void ShowAbout() => new AboutWindow().ShowDialog(this);
+
+    private void OnFullScreenGesture(object? sender, KeyEventArgs e)
+    {
+        if (!Rdp.FullScreenGesture.Matches(e) || DataContext is not MainWindowViewModel vm)
+            return;
+        (FocusManager?.GetFocusedElement() as SessionView)?.ReleaseKeys();
+        vm.ToggleFullScreenCommand.Execute(null);
+        e.Handled = true;
+    }
+
+    private MainWindowViewModel? _watched;
+    private WindowState _beforeFullScreen = WindowState.Maximized;
+
+    private void WatchFullScreen(MainWindowViewModel? vm)
+    {
+        if (_watched is not null)
+            _watched.PropertyChanged -= OnViewModelChanged;
+        _watched = vm;
+        if (_watched is not null)
+            _watched.PropertyChanged += OnViewModelChanged;
+    }
+
+    private void OnViewModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(MainWindowViewModel.IsFullScreen) || _watched is null)
+            return;
+        if (_watched.IsFullScreen)
+        {
+            if (WindowState != WindowState.FullScreen)
+                _beforeFullScreen = WindowState;
+            WindowState = WindowState.FullScreen;
+        }
+        else if (WindowState == WindowState.FullScreen)
+            WindowState = _beforeFullScreen;
+    }
 
     // Başlık çubuğunun boş yerine çift tık: ekranı doldur ya da eski boyuta dön.
     private void OnTitleBarDoubleTapped(object? sender, TappedEventArgs e)
