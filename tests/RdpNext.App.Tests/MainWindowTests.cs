@@ -35,6 +35,14 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
+    public void WindowHasAppIcon()
+    {
+        var (window, _) = TestWindows.Open();
+
+        Assert.NotNull(window.Icon);
+    }
+
+    [AvaloniaFact]
     public void DoubleClickOnServerOpensTab()
     {
         var (window, vm) = TestWindows.Open();

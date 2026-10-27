@@ -4,6 +4,7 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>rdpNext</AssemblyName>
     <RootNamespace>RdpNext.App</RootNamespace>
+    <ApplicationIcon>Assets\rdpNext.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />
@@ -11,6 +12,9 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\rdpNext.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Strings\Strings.resx">

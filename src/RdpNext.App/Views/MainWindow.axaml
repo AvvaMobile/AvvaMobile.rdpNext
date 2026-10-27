@@ -5,6 +5,7 @@
         x:Class="RdpNext.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="rdpNext"
+        Icon="/Assets/rdpNext.png"
         Width="1280" Height="800" MinWidth="800" MinHeight="500"
         WindowState="Maximized"
         ExtendClientAreaToDecorationsHint="True"
