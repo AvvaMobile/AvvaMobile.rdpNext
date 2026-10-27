@@ -60,16 +60,30 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     private string _port = "3389";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowUsernameSource))]
     private string _username = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPasswordSource))]
     private string _password = "";
 
     [ObservableProperty]
     private bool _isPasswordVisible;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowDomainSource))]
     private string _domain = "";
+
+    // Alt sekme: Genel ya da Gelişmiş.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowGeneral))]
+    private bool _showAdvanced;
+
+    public bool ShowGeneral
+    {
+        get => !ShowAdvanced;
+        set => ShowAdvanced = !value;
+    }
 
     [ObservableProperty]
     private FolderOption _folder;
@@ -88,14 +102,33 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         set => Screen = (ScreenMode)value;
     }
 
+    // Gruptan gelen değer alanda soluk görünür, kaynağı ("Üretim'den") alanın sağında.
     [ObservableProperty]
     private string? _usernameHint;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowUsernameSource))]
+    private string? _usernameSource;
 
     [ObservableProperty]
     private string? _passwordHint;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPasswordSource))]
+    private string? _passwordSource;
+
+    [ObservableProperty]
     private string? _domainHint;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowDomainSource))]
+    private string? _domainSource;
+
+    public bool ShowUsernameSource => UsernameSource is not null && Username.Length == 0;
+
+    public bool ShowPasswordSource => PasswordSource is not null && Password.Length == 0;
+
+    public bool ShowDomainSource => DomainSource is not null && Domain.Length == 0;
 
     partial void OnFolderChanged(FolderOption value) => UpdateHints();
 
@@ -168,13 +201,15 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     private void UpdateHints()
     {
         var inherited = CredentialResolver.Inherited(Folder.Group ?? _owner.Tree.Root, _owner.Secrets);
-        UsernameHint = Hint(inherited.Username?.Value, inherited.Username);
-        DomainHint = Hint(inherited.Domain?.Value, inherited.Domain);
-        PasswordHint = Hint("••••••", inherited.Password);
+        UsernameHint = inherited.Username?.Value;
+        UsernameSource = Source(inherited.Username);
+        DomainHint = inherited.Domain?.Value;
+        DomainSource = Source(inherited.Domain);
+        PasswordHint = inherited.Password is null ? null : "••••••";
+        PasswordSource = Source(inherited.Password);
     }
 
-    private static string? Hint(string? shown, InheritedValue? value) =>
-        value is null ? null : $"{shown} ({TurkishText.From(value.FromGroup)})";
+    private static string? Source(InheritedValue? value) => value is null ? null : TurkishText.From(value.FromGroup);
 
     private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

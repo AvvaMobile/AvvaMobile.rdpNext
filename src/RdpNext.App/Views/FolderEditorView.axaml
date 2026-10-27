@@ -5,8 +5,12 @@
              x:Class="RdpNext.App.Views.FolderEditorView"
              x:DataType="vm:FolderEditorViewModel"
              Background="{DynamicResource CardBrush}">
-  <TabControl Classes="editor">
-    <TabItem Header="{x:Static s:Strings.General}">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Classes="subtabs">
+      <StackPanel Orientation="Horizontal">
+        <RadioButton Classes="subtab" Content="{x:Static s:Strings.General}" IsChecked="True" />
+      </StackPanel>
+    </Border>
       <ScrollViewer>
         <Grid>
           <Grid.ColumnDefinitions>
@@ -61,6 +65,5 @@
         </StackPanel>
         </Grid>
       </ScrollViewer>
-    </TabItem>
-  </TabControl>
+  </DockPanel>
 </UserControl>

@@ -70,7 +70,7 @@
   <!-- Düzenleme sekmesi (docs/tasarim/duzenle-sekmesi.png) -->
   <Style Selector="StackPanel.form">
     <Setter Property="Spacing" Value="18" />
-    <Setter Property="Margin" Value="28,22" />
+    <Setter Property="Margin" Value="28,24" />
   </Style>
   <Style Selector="TextBlock.label">
     <Setter Property="FontSize" Value="{StaticResource SecondaryFontSize}" />
@@ -141,31 +141,49 @@
     <Setter Property="Background" Value="{StaticResource NoticeBrush}" />
     <Setter Property="Foreground" Value="White" />
   </Style>
-  <Style Selector="TabControl.editor">
-    <Setter Property="Padding" Value="0" />
+
+  <!-- Düzenleme sekmesinin üst şeridi: gri zemin, boydan boya alt çizgi, seçili başlıkta mavi çizgi -->
+  <Style Selector="Border.subtabs">
+    <Setter Property="Background" Value="{DynamicResource SidebarBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Padding" Value="28,0" />
   </Style>
-  <Style Selector="TabControl.editor TabItem">
+  <Style Selector="RadioButton.subtab">
     <Setter Property="FontSize" Value="{StaticResource BodyFontSize}" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
-    <Setter Property="Padding" Value="18,10" />
-    <Setter Property="MinHeight" Value="46" />
-  </Style>
-  <Style Selector="TabControl.editor TabItem:selected">
-    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
-  </Style>
-  <Style Selector="TabControl.editor TabItem /template/ :is(Control)#PART_SelectedPipe">
-    <Setter Property="IsVisible" Value="False" />
-  </Style>
-  <Style Selector="TabControl.editor TabItem">
-    <Setter Property="BorderThickness" Value="0,0,0,2" />
     <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,2" Padding="18,12">
+          <ContentPresenter Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
   </Style>
-  <Style Selector="TabControl.editor TabItem:selected">
+  <Style Selector="RadioButton.subtab:checked">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
   </Style>
-  <Style Selector="TabControl.editor TabItem /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="FontWeight" Value="Medium" />
+  <Style Selector="TextBlock.source">
+    <Setter Property="FontSize" Value="{StaticResource SecondaryFontSize}" />
+    <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Margin" Value="8,0,12,0" />
+  </Style>
+  <!-- Pasif butonlar gri değil, kendi renginde soluk -->
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+  <Style Selector="Button.secondary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+  <Style Selector="Button.primary:disabled, Button.secondary:disabled">
+    <Setter Property="Opacity" Value="0.5" />
   </Style>
 
   <!-- Sağ tık menüsü: yuvarlak köşe, ferah satırlar, Sil kırmızı -->

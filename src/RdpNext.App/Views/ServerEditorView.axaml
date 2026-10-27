@@ -7,9 +7,15 @@
              x:Class="RdpNext.App.Views.ServerEditorView"
              x:DataType="vm:ServerEditorViewModel"
              Background="{DynamicResource CardBrush}">
-  <TabControl Classes="editor">
-    <TabItem Header="{x:Static s:Strings.General}">
-      <ScrollViewer>
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Classes="subtabs">
+      <StackPanel Orientation="Horizontal">
+        <RadioButton Classes="subtab" Content="{x:Static s:Strings.General}" IsChecked="{Binding ShowGeneral}" />
+        <RadioButton Classes="subtab" Content="{x:Static s:Strings.Advanced}" IsChecked="{Binding ShowAdvanced}" />
+      </StackPanel>
+    </Border>
+    <Panel>
+      <ScrollViewer IsVisible="{Binding ShowGeneral}">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1000*" MaxWidth="876" />
@@ -61,17 +67,24 @@
           <Grid ColumnDefinitions="*,12,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
-              <TextBox Classes="field" Text="{Binding Username}" PlaceholderText="{Binding UsernameHint}" />
+              <TextBox Classes="field" Text="{Binding Username}" PlaceholderText="{Binding UsernameHint}">
+                <TextBox.InnerRightContent>
+                  <TextBlock Classes="source" Text="{Binding UsernameSource}" IsVisible="{Binding ShowUsernameSource}" />
+                </TextBox.InnerRightContent>
+              </TextBox>
             </StackPanel>
             <StackPanel Grid.Column="2">
               <TextBlock Classes="label" Text="{x:Static s:Strings.Password}" />
               <TextBox Classes="field" Text="{Binding Password}" PlaceholderText="{Binding PasswordHint}"
                        PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}">
                 <TextBox.InnerRightContent>
+                  <StackPanel Orientation="Horizontal">
+                  <TextBlock Classes="source" Text="{Binding PasswordSource}" IsVisible="{Binding ShowPasswordSource}" />
                   <ToggleButton Classes="eye" IsChecked="{Binding IsPasswordVisible}">
                     <Path Data="{StaticResource EyeIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.6"
                           Width="16" Height="16" Stretch="Uniform" />
                   </ToggleButton>
+                  </StackPanel>
                 </TextBox.InnerRightContent>
               </TextBox>
             </StackPanel>
@@ -79,7 +92,11 @@
           <Grid ColumnDefinitions="*,12,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
-              <TextBox Classes="field" Text="{Binding Domain}" PlaceholderText="{Binding DomainHint}" />
+              <TextBox Classes="field" Text="{Binding Domain}" PlaceholderText="{Binding DomainHint}">
+                <TextBox.InnerRightContent>
+                  <TextBlock Classes="source" Text="{Binding DomainSource}" IsVisible="{Binding ShowDomainSource}" />
+                </TextBox.InnerRightContent>
+              </TextBox>
             </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="Auto,10,Auto,*" Margin="0,6,0,0">
@@ -91,9 +108,7 @@
         </StackPanel>
         </Grid>
       </ScrollViewer>
-    </TabItem>
-    <TabItem Header="{x:Static s:Strings.Advanced}">
-      <StackPanel Classes="form">
+      <StackPanel Classes="form" IsVisible="{Binding ShowAdvanced}">
         <StackPanel MaxWidth="400" HorizontalAlignment="Left">
           <TextBlock Classes="label" Text="{x:Static s:Strings.Screen}" />
           <ComboBox Classes="field" SelectedIndex="{Binding ScreenIndex}">
@@ -102,6 +117,6 @@
           </ComboBox>
         </StackPanel>
       </StackPanel>
-    </TabItem>
-  </TabControl>
+    </Panel>
+  </DockPanel>
 </UserControl>
