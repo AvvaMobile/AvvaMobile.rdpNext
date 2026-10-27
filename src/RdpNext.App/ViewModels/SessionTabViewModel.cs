@@ -91,6 +91,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
 
     private Func<IRdpSession>? _newSession;
     private Size _size;
+    private (int Width, int Height) _startedSize;
     // Son bağlanılan bilgiler; Reconnect aynı bilgilerle bağlanır (şifre yalnız bellekte).
     private (string Username, string Password, string? Domain) _lastSignIn;
 
@@ -135,12 +136,12 @@ public sealed partial class SessionTabViewModel : TabViewModel
         State = SessionState.Connecting;
         _lastSignIn = (username, password, domain);
         session.VerifyCertificate = certificate => AskCertificate(session, certificate);
-        session.Connected += () => OnUi(session, () => State = SessionState.Connected);
+        session.Connected += () => OnUi(session, OnConnected);
         session.Ended += (reason, _) => OnUi(session, () => Ended(reason));
         session.Frame += Screen.CopyFrame;
         session.PointerChanged += pointer => OnUi(session, () => Pointer = pointer);
         session.RemoteClipboardText += text => OnUi(session, () => RemoteClipboardText?.Invoke(text));
-        var (width, height) = RemoteSize(_size.Width, _size.Height);
+        var (width, height) = _startedSize = RemoteSize(_size.Width, _size.Height);
         session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, username, domain, password, width, height));
     }
 
@@ -172,6 +173,14 @@ public sealed partial class SessionTabViewModel : TabViewModel
     {
         IsAskingCredentials = false;
         CloseRequested?.Invoke();
+    }
+
+    // Bağlanırken görünüm boyutu değiştiyse sunucudan şimdiki boyut istenir.
+    private void OnConnected()
+    {
+        State = SessionState.Connected;
+        if (RemoteSize(_size.Width, _size.Height) != _startedSize)
+            ViewSizeChanged(_size.Width, _size.Height);
     }
 
     private void Ended(RdpEndReason reason)

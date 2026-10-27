@@ -209,11 +209,6 @@
     <Setter Property="FontFamily" Value="Menlo, Consolas, monospace" />
     <Setter Property="FontSize" Value="14" />
   </Style>
-  <Style Selector="Border.content-frame.fullscreen">
-    <Setter Property="Margin" Value="0" />
-    <Setter Property="CornerRadius" Value="0" />
-    <Setter Property="BorderThickness" Value="0" />
-  </Style>
   <Style Selector="Border.content-frame">
     <Setter Property="Margin" Value="12" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
@@ -221,6 +216,12 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Background" Value="{DynamicResource CardBrush}" />
     <Setter Property="ClipToBounds" Value="True" />
+  </Style>
+  <!-- Tam ekranda oturum kenardan kenara; aynı özellikleri ezdiği için content-frame'den sonra gelir. -->
+  <Style Selector="Border.content-frame.fullscreen">
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="BorderThickness" Value="0" />
   </Style>
 
   <!-- Düzenleme sekmesinin üst şeridi: gri zemin, boydan boya alt çizgi, seçili başlıkta mavi çizgi -->

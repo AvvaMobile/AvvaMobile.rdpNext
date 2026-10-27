@@ -56,6 +56,21 @@ public class SessionTabTests
         Assert.Equal([(expectedWidth, expectedHeight)], _sessions[0].Resizes);
     }
 
+    // Bağlanırken görünüm boyutu değiştiyse, bağlanınca sunucudan bu boyut istenir.
+    [AvaloniaFact]
+    public void SizeChangedWhileConnectingIsSentAfterConnect()
+    {
+        GiveUretimCredentials();
+        var tab = Connect("web-01");
+        tab.ViewSizeChanged(1374, 996);
+
+        _sessions[0].RaiseConnected();
+        Dispatcher.UIThread.RunJobs();
+        _time.Advance(TimeSpan.FromMilliseconds(300));
+
+        Assert.Equal([(1374, 996)], _sessions[0].Resizes);
+    }
+
     [AvaloniaFact]
     public void ResizeBeforeConnectedIsIgnored()
     {

@@ -41,6 +41,10 @@ public class FullScreenTests
         Assert.False(window.Named<Control>("Sidebar").IsVisible);
         Assert.False(window.Named<Control>("TitleBar").IsVisible);
         Assert.True(window.Named<Control>("SessionViewRoot").IsEffectivelyVisible);
+        // Tam ekranda oturum kenardan kenara: çerçevenin boşluğu, köşesi ve kenarlığı yok.
+        var frame = window.Named<Border>("ContentFrame");
+        Assert.Equal((new Avalonia.Thickness(0), new Avalonia.CornerRadius(0), new Avalonia.Thickness(0)),
+            (frame.Margin, frame.CornerRadius, frame.BorderThickness));
     }
 
     [AvaloniaFact]
