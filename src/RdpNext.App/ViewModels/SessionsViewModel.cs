@@ -7,12 +7,17 @@ public sealed partial class SessionsViewModel(TimeProvider? time = null) : Obser
 {
     public ObservableCollection<TabViewModel> Tabs { get; } = [];
 
+    // Tam ekrandaki oturumlar: her biri kendi penceresinde açılır, sekme şeridinde durmaz.
+    public ObservableCollection<SessionTabViewModel> Windows { get; } = [];
+
     [ObservableProperty]
     private TabViewModel? _selected;
 
     public SessionTabViewModel Open(ServerNodeViewModel server)
     {
         var tab = Find<SessionTabViewModel>(t => t.Server == server);
+        if (tab is not null && Windows.Contains(tab))
+            return tab;
         if (tab is null)
         {
             tab = new SessionTabViewModel(server, time);
@@ -42,10 +47,37 @@ public sealed partial class SessionsViewModel(TimeProvider? time = null) : Obser
     }
 
     public T? Find<T>(Func<T, bool> match) where T : TabViewModel =>
-        Tabs.OfType<T>().FirstOrDefault(match);
+        Tabs.OfType<T>().Concat(Windows.OfType<T>()).FirstOrDefault(match);
+
+    // Oturum sekme şeridinden çıkar, kendi tam ekran penceresine geçer; oturum kapanmaz.
+    public void Detach(SessionTabViewModel tab)
+    {
+        var index = Tabs.IndexOf(tab);
+        if (index < 0)
+            return;
+        var wasSelected = Selected == tab;
+        Tabs.RemoveAt(index);
+        if (wasSelected)
+            Selected = Tabs.Count == 0 ? null : Tabs[Math.Max(index - 1, 0)];
+        Windows.Add(tab);
+    }
+
+    // Tam ekrandan çıkan oturum sekmesine döner.
+    public void Attach(SessionTabViewModel tab)
+    {
+        if (!Windows.Remove(tab))
+            return;
+        Tabs.Add(tab);
+        Selected = tab;
+    }
 
     public void Close(TabViewModel tab)
     {
+        if (tab is SessionTabViewModel session && Windows.Remove(session))
+        {
+            tab.OnClosed();
+            return;
+        }
         var index = Tabs.IndexOf(tab);
         if (index < 0)
             return;
