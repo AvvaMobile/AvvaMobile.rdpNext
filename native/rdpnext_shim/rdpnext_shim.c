@@ -352,6 +352,9 @@ uint32_t rn_connect(rdpContext* ctx, const rn_options* o)
 	freerdp_settings_set_bool(s, FreeRDP_RedirectClipboard, TRUE);
 	/* Sunucunun sesi bu bilgisayarda çalar (rdpsnd; Mac'te mac, Windows'ta winmm arka ucu). */
 	freerdp_settings_set_bool(s, FreeRDP_AudioPlayback, TRUE);
+	/* Ağ kopunca FreeRDP önce kendisi birkaç kez dener; olmazsa oturum biter ve Reconnect çıkar. */
+	freerdp_settings_set_bool(s, FreeRDP_AutoReconnectionEnabled, TRUE);
+	freerdp_settings_set_uint32(s, FreeRDP_AutoReconnectMaxRetries, 5);
 	if (freerdp_connect(ctx->instance))
 		return 0;
 	uint32_t error = freerdp_get_last_error(ctx);
@@ -366,7 +369,7 @@ int rn_pump(rdpContext* ctx, int timeout_ms)
 		return 0;
 	WaitForMultipleObjects(count, handles, FALSE, (DWORD)timeout_ms);
 	if (!freerdp_check_event_handles(ctx))
-		return 0;
+		return client_auto_reconnect_ex(ctx->instance, NULL) ? 1 : 0;
 	return freerdp_shall_disconnect_context(ctx) ? 0 : 1;
 }
 

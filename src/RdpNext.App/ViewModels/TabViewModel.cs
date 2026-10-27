@@ -15,6 +15,9 @@ public abstract class TabViewModel : ObservableObject
 
     public bool IsEditor => Color is null;
 
+    // Sekmenin sağ tık menüsünde "Reconnect" görünür mü (yalnız oturum).
+    public virtual bool CanReconnect => false;
+
     public virtual void OnClosed()
     {
     }

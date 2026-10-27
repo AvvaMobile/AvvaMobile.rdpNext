@@ -25,6 +25,9 @@
                 <MenuItem Header="{x:Static s:Strings.CloseOtherTabs}"
                           Command="{Binding $parent[v:TabStripView].((vm:MainWindowViewModel)DataContext).CloseOtherTabsCommand}"
                           CommandParameter="{Binding}" />
+                <MenuItem Header="{x:Static s:Strings.Reconnect}" IsVisible="{Binding CanReconnect}"
+                          Command="{Binding $parent[v:TabStripView].((vm:MainWindowViewModel)DataContext).ReconnectTabCommand}"
+                          CommandParameter="{Binding}" />
               </ContextMenu>
             </StackPanel.ContextMenu>
             <Border Classes="tile-small" Background="{Binding Color, Converter={x:Static v:Converters.TabTileBrush}}">

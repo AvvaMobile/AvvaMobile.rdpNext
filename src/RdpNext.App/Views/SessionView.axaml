@@ -12,6 +12,21 @@
              HorizontalAlignment="Left" VerticalAlignment="Top" />
     </Border>
 
+    <!-- Bağlanıyor (docs/tasarim/rdp-oturumu.png, c). -->
+    <StackPanel x:Name="ConnectingCard" Classes="session-state" IsVisible="{Binding ShowConnecting}">
+      <Arc Classes="spinner" Width="28" Height="28" StartAngle="0" SweepAngle="90" Stroke="White" StrokeThickness="3" />
+      <TextBlock Foreground="White" Text="{Binding ConnectingTitle}" />
+    </StackPanel>
+
+    <!-- Bağlantı koptu: son görüntü karartılır (d). -->
+    <Panel IsVisible="{Binding ShowDisconnected}">
+      <Border Background="#B3000000" />
+      <StackPanel x:Name="DisconnectedCard" Classes="session-state">
+        <TextBlock Foreground="White" Text="{x:Static s:Strings.ConnectionLost}" />
+        <Button Classes="primary" HorizontalAlignment="Center" Content="{x:Static s:Strings.Reconnect}" Command="{Binding ReconnectCommand}" />
+      </StackPanel>
+    </Panel>
+
     <!-- Sertifika sorusu: oturumun üstünde, arka plan karartılır (docs/tasarim/rdp-oturumu.png, a). -->
     <Panel IsVisible="{Binding CertificatePrompt, Converter={x:Static ObjectConverters.IsNotNull}}">
       <Border Background="#99000000" />
