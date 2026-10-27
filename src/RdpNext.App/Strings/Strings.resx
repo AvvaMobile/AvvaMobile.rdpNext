@@ -41,4 +41,14 @@
   <data name="KeychainError" xml:space="preserve"><value>Anahtar zincirine erişilemedi, şifre okunamadı ya da kaydedilmedi.</value></data>
   <data name="FolderNamePrompt" xml:space="preserve"><value>Klasör adı</value></data>
   <data name="Add" xml:space="preserve"><value>Ekle</value></data>
+  <data name="Settings" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="Backup" xml:space="preserve"><value>Yedek</value></data>
+  <data name="BackupHint" xml:space="preserve"><value>Sunucu ve klasör listeni bir dosyaya kaydet ya da yedekten geri yükle. Şifreler dosyaya yazılmaz.</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe aktar</value></data>
+  <data name="ExportDone" xml:space="preserve"><value>Kaydedildi: {0}</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Dosya kaydedilemedi: {0}</value></data>
+  <data name="ImportDone" xml:space="preserve"><value>Yedek yüklendi, {0} sunucu.</value></data>
+  <data name="ImportFailed" xml:space="preserve"><value>Dosya okunamadı: {0}</value></data>
+  <data name="ImportConfirm" xml:space="preserve"><value>Mevcut liste {0} içindeki listeyle değiştirilsin mi? Açık sekmeler kapanır.</value></data>
 </root>

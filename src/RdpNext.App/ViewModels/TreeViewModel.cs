@@ -103,6 +103,24 @@ public sealed partial class TreeViewModel : ObservableObject
         return index < siblings.Count ? siblings[index] : null;
     }
 
+    // Bütün listeyi verilen klasörün çocuklarıyla değiştirir (içe aktarma).
+    public void Replace(Group source)
+    {
+        Selected = null;
+        foreach (var child in Root.Children.ToList())
+            Root.Remove(child);
+        foreach (var child in source.Children.ToList())
+            Root.Add(child);
+        Roots.Clear();
+        _all.Clear();
+        _byId.Clear();
+        foreach (var child in Root.Children)
+            Roots.Add(TreeNodeViewModel.Create(child));
+        Index(Roots);
+        OnQueryChanged(Query);
+        StructureChanged?.Invoke();
+    }
+
     public void Remove(TreeNodeViewModel node)
     {
         if (Selected is { } selected && IsUnder(selected.Model, node.Model))

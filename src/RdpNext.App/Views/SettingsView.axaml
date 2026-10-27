@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:s="using:RdpNext.App.Strings"
+             x:Class="RdpNext.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             Background="{DynamicResource CardBrush}">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Classes="subtabs">
+      <StackPanel Orientation="Horizontal">
+        <RadioButton Classes="subtab" Content="{x:Static s:Strings.Backup}" IsChecked="True" />
+      </StackPanel>
+    </Border>
+    <ScrollViewer>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="1000*" MaxWidth="876" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Classes="form">
+          <TextBlock Classes="secondary" Text="{x:Static s:Strings.BackupHint}" TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button x:Name="ExportButton" Classes="primary" Content="{x:Static s:Strings.Export}" Command="{Binding ExportCommand}" />
+            <Button x:Name="ImportButton" Classes="secondary" Content="{x:Static s:Strings.Import}" Command="{Binding ImportCommand}" />
+          </StackPanel>
+          <TextBlock x:Name="StatusText" Classes="secondary" Text="{Binding Status}" TextWrapping="Wrap"
+                     IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

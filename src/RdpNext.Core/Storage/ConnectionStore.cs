@@ -26,21 +26,26 @@ public sealed class ConnectionStore(string filePath)
     {
         if (!File.Exists(filePath))
             return new LoadResult(new Group(), null);
-
-        try
-        {
-            var file = JsonSerializer.Deserialize<ConnectionFile>(File.ReadAllText(filePath), Options);
-            if (file?.Root is not null)
-                return new LoadResult(file.Root, null);
-        }
-        catch (Exception e) when (e is JsonException or NotSupportedException)
-        {
-        }
+        if (Read(filePath) is { } root)
+            return new LoadResult(root, null);
 
         // Okunamayan dosyanın üstüne asla yazılmaz; kenara alınır.
         var backup = BackupPath();
         File.Move(filePath, backup);
         return new LoadResult(new Group(), backup);
+    }
+
+    // Dosyayı okur; yoksa ya da okunamıyorsa null. Dosyaya dokunmaz (içe aktarmada kullanılır).
+    public static Group? Read(string path)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<ConnectionFile>(File.ReadAllText(path), Options)?.Root;
+        }
+        catch (Exception e) when (e is JsonException or NotSupportedException or IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     public void Save(Group root)
