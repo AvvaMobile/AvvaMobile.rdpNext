@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -20,6 +21,8 @@ public sealed class SshSession : ISshSession
     // Connect sürüyor; Dispose istemciyi kapatmaz, bağlanma bitince arka plan işi kapatır.
     private bool _connecting;
     private int _ended;
+    // Yazılanlar sırayla ayrı iş parçacığında gönderilir; sunucu okumazken çağıran beklemez.
+    private readonly BlockingCollection<byte[]> _outgoing = new();
 
     public event Action? Connected;
 
@@ -37,13 +40,27 @@ public sealed class SshSession : ISshSession
 
     public void Send(byte[] data)
     {
-        var shell = _shell;
-        if (shell is null)
+        if (_shell is null)
             return;
         try
         {
-            shell.Write(data, 0, data.Length);
-            shell.Flush();
+            _outgoing.Add(data);
+        }
+        catch (InvalidOperationException)
+        {
+            // Oturum kapandı.
+        }
+    }
+
+    private void Write(ShellStream shell)
+    {
+        try
+        {
+            foreach (var data in _outgoing.GetConsumingEnumerable())
+            {
+                shell.Write(data, 0, data.Length);
+                shell.Flush();
+            }
         }
         catch (Exception e) when (e is ObjectDisposedException or SshException or IOException or SocketException)
         {
@@ -146,6 +163,7 @@ public sealed class SshSession : ISshSession
             return;
         }
 
+        new Thread(() => Write(shell!)) { IsBackground = true, Name = "ssh-write" }.Start();
         Connected?.Invoke();
         Read(client, shell!);
     }
@@ -195,6 +213,11 @@ public sealed class SshSession : ISshSession
             End(SshEndReason.Disconnected, e.Message);
             return;
         }
+        finally
+        {
+            // Yazma iş parçacığı da sonlanır.
+            _outgoing.CompleteAdding();
+        }
         // Kabuk kapandı; bağlantı da gittiyse kopmadır.
         End(client.IsConnected ? SshEndReason.Exited : SshEndReason.Disconnected, null);
     }
@@ -228,6 +251,7 @@ public sealed class SshSession : ISshSession
             client = connecting ? null : _client;
             _client = null;
         }
+        _outgoing.CompleteAdding();
         _shell?.Dispose();
         client?.Dispose();
         if (!connecting)

@@ -319,6 +319,23 @@ public class SshTabTests
         Assert.Equal(["yeni"], received);
     }
 
+    // Arayüz meşgulken gelen parçalar tek seferde terminale verilir.
+    [AvaloniaFact]
+    public void OutputBurstFedOnce()
+    {
+        var tab = Connected();
+        var received = new List<string>();
+        tab.Output += bytes => received.Add(Encoding.UTF8.GetString(bytes));
+
+        _sessions[0].RaiseOutput("bir "u8.ToArray());
+        _sessions[0].RaiseOutput("iki "u8.ToArray());
+        _sessions[0].RaiseOutput("üç"u8.ToArray());
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(["bir iki üç"], received);
+        Assert.Contains("bir iki üç", string.Join("\n", tab.Terminal.Terminal.Engine.GetVisibleLines()));
+    }
+
     [AvaloniaFact]
     public void SendGoesToSessionOnlyWhenConnected()
     {

@@ -230,6 +230,28 @@ public sealed class SshSessionTests(SshServerFixture server) : IClassFixture<Ssh
         Assert.Equal(SshEndReason.Exited, await run.Ended());
     }
 
+    // Sunucu okumazken büyük yapıştırma: Send çağıranı (arayüzü) bekletmez, veri sırayla ve eksiksiz gider.
+    [Fact]
+    public async Task LargePasteDoesNotBlockCaller()
+    {
+        SkipWithoutDocker();
+        using var run = new Run(Options());
+        await run.Connected();
+        run.Type("stty -echo; echo HA''ZIR\n");
+        await run.WaitFor("HAZIR");
+        run.Type("sleep 3; head -c 6000000 | tail -c 5; echo; echo BI''TTI\n");
+        var line = new string('a', 999) + "\n";
+        var paste = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(line, 5999)) + new string('a', 996) + "SON\n");
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        run.Session.Send(paste);
+        watch.Stop();
+
+        Assert.True(watch.ElapsedMilliseconds < 500, $"Send {watch.ElapsedMilliseconds} ms bekletti");
+        await run.WaitFor("aSON");
+        await run.WaitFor("BITTI");
+    }
+
     [Fact]
     public async Task TurkishCharactersRoundTrip()
     {

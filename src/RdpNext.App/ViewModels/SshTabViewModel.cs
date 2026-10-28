@@ -98,11 +98,31 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
         session.VerifyHostKey = key => AskHostKey(session, key);
         session.Connected += () => OnUi(session, OnConnected);
         session.Ended += (reason, _) => OnUi(session, () => Ended(reason));
-        session.Output += bytes => OnUi(session, () =>
+        // Arayüz işlemeden önce gelen parçalar biriktirilir, terminale tek seferde verilir.
+        var pending = new MemoryStream();
+        var scheduled = false;
+        session.Output += bytes =>
         {
-            Terminal.Feed(bytes, bytes.Length);
-            Output?.Invoke(bytes);
-        });
+            lock (pending)
+            {
+                pending.Write(bytes);
+                if (scheduled)
+                    return;
+                scheduled = true;
+            }
+            OnUi(session, () =>
+            {
+                byte[] chunk;
+                lock (pending)
+                {
+                    chunk = pending.ToArray();
+                    pending.SetLength(0);
+                    scheduled = false;
+                }
+                Terminal.Feed(chunk, chunk.Length);
+                Output?.Invoke(chunk);
+            });
+        };
         var server = Server.Server;
         _startedSize = _size;
         // Anahtar modunda yol boş olsa da "" gider; oturum şifreye düşmez, anahtar kullanılamadı der.
