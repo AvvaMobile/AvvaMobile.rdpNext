@@ -66,6 +66,7 @@
   <data name="ConnectionType" xml:space="preserve"><value>Connection type</value></data>
   <data name="WindowsType" xml:space="preserve"><value>Windows</value></data>
   <data name="SshType" xml:space="preserve"><value>SSH</value></data>
+  <data name="LinuxType" xml:space="preserve"><value>Linux</value></data>
   <data name="SignInMethod" xml:space="preserve"><value>Sign-in method</value></data>
   <data name="KeyFile" xml:space="preserve"><value>Key file</value></data>
   <data name="Choose" xml:space="preserve"><value>Choose…</value></data>

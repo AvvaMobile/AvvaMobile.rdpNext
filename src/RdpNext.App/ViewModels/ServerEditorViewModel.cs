@@ -26,6 +26,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             _password = _savedPassword = owner.Secrets.GetPassword(existing.Id) ?? "";
             _color = existing.Color;
             _protocol = existing.Protocol;
+            _os = existing.Os;
             _auth = existing.Auth;
             _keyFile = existing.KeyFile ?? "";
             _screen = existing.Screen;
@@ -94,9 +95,10 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     [ObservableProperty]
     private ServerColor _color = ServerColor.Blue;
 
-    // Bağlantı tipi: Windows (RDP) ya da SSH; formun geri kalanı buna göre değişir.
+    // Bağlantı tipi: Windows ya da Linux (ikisi de RDP) ya da SSH; formun geri kalanı buna göre değişir.
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsRdp), nameof(IsSsh), nameof(IsPasswordAuth), nameof(IsKeyAuth), nameof(PasswordRow), nameof(PasswordColumn))]
+    [NotifyPropertyChangedFor(nameof(IsRdp), nameof(IsSsh), nameof(IsWindows), nameof(IsLinux), nameof(IsPasswordAuth), nameof(IsKeyAuth),
+        nameof(PasswordRow), nameof(PasswordColumn))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private Protocol _protocol = Protocol.Rdp;
 
@@ -110,6 +112,29 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     {
         get => Protocol == Protocol.Ssh;
         set { if (value) Protocol = Protocol.Ssh; }
+    }
+
+    // RDP sunucusunun işletim sistemi; yalnız ikonu değiştirir.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWindows), nameof(IsLinux))]
+    private ServerOs _os;
+
+    public bool IsWindows
+    {
+        get => IsRdp && Os == ServerOs.Windows;
+        set { if (value) SelectRdp(ServerOs.Windows); }
+    }
+
+    public bool IsLinux
+    {
+        get => IsRdp && Os == ServerOs.Linux;
+        set { if (value) SelectRdp(ServerOs.Linux); }
+    }
+
+    private void SelectRdp(ServerOs os)
+    {
+        Os = os;
+        Protocol = Protocol.Rdp;
     }
 
     [ObservableProperty]
@@ -240,6 +265,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             server.HostKeyType = null;
         }
         server.Protocol = Protocol;
+        server.Os = IsSsh ? ServerOs.Windows : Os;
         server.Domain = IsSsh ? null : Blank(Domain);
         server.Auth = IsSsh ? Auth : SshAuth.Password;
         server.KeyFile = IsKeyAuth ? Blank(KeyFile) : null;

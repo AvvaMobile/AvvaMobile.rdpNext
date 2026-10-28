@@ -195,6 +195,20 @@ public sealed class ConnectionStoreTests : IDisposable
     }
 
     [Fact]
+    public void LinuxServerRoundTripsAndOldFilesAreWindows()
+    {
+        var root = new Group();
+        root.Add(new Server { Name = "linux-rdp", Host = "10.0.4.1", Os = ServerOs.Linux });
+        root.Add(new Server { Name = "win", Host = "10.0.4.2" });
+
+        new ConnectionStore(_path).Save(root);
+        var loaded = new ConnectionStore(_path).Load().Root.Children.Cast<Server>().ToList();
+
+        Assert.Equal([ServerOs.Linux, ServerOs.Windows], loaded.Select(s => s.Os));
+        Assert.Equal((Protocol.Rdp, ServerIcon.Linux), (loaded[0].Protocol, loaded[0].Icon));
+    }
+
+    [Fact]
     public void SshServerRoundTrips()
     {
         var root = new Group();

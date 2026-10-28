@@ -278,6 +278,46 @@ public class MainWindowTests
         Assert.Equal(Protocol.Ssh, editor.Protocol);
         Assert.True(window.Named<RadioButton>("SshType").IsChecked);
         Assert.False(window.Named<RadioButton>("WindowsType").IsChecked);
+
+        // Sıra: Windows, SSH, Linux. Linux RDP ile bağlanır, yalnız ikonu farklı.
+        var types = window.GetVisualDescendants().OfType<RadioButton>().Where(r => r.Name is "WindowsType" or "SshType" or "LinuxType")
+            .Select(r => r.Name).ToList();
+        Assert.Equal(["WindowsType", "SshType", "LinuxType"], types);
+        window.Named<RadioButton>("LinuxType").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal((Protocol.Rdp, ServerOs.Linux, "3389"), (editor.Protocol, editor.Os, editor.Port));
+        Assert.False(window.Named<RadioButton>("SshType").IsChecked);
+        Assert.False(window.Named<RadioButton>("WindowsType").IsChecked);
+        Assert.True(window.Named<Control>("AdvancedTab").IsEnabled);
+
+        window.Named<RadioButton>("WindowsType").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal((Protocol.Rdp, ServerOs.Windows), (editor.Protocol, editor.Os));
+        Assert.False(window.Named<RadioButton>("LinuxType").IsChecked);
+    }
+
+    [AvaloniaFact]
+    public void LinuxIconShowsInSidebarAndTab()
+    {
+        var path = TestWindows.SampleFile();
+        var (window, vm) = TestWindows.OpenExpanded(path);
+        var web = vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == "web-01").Id);
+        vm.EditCommand.Execute(web);
+        var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
+        editor.IsLinux = true;
+        editor.SaveCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        var icon = window.Named<Control>("Tree").GetVisualDescendants().OfType<Views.ServerIconView>()
+            .Single(i => i.DataContext == web);
+        Assert.Equal(ServerIcon.Linux, icon.Icon);
+        Assert.True(icon.Named<Control>("LinuxGlyph").IsVisible);
+        Assert.False(icon.Named<Control>("WindowsGlyph").IsVisible);
+        Assert.Equal(ServerOs.Linux, new RdpNext.Core.Storage.ConnectionStore(path).Load().Root.AllServers().First(s => s.Name == "web-01").Os);
+
+        vm.ConnectCommand.Execute(web);
+        Assert.IsType<SessionTabViewModel>(vm.Sessions.Selected);
+        Assert.Equal(ServerIcon.Linux, vm.Sessions.Selected!.Icon);
     }
 
     // Advanced sekmesinde yapılan değişiklik de aynı yerdeki Save ile kaydedilir.

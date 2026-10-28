@@ -4,7 +4,7 @@ using RdpNext.Core.Model;
 
 namespace RdpNext.App.Views;
 
-// Sunucu kutucuğundaki beyaz ikon: Windows logosu ya da terminal.
+// Sunucu kutucuğundaki beyaz ikon: Windows logosu, penguen ya da terminal.
 public partial class ServerIconView : UserControl
 {
     public static readonly StyledProperty<ServerIcon> IconProperty =
@@ -27,6 +27,7 @@ public partial class ServerIconView : UserControl
         if (change.Property != IconProperty)
             return;
         WindowsGlyph.IsVisible = Icon == ServerIcon.Windows;
+        LinuxGlyph.IsVisible = Icon == ServerIcon.Linux;
         SshGlyph.IsVisible = Icon == ServerIcon.Ssh;
     }
 }

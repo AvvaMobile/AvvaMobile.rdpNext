@@ -24,9 +24,12 @@ public sealed class Server : Node
 
     public ScreenMode Screen { get; set; } = ScreenMode.FitToWindow;
 
-    // Eski dosyalardaki "icon" alanı okunmaz; ikon protokolden gelir.
+    // Linux sunucusu da RDP ile bağlanır (xrdp); eski dosyalarda alan yoksa Windows.
+    public ServerOs Os { get; set; } = ServerOs.Windows;
+
+    // Eski dosyalardaki "icon" alanı okunmaz; ikon protokolden ve işletim sisteminden gelir.
     [JsonIgnore]
-    public ServerIcon Icon => Protocol == Protocol.Ssh ? ServerIcon.Ssh : ServerIcon.Windows;
+    public ServerIcon Icon => Protocol == Protocol.Ssh ? ServerIcon.Ssh : Os == ServerOs.Linux ? ServerIcon.Linux : ServerIcon.Windows;
 
     // Kullanıcının "güven" dediği sertifikanın parmak izi; aynısı gelirse sorulmaz.
     public string? CertificateFingerprint { get; set; }
@@ -46,6 +49,7 @@ public sealed class Server : Node
     {
         Name = name,
         Protocol = Protocol,
+        Os = Os,
         Host = Host,
         Port = Port,
         Username = Username,
