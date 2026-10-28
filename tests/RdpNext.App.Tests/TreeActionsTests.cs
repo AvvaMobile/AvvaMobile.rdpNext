@@ -169,6 +169,20 @@ public class TreeActionsTests
         Assert.Equal("web-01 settings", vm.Sessions.Selected?.Title);
     }
 
+    // macOS'ta menü birkaç piksel taşınca kaydırma oku çıkıyordu; menüler kısa, kaydırma hiç olmasın.
+    [AvaloniaFact]
+    public void RowMenuNeverScrolls()
+    {
+        var (window, _) = TestWindows.OpenExpanded(_path);
+        var row = window.Text("web-01").GetVisualAncestors().OfType<Control>().First(c => c.ContextMenu is not null);
+        row.ContextMenu!.Open(row);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+        var scroller = row.ContextMenu.GetVisualDescendants().OfType<ScrollViewer>().Single();
+        Assert.Equal(Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, scroller.VerticalScrollBarVisibility);
+        row.ContextMenu.Close();
+    }
+
     [AvaloniaFact]
     public void FolderRowMenuHasApprovedItems()
     {
