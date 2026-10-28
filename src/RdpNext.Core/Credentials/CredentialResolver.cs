@@ -12,10 +12,17 @@ public sealed record InheritedCredentials(InheritedValue? Username, InheritedVal
 public static class CredentialResolver
 {
     // Her alan ayrı ayrı aranır: önce sunucu, sonra en yakın üst gruptan köke doğru.
-    public static ResolvedCredentials Resolve(Server server, ISecretStore secrets) => new(
-        FirstValue(server, n => n switch { Server s => s.Username, Group g => g.Username, _ => null }),
-        FirstValue(server, n => secrets.GetPassword(n.Id)),
-        FirstValue(server, n => n switch { Server s => s.Domain, Group g => g.Domain, _ => null }));
+    // SSH'de domain yok; anahtarla girişte yuvadaki değer anahtar parolasıdır, klasörden devralınmaz.
+    public static ResolvedCredentials Resolve(Server server, ISecretStore secrets)
+    {
+        var ssh = server.Protocol == Protocol.Ssh;
+        return new(
+            FirstValue(server, n => n switch { Server s => s.Username, Group g => g.Username, _ => null }),
+            ssh && server.Auth == SshAuth.Key ? Blank(secrets.GetPassword(server.Id)) : FirstValue(server, n => secrets.GetPassword(n.Id)),
+            ssh ? null : FirstValue(server, n => n switch { Server s => s.Domain, Group g => g.Domain, _ => null }));
+    }
+
+    private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
     // Bir klasörden köke doğru, her alan için ilk dolu değer ve geldiği klasör.
     public static InheritedCredentials Inherited(Group? start, ISecretStore secrets) => new(

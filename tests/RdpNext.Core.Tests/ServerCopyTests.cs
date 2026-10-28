@@ -9,7 +9,7 @@ public class ServerCopyTests
         var server = new Server
         {
             Name = "web-01", Host = "10.0.1.11", Port = 3390, Username = "ali", Domain = "AVVA",
-            Color = ServerColor.Teal, Screen = ScreenMode.FullScreen, Icon = ServerIcon.Linux,
+            Color = ServerColor.Teal, Screen = ScreenMode.FullScreen,
         };
         group.Add(server);
 
@@ -18,12 +18,33 @@ public class ServerCopyTests
         Assert.NotEqual(server.Id, copy.Id);
         Assert.Null(copy.Parent);
         Assert.Equal(
-            ("web-01 kopya", "10.0.1.11", 3390, "ali", "AVVA", ServerColor.Teal, ScreenMode.FullScreen, ServerIcon.Linux, Protocol.Rdp),
-            (copy.Name, copy.Host, copy.Port, copy.Username, copy.Domain, copy.Color, copy.Screen, copy.Icon, copy.Protocol));
+            ("web-01 kopya", "10.0.1.11", 3390, "ali", "AVVA", ServerColor.Teal, ScreenMode.FullScreen, Protocol.Rdp),
+            (copy.Name, copy.Host, copy.Port, copy.Username, copy.Domain, copy.Color, copy.Screen, copy.Protocol));
     }
 
     // Kopya başka bir makineye işaret edebilir; güvenilen sertifika kopyalanmaz.
     [Fact]
     public void CopyDoesNotCopyFingerprint() =>
         Assert.Null(new Server { CertificateFingerprint = "sha256 AA" }.CopyWithNewId("x").CertificateFingerprint);
+
+    [Fact]
+    public void CopyKeepsSshFieldsButNotHostKey()
+    {
+        var server = new Server
+        {
+            Protocol = Protocol.Ssh, Port = 22, Auth = SshAuth.Key, KeyFile = "~/.ssh/id_ed25519", HostKeyFingerprint = "SHA256:abc",
+        };
+
+        var copy = server.CopyWithNewId("kopya");
+
+        Assert.Equal((Protocol.Ssh, 22, SshAuth.Key, "~/.ssh/id_ed25519"), (copy.Protocol, copy.Port, copy.Auth, copy.KeyFile));
+        Assert.Null(copy.HostKeyFingerprint);
+    }
+
+    [Fact]
+    public void IconFollowsProtocol()
+    {
+        Assert.Equal(ServerIcon.Windows, new Server().Icon);
+        Assert.Equal(ServerIcon.Ssh, new Server { Protocol = Protocol.Ssh }.Icon);
+    }
 }

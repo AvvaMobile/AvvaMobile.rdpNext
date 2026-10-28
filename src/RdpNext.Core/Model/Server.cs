@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace RdpNext.Core.Model;
 
 public sealed class Server : Node
@@ -22,10 +24,20 @@ public sealed class Server : Node
 
     public ScreenMode Screen { get; set; } = ScreenMode.FitToWindow;
 
-    public ServerIcon Icon { get; set; } = ServerIcon.Windows;
+    // Eski dosyalardaki "icon" alanı okunmaz; ikon protokolden gelir.
+    [JsonIgnore]
+    public ServerIcon Icon => Protocol == Protocol.Ssh ? ServerIcon.Ssh : ServerIcon.Windows;
 
     // Kullanıcının "güven" dediği sertifikanın parmak izi; aynısı gelirse sorulmaz.
     public string? CertificateFingerprint { get; set; }
+
+    public SshAuth Auth { get; set; } = SshAuth.Password;
+
+    // Özel anahtar dosyasının yolu; dosyanın kendisi kopyalanmaz.
+    public string? KeyFile { get; set; }
+
+    // Kullanıcının "güven" dediği SSH sunucu anahtarı ("SHA256:..."); aynısı gelirse sorulmaz.
+    public string? HostKeyFingerprint { get; set; }
 
     public Server CopyWithNewId(string name) => new()
     {
@@ -37,6 +49,7 @@ public sealed class Server : Node
         Domain = Domain,
         Color = Color,
         Screen = Screen,
-        Icon = Icon,
+        Auth = Auth,
+        KeyFile = KeyFile,
     };
 }
