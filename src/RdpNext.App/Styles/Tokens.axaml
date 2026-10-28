@@ -57,6 +57,23 @@
   <SolidColorBrush x:Key="ConnectedBrush" Color="#2fbf71" />
   <SolidColorBrush x:Key="NoticeBrush" Color="#e5673a" />
   <SolidColorBrush x:Key="SessionBrush" Color="#0f1424" />
+  <!-- Terminal: oturum alanı gibi her temada koyu. 0 zemin, 15 yazı; 1-14 ANSI renkleri. -->
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor0" Color="#0F1424" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor1" Color="#E5534B" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor2" Color="#57AB5A" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor3" Color="#C69026" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor4" Color="#539BF5" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor5" Color="#B083F0" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor6" Color="#39C5CF" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor7" Color="#C9D1D9" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor8" Color="#6E7681" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor9" Color="#FF7B72" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor10" Color="#7EE787" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor11" Color="#F2CC60" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor12" Color="#79C0FF" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor13" Color="#D2A8FF" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor14" Color="#56D4DD" />
+  <SolidColorBrush x:Key="SvcSystems.UI.TerminalColor15" Color="#E8EAF2" />
 
   <x:Double x:Key="BodyFontSize">15</x:Double>
   <x:Double x:Key="SecondaryFontSize">14</x:Double>

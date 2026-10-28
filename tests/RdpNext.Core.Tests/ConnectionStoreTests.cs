@@ -26,7 +26,7 @@ public sealed class ConnectionStoreTests : IDisposable
         var server = new Server
         {
             Name = "web-01", Host = "10.0.1.11", Port = 3390, Color = ServerColor.Violet,
-            Screen = ScreenMode.FullScreen, Username = "ali", Domain = "AVVA2", Icon = ServerIcon.Ssh,
+            Screen = ScreenMode.FullScreen, Username = "ali", Domain = "AVVA2",
             CertificateFingerprint = "sha256 AA:BB",
         };
         root.Add(uretim);
@@ -42,8 +42,8 @@ public sealed class ConnectionStoreTests : IDisposable
         Assert.False(lWeb.IsExpanded);
         var lServer = Assert.IsType<Server>(Assert.Single(lWeb.Children));
         Assert.Equal(
-            (server.Id, "web-01", "10.0.1.11", 3390, ServerColor.Violet, ScreenMode.FullScreen, "ali", "AVVA2", ServerIcon.Ssh, Protocol.Rdp),
-            (lServer.Id, lServer.Name, lServer.Host, lServer.Port, lServer.Color, lServer.Screen, lServer.Username, lServer.Domain, lServer.Icon, lServer.Protocol));
+            (server.Id, "web-01", "10.0.1.11", 3390, ServerColor.Violet, ScreenMode.FullScreen, "ali", "AVVA2", Protocol.Rdp),
+            (lServer.Id, lServer.Name, lServer.Host, lServer.Port, lServer.Color, lServer.Screen, lServer.Username, lServer.Domain, lServer.Protocol));
         Assert.Equal("sha256 AA:BB", lServer.CertificateFingerprint);
         Assert.Same(lWeb, lServer.Parent);
         Assert.Same(lUretim, lWeb.Parent);
@@ -177,6 +177,40 @@ public sealed class ConnectionStoreTests : IDisposable
         var server = Assert.IsType<Server>(Assert.Single(new ConnectionStore(_path).Load().Root.Children));
 
         Assert.Equal(ServerIcon.Windows, server.Icon);
+    }
+
+    // İkon seçicisi varken Linux ya da SSH ikonu seçilmiş RDP sunucuları yeni sürümde RDP olarak açılır.
+    [Theory]
+    [InlineData("linux")]
+    [InlineData("ssh")]
+    public void OldFileWithLinuxIconLoadsAsRdp(string icon)
+    {
+        File.WriteAllText(_path, $$"""{ "version": 1, "root": { "kind": "group", "children": [ { "kind": "server", "name": "web-01", "host": "h", "icon": "{{icon}}" } ] } }""");
+
+        var result = new ConnectionStore(_path).Load();
+
+        Assert.Null(result.CorruptBackupPath);
+        var server = Assert.IsType<Server>(Assert.Single(result.Root.Children));
+        Assert.Equal((Protocol.Rdp, ServerIcon.Windows), (server.Protocol, server.Icon));
+    }
+
+    [Fact]
+    public void SshServerRoundTrips()
+    {
+        var root = new Group();
+        var server = new Server
+        {
+            Name = "linux-01", Host = "10.0.2.5", Port = 22, Protocol = Protocol.Ssh, Auth = SshAuth.Key,
+            KeyFile = "~/.ssh/id_ed25519", HostKeyFingerprint = "SHA256:abc",
+        };
+        root.Add(server);
+
+        new ConnectionStore(_path).Save(root);
+        var loaded = Assert.IsType<Server>(Assert.Single(new ConnectionStore(_path).Load().Root.Children));
+
+        Assert.Equal((Protocol.Ssh, 22, SshAuth.Key, "~/.ssh/id_ed25519", "SHA256:abc"),
+            (loaded.Protocol, loaded.Port, loaded.Auth, loaded.KeyFile, loaded.HostKeyFingerprint));
+        Assert.DoesNotContain("\"icon\"", File.ReadAllText(_path));
     }
 
     [Fact]

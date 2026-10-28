@@ -192,25 +192,69 @@ public class MainWindowTests
         Assert.Equal(WindowState.Maximized, window.WindowState);
     }
 
-    // Sunucunun ikonu kenar çubuğunda ve sekmede aynı.
+    // SSH sunucusunun ikonu kenar çubuğunda ve düzenleme sekmesinin seçicisinde terminal çizimi.
     [AvaloniaFact]
-    public void LinuxIconShowsInSidebarAndTab()
+    public void SshIconShowsInSidebar()
     {
         var (window, vm) = TestWindows.OpenExpanded(TestWindows.SampleFile());
         var web = vm.Tree.Node<ServerNodeViewModel>(vm.Tree.Root.AllServers().First(s => s.Name == "web-01").Id);
         vm.EditCommand.Execute(web);
         var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
-        editor.Icon = ServerIcon.Linux;
+        editor.Protocol = Protocol.Ssh;
         editor.SaveCommand.Execute(null);
-        vm.ConnectCommand.Execute(web);
         Dispatcher.UIThread.RunJobs();
 
-        // Linux çizimi görünür, diğerleri gizli.
-        bool Shows(string name) => window.Named<Control>(name).GetVisualDescendants().OfType<Views.ServerIconView>()
-            .Any(i => i.Icon == ServerIcon.Linux && i.Named<Control>("LinuxGlyph").IsVisible
-                      && !i.Named<Control>("WindowsGlyph").IsVisible && !i.Named<Control>("SshGlyph").IsVisible);
-        Assert.True(Shows("Tree"));
-        Assert.True(Shows("TabStrip"));
+        var icon = window.Named<Control>("Tree").GetVisualDescendants().OfType<Views.ServerIconView>()
+            .Single(i => i.DataContext == web);
+        Assert.Equal(ServerIcon.Ssh, icon.Icon);
+        Assert.True(icon.Named<Control>("SshGlyph").IsVisible);
+        Assert.False(icon.Named<Control>("WindowsGlyph").IsVisible);
+    }
+
+    // Formdaki alanlar bağlantı tipine göre değişir; SSH'de Advanced sekmesi pasif.
+    [AvaloniaFact]
+    public void SshFormShowsKeyFieldsOnlyForKeyAuth()
+    {
+        var (window, vm) = TestWindows.Open();
+        vm.NewServer();
+        var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
+        Dispatcher.UIThread.RunJobs();
+        bool Visible(string name) => window.GetVisualDescendants().OfType<Control>().Any(c => c.Name == name && c.IsEffectivelyVisible);
+
+        Assert.True(Visible("DomainBox"));
+        Assert.False(Visible("AuthBox"));
+        Assert.True(window.Named<RadioButton>("AdvancedTab").IsEnabled);
+
+        editor.Protocol = Protocol.Ssh;
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(Visible("DomainBox"));
+        Assert.True(Visible("AuthBox"));
+        Assert.True(Visible("PasswordBox"));
+        Assert.False(Visible("KeyFileBox"));
+        Assert.False(window.Named<RadioButton>("AdvancedTab").IsEnabled);
+
+        editor.Auth = SshAuth.Key;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(Visible("KeyFileBox"));
+        Assert.True(Visible("PasswordBox"));
+        Assert.Contains(window.Texts(), t => t.Text == "Key passphrase");
+    }
+
+    // Bağlantı tipi düğmesine tıklamak formu değiştirir.
+    [AvaloniaFact]
+    public void ConnectionTypeButtonsSwitchProtocol()
+    {
+        var (window, vm) = TestWindows.Open();
+        vm.NewServer();
+        var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
+        Dispatcher.UIThread.RunJobs();
+
+        window.Named<RadioButton>("SshType").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(Protocol.Ssh, editor.Protocol);
+        Assert.True(window.Named<RadioButton>("SshType").IsChecked);
+        Assert.False(window.Named<RadioButton>("WindowsType").IsChecked);
     }
 
     // Advanced sekmesinde yapılan değişiklik de aynı yerdeki Save ile kaydedilir.
@@ -241,9 +285,12 @@ public class MainWindowTests
         Dispatcher.UIThread.RunJobs();
         var editor = window.Named<Control>("SessionArea").GetVisualDescendants().OfType<Views.ServerEditorView>().Single();
 
-        var labels = editor.Texts().Where(t => t.Classes.Contains("label")).Select(t => t.Text).ToList();
+        // Ekrandaki sıra: yukarıdan aşağı, soldan sağa.
+        var labels = editor.Texts().Where(t => t.Classes.Contains("label"))
+            .Select(t => (t.Text, Point: t.TranslatePoint(default, editor)!.Value))
+            .OrderBy(l => Math.Round(l.Point.Y)).ThenBy(l => l.Point.X).Select(l => l.Text).ToList();
 
-        Assert.Equal(["Display name", "Icon", "Folder", "Color", "Host/IP", "Port", "User", "Password", "Domain"], labels);
+        Assert.Equal(["Connection type", "Color", "Display name", "Folder", "Host/IP", "Port", "User", "Password", "Domain"], labels);
         Assert.DoesNotContain(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Connect");
         Assert.Contains("primary", window.Named<Button>("SaveButton").Classes);
         Assert.Contains(editor.GetVisualDescendants().OfType<Button>(), b => b.Content as string == "Save");

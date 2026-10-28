@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using RdpNext.App.ViewModels;
 
 namespace RdpNext.App.Views;
@@ -14,21 +16,24 @@ public partial class SessionWindow : Window
         InitializeComponent();
     }
 
-    public SessionWindow(MainWindowViewModel owner, SessionTabViewModel tab) : this()
+    public SessionWindow(MainWindowViewModel owner, ConnectionTabViewModel tab) : this()
     {
         DataContext = tab;
         Opened += (_, _) =>
         {
             WindowState = WindowState.FullScreen;
-            SessionViewRoot.Focus();
+            (View as Control)?.Focus();
         };
         AddHandler(KeyDownEvent, (_, e) =>
         {
             if (!Rdp.FullScreenGesture.Matches(e))
                 return;
-            SessionViewRoot.ReleaseKeys();
+            (View as SessionView)?.ReleaseKeys();
             owner.ToggleFullScreenCommand.Execute(tab);
             e.Handled = true;
         }, RoutingStrategies.Tunnel);
     }
+
+    // İçerikteki oturum görünümü (SessionView ya da TerminalView).
+    private Visual? View => SessionContent.GetVisualDescendants().FirstOrDefault(v => v is SessionView or TerminalView);
 }

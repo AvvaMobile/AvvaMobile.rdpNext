@@ -3,10 +3,20 @@
         xmlns:vm="using:RdpNext.App.ViewModels"
         xmlns:v="using:RdpNext.App.Views"
         x:Class="RdpNext.App.Views.SessionWindow"
-        x:DataType="vm:SessionTabViewModel"
+        x:DataType="vm:ConnectionTabViewModel"
         Title="{Binding Title}"
         Icon="/Assets/rdpNext.png"
         Width="1280" Height="800"
         Background="{StaticResource SessionBrush}">
-  <v:SessionView x:Name="SessionViewRoot" />
+  <!-- RDP oturumu ya da SSH terminali. -->
+  <ContentControl x:Name="SessionContent" Content="{Binding}">
+    <ContentControl.DataTemplates>
+      <DataTemplate DataType="vm:SessionTabViewModel">
+        <v:SessionView />
+      </DataTemplate>
+      <DataTemplate DataType="vm:SshTabViewModel">
+        <v:TerminalView />
+      </DataTemplate>
+    </ContentControl.DataTemplates>
+  </ContentControl>
 </Window>

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:v="using:RdpNext.App.Views"
              xmlns:s="using:RdpNext.App.Strings"
              x:Class="RdpNext.App.Views.SessionView"
              x:DataType="vm:SessionTabViewModel"
@@ -12,20 +13,7 @@
              HorizontalAlignment="Left" VerticalAlignment="Top" />
     </Border>
 
-    <!-- Bağlanıyor (docs/tasarim/rdp-oturumu.png, c). -->
-    <StackPanel x:Name="ConnectingCard" Classes="session-state" IsVisible="{Binding ShowConnecting}">
-      <Arc Classes="spinner" Width="28" Height="28" StartAngle="0" SweepAngle="90" Stroke="White" StrokeThickness="3" />
-      <TextBlock Foreground="White" Text="{Binding ConnectingTitle}" />
-    </StackPanel>
-
-    <!-- Bağlantı koptu: son görüntü karartılır (d). -->
-    <Panel IsVisible="{Binding ShowDisconnected}">
-      <Border Background="#B3000000" />
-      <StackPanel x:Name="DisconnectedCard" Classes="session-state">
-        <TextBlock Foreground="White" Text="{x:Static s:Strings.ConnectionLost}" />
-        <Button Classes="primary" HorizontalAlignment="Center" Content="{x:Static s:Strings.Reconnect}" Command="{Binding ReconnectCommand}" />
-      </StackPanel>
-    </Panel>
+    <v:ConnectionCards />
 
     <!-- Sertifika sorusu: oturumun üstünde, arka plan karartılır (docs/tasarim/rdp-oturumu.png, a). -->
     <Panel IsVisible="{Binding CertificatePrompt, Converter={x:Static ObjectConverters.IsNotNull}}">
@@ -46,35 +34,6 @@
           <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
             <Button Classes="secondary" Content="{x:Static s:Strings.Cancel}" Command="{Binding CancelCertificateCommand}" />
             <Button Classes="primary" Content="{x:Static s:Strings.Trust}" Command="{Binding TrustCertificateCommand}" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
-    </Panel>
-
-    <!-- Kullanıcı adı ve şifre sorusu (docs/tasarim/rdp-oturumu.png, b). -->
-    <Panel IsVisible="{Binding IsAskingCredentials}">
-      <Border Background="#99000000" />
-      <Border x:Name="CredentialsCard" Classes="session-card">
-        <StackPanel Spacing="14">
-          <TextBlock Classes="card-title" Text="{Binding SignInTitle}" />
-          <Grid ColumnDefinitions="*,10,*">
-            <StackPanel>
-              <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
-              <TextBox x:Name="PromptUserBox" Classes="field" Text="{Binding PromptUsername}" />
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-              <TextBlock Classes="label" Text="{x:Static s:Strings.Password}" />
-              <TextBox x:Name="PromptPasswordBox" Classes="field" PasswordChar="•" Text="{Binding PromptPassword}" />
-            </StackPanel>
-          </Grid>
-          <StackPanel>
-            <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
-            <TextBox Classes="field" Text="{Binding PromptDomain}" />
-          </StackPanel>
-          <CheckBox Content="{x:Static s:Strings.Save}" IsChecked="{Binding PromptSave}" />
-          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-            <Button Classes="secondary" Content="{x:Static s:Strings.Cancel}" Command="{Binding CancelSignInCommand}" IsCancel="True" />
-            <Button Classes="primary" Content="{x:Static s:Strings.Connect}" Command="{Binding SignInCommand}" IsDefault="True" />
           </StackPanel>
         </StackPanel>
       </Border>

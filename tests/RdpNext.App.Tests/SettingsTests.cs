@@ -34,6 +34,8 @@ public class SettingsTests
         }
 
         public Task<string?> OpenAsync() => Task.FromResult(path);
+
+        public Task<string?> OpenKeyFileAsync() => Task.FromResult<string?>(null);
     }
 
     private readonly string _path = TestWindows.SampleFile();

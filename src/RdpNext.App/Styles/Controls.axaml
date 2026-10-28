@@ -255,6 +255,38 @@
     <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
   </Style>
+  <Style Selector="RadioButton.subtab:disabled">
+    <Setter Property="Opacity" Value="0.4" />
+  </Style>
+  <!-- İki seçenekli düğme grubu (bağlantı tipi, giriş yöntemi): seçili olan kart renginde öne çıkar. -->
+  <Style Selector="Border.segmented">
+    <Setter Property="Background" Value="{DynamicResource SidebarBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="9" />
+    <Setter Property="Padding" Value="3" />
+    <Setter Property="MinHeight" Value="42" />
+  </Style>
+  <Style Selector="RadioButton.segment">
+    <Setter Property="FontSize" Value="{StaticResource BodyFontSize}" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" CornerRadius="7" Padding="10,6">
+          <ContentPresenter Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="RadioButton.segment:checked">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+  </Style>
   <Style Selector="TextBlock.source">
     <Setter Property="FontSize" Value="{StaticResource SecondaryFontSize}" />
     <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />

@@ -45,17 +45,163 @@ public class ServerEditorTests
     }
 
     [Fact]
-    public void IconIsSavedAndLoaded()
+    public void NewServerDefaultsToWindows()
     {
         var editor = NewIn("Üretim");
-        Assert.Equal(ServerIcon.Windows, editor.Icon);
-        editor.Host = "10.0.1.70";
-        editor.Icon = ServerIcon.Linux;
+
+        Assert.Equal((Protocol.Rdp, "3389", true, false), (editor.Protocol, editor.Port, editor.IsRdp, editor.IsSsh));
+    }
+
+    [Fact]
+    public void ChoosingSshSetsPort22AndShowsSshFields()
+    {
+        var editor = NewIn("Üretim");
+
+        editor.Protocol = Protocol.Ssh;
+
+        Assert.Equal(("22", true, false), (editor.Port, editor.IsSsh, editor.IsRdp));
+        Assert.Equal((true, false), (editor.IsPasswordAuth, editor.IsKeyAuth));
+        editor.Auth = SshAuth.Key;
+        Assert.Equal((false, true), (editor.IsPasswordAuth, editor.IsKeyAuth));
+    }
+
+    [Fact]
+    public void CustomPortSurvivesTypeChange()
+    {
+        var editor = NewIn("Üretim");
+        editor.Port = "2200";
+
+        editor.Protocol = Protocol.Ssh;
+        Assert.Equal("2200", editor.Port);
+        editor.Protocol = Protocol.Rdp;
+        Assert.Equal("2200", editor.Port);
+    }
+
+    [Fact]
+    public void ChoosingSshLeavesAdvancedTab()
+    {
+        var editor = NewIn("Üretim");
+        editor.ShowAdvanced = true;
+
+        editor.Protocol = Protocol.Ssh;
+
+        Assert.False(editor.ShowAdvanced);
+    }
+
+    private ServerEditorViewModel SavedSshKeyServer(string host, string passphrase = "")
+    {
+        var editor = NewIn("Üretim");
+        editor.Protocol = Protocol.Ssh;
+        editor.Host = host;
+        editor.Auth = SshAuth.Key;
+        editor.KeyFile = "/k/id_ed25519";
+        editor.Password = passphrase;
+        editor.SaveCommand.Execute(null);
+        return editor;
+    }
+
+    [Fact]
+    public void SshKeyServerSavesPathAndPassphrase()
+    {
+        SavedSshKeyServer("10.0.2.5", "anahtar123");
+
+        var saved = Reload().AllServers().Single(s => s.Host == "10.0.2.5");
+        Assert.Equal((Protocol.Ssh, 22, SshAuth.Key, "/k/id_ed25519", (string?)null), (saved.Protocol, saved.Port, saved.Auth, saved.KeyFile, saved.Domain));
+        Assert.Equal("anahtar123", _vm.Secrets.GetPassword(saved.Id));
+        Assert.DoesNotContain("anahtar123", File.ReadAllText(_path));
+        Assert.Equal(ServerIcon.Ssh, Server("10.0.2.5").Icon);
+    }
+
+    [Fact]
+    public void SshDoesNotSaveDomain()
+    {
+        var editor = NewIn("Üretim");
+        editor.Domain = "AVVA";
+        editor.Protocol = Protocol.Ssh;
+        editor.Host = "10.0.2.6";
 
         editor.SaveCommand.Execute(null);
 
-        Assert.Equal(ServerIcon.Linux, Reload().AllServers().Single(s => s.Host == "10.0.1.70").Icon);
-        Assert.Equal(ServerIcon.Linux, Server("10.0.1.70").Icon);
+        Assert.Null(Reload().AllServers().Single(s => s.Host == "10.0.2.6").Domain);
+    }
+
+    [Fact]
+    public void SwitchingBackToWindowsRestoresRdpDefaults()
+    {
+        var editor = SavedSshKeyServer("10.0.2.7", "anahtar123");
+        var server = Server("10.0.2.7").Server;
+        server.HostKeyFingerprint = "SHA256:x";
+
+        editor.Protocol = Protocol.Rdp;
+        editor.SaveCommand.Execute(null);
+
+        var saved = Reload().AllServers().Single(s => s.Host == "10.0.2.7");
+        Assert.Equal((Protocol.Rdp, 3389, SshAuth.Password, (string?)null, (string?)null),
+            (saved.Protocol, saved.Port, saved.Auth, saved.KeyFile, saved.HostKeyFingerprint));
+        Assert.Equal(ServerIcon.Windows, Server("10.0.2.7").Icon);
+        // Anahtar parolası RDP şifresi olarak kalmaz; klasördeki şifre devralınır.
+        Assert.Null(_vm.Secrets.GetPassword(saved.Id));
+        Assert.Equal("", editor.Password);
+    }
+
+    [Fact]
+    public void KeyAuthNeedsKeyFileToSave()
+    {
+        var editor = NewIn("Üretim");
+        editor.Protocol = Protocol.Ssh;
+        editor.Host = "10.0.2.9";
+        editor.Auth = SshAuth.Key;
+
+        Assert.False(editor.SaveCommand.CanExecute(null));
+        editor.KeyFile = "  ";
+        Assert.False(editor.SaveCommand.CanExecute(null));
+        editor.KeyFile = "/k/id";
+        Assert.True(editor.SaveCommand.CanExecute(null));
+        editor.Auth = SshAuth.Password;
+        editor.KeyFile = "";
+        Assert.True(editor.SaveCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void ChangingAuthMethodDeletesOldSecret()
+    {
+        var editor = NewIn("Üretim");
+        editor.Protocol = Protocol.Ssh;
+        editor.Host = "10.0.2.8";
+        editor.Password = "sifre";
+        editor.SaveCommand.Execute(null);
+        var id = Server("10.0.2.8").Server.Id;
+        Assert.Equal("sifre", _vm.Secrets.GetPassword(id));
+
+        editor.Auth = SshAuth.Key;
+        editor.SaveCommand.Execute(null);
+
+        Assert.Null(_vm.Secrets.GetPassword(id));
+        Assert.Equal("", editor.Password);
+    }
+
+    [Fact]
+    public async Task ChooseKeyFileFillsPath()
+    {
+        var vm = new MainWindowViewModel(new ConnectionStore(TestWindows.SampleFile()), new Core.Secrets.InMemorySecretStore(),
+            files: new KeyFiles("/Users/x/.ssh/id_ed25519"));
+        vm.NewServer();
+        var editor = Assert.IsType<ServerEditorViewModel>(vm.Sessions.Selected);
+        editor.Protocol = Protocol.Ssh;
+        editor.Auth = SshAuth.Key;
+
+        await editor.ChooseKeyFileCommand.ExecuteAsync(null);
+
+        Assert.Equal("/Users/x/.ssh/id_ed25519", editor.KeyFile);
+    }
+
+    private sealed class KeyFiles(string? path) : Services.IFileDialogService
+    {
+        public Task<string?> SaveAsync(string suggestedName) => Task.FromResult<string?>(null);
+
+        public Task<string?> OpenAsync() => Task.FromResult<string?>(null);
+
+        public Task<string?> OpenKeyFileAsync() => Task.FromResult(path);
     }
 
     [Fact]

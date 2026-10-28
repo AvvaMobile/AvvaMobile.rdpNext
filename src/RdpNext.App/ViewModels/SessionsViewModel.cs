@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RdpNext.Core.Model;
 
 namespace RdpNext.App.ViewModels;
 
@@ -8,19 +9,20 @@ public sealed partial class SessionsViewModel(TimeProvider? time = null) : Obser
     public ObservableCollection<TabViewModel> Tabs { get; } = [];
 
     // Tam ekrandaki oturumlar: her biri kendi penceresinde açılır, sekme şeridinde durmaz.
-    public ObservableCollection<SessionTabViewModel> Windows { get; } = [];
+    public ObservableCollection<ConnectionTabViewModel> Windows { get; } = [];
 
     [ObservableProperty]
     private TabViewModel? _selected;
 
-    public SessionTabViewModel Open(ServerNodeViewModel server)
+    // Sunucunun açık sekmesi varsa ona geçer; yoksa protokolüne göre RDP ya da SSH sekmesi açar.
+    public ConnectionTabViewModel Open(ServerNodeViewModel server)
     {
-        var tab = Find<SessionTabViewModel>(t => t.Server == server);
+        var tab = Find<ConnectionTabViewModel>(t => t.Server == server);
         if (tab is not null && Windows.Contains(tab))
             return tab;
         if (tab is null)
         {
-            tab = new SessionTabViewModel(server, time);
+            tab = server.Server.Protocol == Protocol.Ssh ? new SshTabViewModel(server) : new SessionTabViewModel(server, time);
             Tabs.Add(tab);
         }
         Selected = tab;
@@ -50,7 +52,7 @@ public sealed partial class SessionsViewModel(TimeProvider? time = null) : Obser
         Tabs.OfType<T>().Concat(Windows.OfType<T>()).FirstOrDefault(match);
 
     // Oturum sekme şeridinden çıkar, kendi tam ekran penceresine geçer; oturum kapanmaz.
-    public void Detach(SessionTabViewModel tab)
+    public void Detach(ConnectionTabViewModel tab)
     {
         var index = Tabs.IndexOf(tab);
         if (index < 0)
@@ -63,7 +65,7 @@ public sealed partial class SessionsViewModel(TimeProvider? time = null) : Obser
     }
 
     // Tam ekrandan çıkan oturum sekmesine döner.
-    public void Attach(SessionTabViewModel tab)
+    public void Attach(ConnectionTabViewModel tab)
     {
         if (!Windows.Remove(tab))
             return;
@@ -73,7 +75,7 @@ public sealed partial class SessionsViewModel(TimeProvider? time = null) : Obser
 
     public void Close(TabViewModel tab)
     {
-        if (tab is SessionTabViewModel session && Windows.Remove(session))
+        if (tab is ConnectionTabViewModel session && Windows.Remove(session))
         {
             tab.OnClosed();
             return;

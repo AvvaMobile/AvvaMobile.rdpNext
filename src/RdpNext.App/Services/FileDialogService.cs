@@ -5,7 +5,7 @@ using Avalonia.Platform.Storage;
 
 namespace RdpNext.App.Services;
 
-// Ana pencerenin sistem dosya pencerelerini açar; yalnız .json dosyaları.
+// Ana pencerenin sistem dosya pencerelerini açar; yedek için yalnız .json, anahtar için her dosya.
 public sealed class FileDialogService : IFileDialogService
 {
     private static readonly FilePickerFileType Json = new("JSON") { Patterns = ["*.json"] };
@@ -32,6 +32,19 @@ public sealed class FileDialogService : IFileDialogService
         {
             AllowMultiple = false,
             FileTypeFilter = [Json],
+        });
+        return files.Count == 0 ? null : files[0].TryGetLocalPath();
+    }
+
+    public async Task<string?> OpenKeyFileAsync()
+    {
+        if (Owner() is not { } owner)
+            return null;
+        var ssh = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".ssh");
+        var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = false,
+            SuggestedStartLocation = Directory.Exists(ssh) ? await owner.StorageProvider.TryGetFolderFromPathAsync(ssh) : null,
         });
         return files.Count == 0 ? null : files[0].TryGetLocalPath();
     }

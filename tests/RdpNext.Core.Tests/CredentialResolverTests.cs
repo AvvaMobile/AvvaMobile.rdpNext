@@ -108,4 +108,28 @@ public class CredentialResolverTests
     [Fact]
     public void InheritedNullStartGivesNulls() =>
         Assert.Equal(new InheritedCredentials(null, null, null), CredentialResolver.Inherited(null, _secrets));
+
+    [Fact]
+    public void SshKeyAuthDoesNotInheritPassword()
+    {
+        var group = new Group { Name = "Üretim", Username = "root" };
+        _secrets.SetPassword(group.Id, "klasor");
+        var server = new Server { Protocol = Protocol.Ssh, Auth = SshAuth.Key, KeyFile = "/k/id" };
+        group.Add(server);
+
+        Assert.Equal(new ResolvedCredentials("root", null, null), CredentialResolver.Resolve(server, _secrets));
+        _secrets.SetPassword(server.Id, "anahtar123");
+        Assert.Equal(new ResolvedCredentials("root", "anahtar123", null), CredentialResolver.Resolve(server, _secrets));
+    }
+
+    [Fact]
+    public void SshIgnoresDomain()
+    {
+        var group = new Group { Name = "Üretim", Username = "root", Domain = "AVVA" };
+        _secrets.SetPassword(group.Id, "klasor");
+        var server = new Server { Protocol = Protocol.Ssh, Domain = "ESKI" };
+        group.Add(server);
+
+        Assert.Equal(new ResolvedCredentials("root", "klasor", null), CredentialResolver.Resolve(server, _secrets));
+    }
 }
