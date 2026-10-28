@@ -140,6 +140,22 @@ public class ServerEditorTests
         Assert.Null(Reload().AllServers().Single(s => s.Host == "10.0.2.6").Domain);
     }
 
+    // Protokol değişmeden kaydetmek güvenilen sunucu anahtarına dokunmaz.
+    [Fact]
+    public void RenamingSshServerKeepsTrustedHostKey()
+    {
+        var editor = SavedSshKeyServer("10.0.2.8");
+        var server = Server("10.0.2.8").Server;
+        server.HostKeyFingerprint = "SHA256:x";
+        server.HostKeyType = "ssh-ed25519";
+
+        editor.Name = "yeni-ad";
+        editor.SaveCommand.Execute(null);
+
+        var saved = Reload().AllServers().Single(s => s.Host == "10.0.2.8");
+        Assert.Equal(("SHA256:x", "ssh-ed25519"), (saved.HostKeyFingerprint, saved.HostKeyType));
+    }
+
     [Fact]
     public void SwitchingBackToWindowsRestoresRdpDefaults()
     {

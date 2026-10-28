@@ -48,5 +48,13 @@ public class ServerCopyTests
     {
         Assert.Equal(ServerIcon.Windows, new Server().Icon);
         Assert.Equal(ServerIcon.Ssh, new Server { Protocol = Protocol.Ssh }.Icon);
+        Assert.Equal(ServerIcon.Linux, new Server { Os = ServerOs.Linux }.Icon);
+        Assert.Equal(ServerIcon.Ssh, new Server { Protocol = Protocol.Ssh, Os = ServerOs.Linux }.Icon);
+    }
+
+    [Fact]
+    public void CopyKeepsLinux()
+    {
+        Assert.Equal(ServerOs.Linux, new Server { Os = ServerOs.Linux }.CopyWithNewId("kopya").Os);
     }
 }

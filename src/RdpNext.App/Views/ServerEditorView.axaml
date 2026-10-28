@@ -27,8 +27,8 @@
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.ConnectionType}" />
               <Border Classes="segmented">
-                <UniformGrid Columns="2">
-                  <RadioButton x:Name="WindowsType" Classes="segment" IsChecked="{Binding IsRdp}">
+                <UniformGrid Columns="3">
+                  <RadioButton x:Name="WindowsType" Classes="segment" IsChecked="{Binding IsWindows}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                       <Border Width="20" Height="20" CornerRadius="6" Background="{Binding Color, Converter={x:Static v:Converters.ServerColorBrush}}">
                         <v:ServerIconView Icon="Windows" Width="10" Height="10" />
@@ -42,6 +42,14 @@
                         <v:ServerIconView Icon="Ssh" Width="10" Height="10" />
                       </Border>
                       <TextBlock VerticalAlignment="Center" Text="{x:Static s:Strings.SshType}" />
+                    </StackPanel>
+                  </RadioButton>
+                  <RadioButton x:Name="LinuxType" Classes="segment" IsChecked="{Binding IsLinux}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Border Width="20" Height="20" CornerRadius="6" Background="{Binding Color, Converter={x:Static v:Converters.ServerColorBrush}}">
+                        <v:ServerIconView Icon="Linux" Width="10" Height="10" />
+                      </Border>
+                      <TextBlock VerticalAlignment="Center" Text="{x:Static s:Strings.LinuxType}" />
                     </StackPanel>
                   </RadioButton>
                 </UniformGrid>
