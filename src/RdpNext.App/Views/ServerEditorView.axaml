@@ -160,6 +160,7 @@
               </ComboBox>
             </StackPanel>
           </Grid>
+          <CheckBox x:Name="InfoOverlayBox" Content="{x:Static s:Strings.ShowInfoOverlay}" IsChecked="{Binding ShowInfoOverlay}" />
         </StackPanel>
           <Button x:Name="SaveButton" Classes="primary" HorizontalAlignment="Left" Margin="0,6,0,0"
                   Content="{x:Static s:Strings.Save}" Command="{Binding SaveCommand}" />

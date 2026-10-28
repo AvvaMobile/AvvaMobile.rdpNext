@@ -103,6 +103,23 @@ public class ServerEditorTests
         Assert.False(editor.ShowAdvanced);
     }
 
+    // Gelişmiş sekmesindeki ad/IP etiketi seçimi kaydedilir ve düzenlerken geri gelir; varsayılanı kapalı.
+    [Fact]
+    public void InfoOverlaySavedAndLoaded()
+    {
+        var editor = NewIn("Üretim");
+        Assert.False(editor.ShowInfoOverlay);
+        editor.Host = "10.0.1.52";
+        editor.ShowInfoOverlay = true;
+
+        editor.SaveCommand.Execute(null);
+
+        var saved = Reload().AllServers().Single(s => s.Host == "10.0.1.52");
+        Assert.True(saved.ShowInfoOverlay);
+        _vm.EditServer(Server("10.0.1.52"));
+        Assert.True(Assert.IsType<ServerEditorViewModel>(_vm.Sessions.Selected).ShowInfoOverlay);
+    }
+
     private ServerEditorViewModel SavedSshKeyServer(string host, string passphrase = "")
     {
         var editor = NewIn("Üretim");

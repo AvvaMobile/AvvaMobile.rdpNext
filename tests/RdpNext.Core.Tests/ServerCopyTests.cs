@@ -57,4 +57,10 @@ public class ServerCopyTests
     {
         Assert.Equal(ServerOs.Linux, new Server { Os = ServerOs.Linux }.CopyWithNewId("kopya").Os);
     }
+
+    [Fact]
+    public void CopyKeepsInfoOverlay()
+    {
+        Assert.True(new Server { ShowInfoOverlay = true }.CopyWithNewId("kopya").ShowInfoOverlay);
+    }
 }

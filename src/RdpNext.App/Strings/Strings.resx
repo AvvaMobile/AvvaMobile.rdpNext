@@ -24,6 +24,7 @@
   <data name="General" xml:space="preserve"><value>General</value></data>
   <data name="Advanced" xml:space="preserve"><value>Advanced</value></data>
   <data name="Screen" xml:space="preserve"><value>Screen</value></data>
+  <data name="ShowInfoOverlay" xml:space="preserve"><value>Show server name and IP on screen</value></data>
   <data name="FullScreen" xml:space="preserve"><value>Full Screen</value></data>
   <data name="Windowed" xml:space="preserve"><value>Windowed</value></data>
   <data name="Saved" xml:space="preserve"><value>Saved</value></data>

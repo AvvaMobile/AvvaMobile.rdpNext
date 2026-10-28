@@ -24,6 +24,9 @@ public sealed class Server : Node
 
     public ScreenMode Screen { get; set; } = ScreenMode.FitToWindow;
 
+    // Oturumun üst ortasında sunucu adı ve adresi görünür.
+    public bool ShowInfoOverlay { get; set; }
+
     // Linux sunucusu da RDP ile bağlanır (xrdp); eski dosyalarda alan yoksa Windows.
     public ServerOs Os { get; set; } = ServerOs.Windows;
 
@@ -56,6 +59,7 @@ public sealed class Server : Node
         Domain = Domain,
         Color = Color,
         Screen = Screen,
+        ShowInfoOverlay = ShowInfoOverlay,
         Auth = Auth,
         KeyFile = KeyFile,
     };
