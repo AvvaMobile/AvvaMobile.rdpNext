@@ -46,7 +46,7 @@
 - [ ] Hepsi geçerse paket seçilir. Geçmezse sırayla `Iciclecreek.Avalonia.Terminal`, sonra `Terminal.Avalonia` denenir; hiçbiri olmazsa durulur ve Murat'a "XTerm.NET üstüne kendi çizimimizi yazalım mı" diye sorulur (plan büyür).
 - [ ] Task 1 sonucu satırını doldur, commit: "SSH test sunucusu ve terminal denemesi sonucu"
 
-Task 1 sonucu: _(doldurulacak: paket adı, sürüm, kontrol sınıfı, besleme ve girdi API'si)_
+Task 1 sonucu (2026-10-28): `SvcSystems.UI.Terminal` 2.3.0 (MIT, Avalonia 12.1.4 ve XTerm.NET 3.0.0'a bağlı). Docker sunucusunda renkler, htop, vim (alternatif ekran), Türkçe yazma ve gösterme, pencere boyutu (`SizeChanged` → `ShellStream.ChangeWindowSize`, `stty size` doğru) ve Cmd+V çalıştı. API: `TerminalControl { Model, FontFamily, FontSize, CaretBrush, SelectionBrush, CopySelectionAsync(), PasteFromClipboardAsync(), SelectedText }`, `TerminalControlModel(TerminalOptions { TermName })`, `Feed(byte[], int)` (UI iş parçacığında), `event UserInput (e.Data: ReadOnlyMemory<byte>)`, `event SizeChanged (e.Cols, e.Rows)`, `Terminal.Cols/Rows`, tema için `Application.Styles`'a `TerminalTheme`, renk paleti `SvcSystems.UI.TerminalColor0..255` kaynakları. SSH.NET `HostKeyReceived` parmak izini "SHA256:" öneki olmadan veriyor; önek biz ekleriz. Cmd+C denenemedi (sahte tuş basımı durduruldu), Task 6'da headless testle doğrulanır.
 
 ### Task 2: Model: protokol, giriş yöntemi, ikon (Core)
 
