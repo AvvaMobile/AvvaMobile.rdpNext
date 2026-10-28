@@ -2,4 +2,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="RdpNext.Core.Tests" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- mRemoteNG şifreleri 16 baytlık nonce'la AES-GCM; .NET'in AesGcm'i yalnız 12 bayt alıyor. -->
+    <PackageReference Include="BouncyCastle.Cryptography" />
+  </ItemGroup>
 </Project>

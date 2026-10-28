@@ -38,6 +38,8 @@ public sealed partial class TreeViewModel : ObservableObject
 
     public T Node<T>(Guid id) where T : TreeNodeViewModel => (T)_byId[id];
 
+    public bool Contains(Guid id) => _byId.ContainsKey(id);
+
     public IReadOnlyList<FolderOption> FolderOptions(Group? exclude = null)
     {
         var options = new List<FolderOption> { new(null, Strings.Strings.TopLevel) };

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>mRemoteNG İçe Aktarma</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Renk ve boyutlar uygulamadan: Styles/Tokens.axaml ve Styles/Controls.axaml */
+  :root, .light { --window:#eef0f5; --side:#f7f8fb; --card:#ffffff; --hover:#e6e9f1; --tx:#1b1e2b; --tx2:#6b7085; --line:#dfe2ea; --acc:#3d6dfd; --btn:#5b5bd6; --ph:#8a8fa3; }
+  .dark { --window:#151827; --side:#1a1d2e; --card:#252839; --hover:#2b2f43; --tx:#e8eaf2; --tx2:#8d92a8; --line:#262a3c; --acc:#4c7dff; --btn:#6e6ade; --ph:#8d92a8; }
+  body { margin:0; padding:32px; background:#c9cdd8; font-family:Inter,-apple-system,sans-serif; }
+  h2 { margin:0 0 4px; font-size:18px; color:#1b1e2b; } p.s { margin:0 0 16px; color:#4a4f63; font-size:14px; max-width:900px; }
+  .switch { display:flex; gap:8px; margin-bottom:16px; }
+  .switch button { font:500 13px Inter; padding:7px 16px; border-radius:8px; border:1px solid #b9bdca; background:#fff; cursor:pointer; }
+  .switch button.on { background:#1b1e2b; color:#fff; border-color:#1b1e2b; }
+  .app { max-width:900px; background:var(--window); border-radius:14px; overflow:hidden; border:1px solid var(--line); box-shadow:0 20px 50px rgba(0,0,0,.18); }
+  .frame { background:var(--card); color:var(--tx); font-size:15px; }
+  .subtabs { display:flex; gap:4px; border-bottom:1px solid var(--line); padding:0 28px; background:var(--side); }
+  .subtabs div { padding:12px 18px; color:var(--tx2); font-weight:500; font-size:15px; }
+  .subtabs div.on { color:var(--tx); box-shadow:inset 0 -2px 0 var(--acc); }
+  .form { margin:24px 28px; max-width:600px; display:flex; flex-direction:column; gap:18px; }
+  .title { font-size:17px; font-weight:600; }
+  .body { font-size:14px; color:var(--tx2); line-height:1.45; }
+  .sep { height:1px; background:var(--line); margin:10px 0; }
+  .label { font-size:14px; color:var(--tx2); margin-bottom:6px; }
+  .field { background:var(--side); border:1px solid var(--line); border-radius:9px; padding:10px 12px; min-height:20px; display:flex; justify-content:space-between; color:var(--ph); }
+  .field .eye { color:var(--tx2); font-size:14px; }
+  .hint { font-size:14px; color:var(--tx2); margin:8px 0 0 2px; line-height:1.4; }
+  .chk { display:flex; align-items:center; gap:10px; } .chk i { width:18px; height:18px; border:1.5px solid var(--tx2); border-radius:5px; }
+  .btn { background:var(--btn); color:#fff; border-radius:8px; padding:7px 18px; font-size:13px; font-weight:500; width:fit-content; }
+  .status { font-size:14px; color:var(--tx2); }
+</style></head><body>
+
+<h2>Import sekmesi: alt alta iki bölüm</h2>
+<p class="s">Her bölümün kendi açıklaması ve düğmesi var. Yazı boyutları, renkler ve düğmeler uygulamadakiyle aynı; üstten tema seçilebilir.</p>
+<div class="switch"><button data-t="light" class="on">Light</button><button data-t="dark">Dark</button></div>
+
+<div class="app light" id="app">
+  <div class="frame">
+    <div class="subtabs"><div>General</div><div>Export</div><div class="on">Import</div></div>
+    <div class="form">
+
+      <div class="title">Import from rdpNext File</div>
+      <div class="body">Choose a .json file you exported earlier. The servers and folders in the file are added to your current list; entries already in the list are not added again.</div>
+      <div class="chk"><i></i>Delete all existing entries</div>
+      <div class="btn">Import</div>
+
+      <div class="sep"></div>
+
+      <div class="title">Import from mRemoteNG File</div>
+      <div class="body">Choose your mRemoteNG connections file (confCons.xml). RDP and SSH connections are added with their folders and passwords under a new "mRemoteNG" folder; other connection types are skipped. Entries already in the list are not added again.</div>
+      <div>
+        <div class="label">Master password</div>
+        <div class="field"><span>Optional</span><span class="eye">👁</span></div>
+        <div class="hint">Only needed if you set a master password for the file in mRemoteNG. Leave it empty otherwise.</div>
+      </div>
+      <div class="btn">Import</div>
+      <div class="status">Imported, 24 new servers added. 3 connections skipped (only RDP and SSH are supported).</div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.switch button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.switch button').forEach(x => x.classList.toggle('on', x === b));
+    document.getElementById('app').className = 'app ' + b.dataset.t;
+  });
+</script>
+</body></html>
