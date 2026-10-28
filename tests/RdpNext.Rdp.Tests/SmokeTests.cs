@@ -136,4 +136,52 @@ public class SmokeTests
             await Task.Delay(500, ct);
         }
     }
+
+    // Sunucudan Mac'e dosya: sunucuda win.ini Explorer'da seçilip kopyalanır (sunucuya yazılmaz), Mac'e iner.
+    [Fact]
+    public async Task FileCopyFromServer()
+    {
+        var options = SmokeServer.Options();
+        Assert.SkipWhen(options is null, "RDPNEXT_SMOKE ayarlı değil");
+        using var session = new RdpSession { VerifyCertificate = _ => Task.FromResult(true) };
+        var connected = new TaskCompletionSource();
+        var files = new TaskCompletionSource<IReadOnlyList<string>>();
+        session.Connected += () => connected.TrySetResult();
+        session.RemoteClipboardFiles += f => files.TrySetResult(f);
+        var ct = TestContext.Current.CancellationToken;
+        void Tap(ushort code, bool extended = false)
+        {
+            session.SendKey(code, extended, true);
+            session.SendKey(code, extended, false);
+        }
+
+        session.Start(options!);
+        await connected.Task.WaitAsync(TimeSpan.FromSeconds(20), ct);
+        await Task.Delay(3000, ct);
+        session.SendKey(0x5B, true, true);
+        Tap(0x13);
+        session.SendKey(0x5B, true, false);
+        await Task.Delay(1500, ct);
+        foreach (var c in @"explorer /select,C:\Windows\win.ini")
+            session.SendUnicode(c);
+        Tap(0x1C);
+        await Task.Delay(3000, ct);
+        session.SendKey(0x1D, false, true);
+        Tap(0x2E);
+        session.SendKey(0x1D, false, false);
+        try
+        {
+            var got = await files.Task.WaitAsync(TimeSpan.FromSeconds(15), ct);
+            var path = Assert.Single(got);
+            Assert.Equal("win.ini", Path.GetFileName(path));
+            Assert.True(new FileInfo(path).Length > 0);
+        }
+        finally
+        {
+            session.SendKey(0x38, false, true);
+            Tap(0x3E);
+            session.SendKey(0x38, false, false);
+            await Task.Delay(800, ct);
+        }
+    }
 }

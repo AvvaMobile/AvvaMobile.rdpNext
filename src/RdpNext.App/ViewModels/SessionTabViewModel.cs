@@ -89,6 +89,9 @@ public sealed partial class SessionTabViewModel : TabViewModel
     // Sunucuda kopyalanan metin; görünüm bunu bu bilgisayarın panosuna yazar.
     public event Action<string?>? RemoteClipboardText;
 
+    // Sunucuda kopyalanıp bu bilgisayara indirilen dosyalar; görünüm Mac panosuna koyar.
+    public event Action<IReadOnlyList<string>>? RemoteClipboardFiles;
+
     // Sunucunun imleç şekli; null ise sistemin oku.
     [ObservableProperty]
     private RdpPointer? _pointer;
@@ -145,6 +148,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
         session.Frame += Screen.CopyFrame;
         session.PointerChanged += pointer => OnUi(session, () => Pointer = pointer);
         session.RemoteClipboardText += text => OnUi(session, () => RemoteClipboardText?.Invoke(text));
+        session.RemoteClipboardFiles += files => OnUi(session, () => RemoteClipboardFiles?.Invoke(files));
         var (width, height) = _startedSize = RemoteSize(_size.Width, _size.Height);
         session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, username, domain, password, width, height));
     }

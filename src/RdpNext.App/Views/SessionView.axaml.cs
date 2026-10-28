@@ -56,6 +56,7 @@ public partial class SessionView : UserControl
             _tab.Screen.Invalidated -= Redraw;
             _tab.PropertyChanged -= OnTabChanged;
             _tab.RemoteClipboardText -= OnRemoteClipboardText;
+            _tab.RemoteClipboardFiles -= OnRemoteClipboardFiles;
         }
         _tab = tab;
         if (_tab is not null)
@@ -63,11 +64,30 @@ public partial class SessionView : UserControl
             _tab.Screen.Invalidated += Redraw;
             _tab.PropertyChanged += OnTabChanged;
             _tab.RemoteClipboardText += OnRemoteClipboardText;
+            _tab.RemoteClipboardFiles += OnRemoteClipboardFiles;
             ShowPointer(_tab.Pointer);
         }
     }
 
     private void Redraw() => Screen.InvalidateVisual();
+
+    // Sunucudan indirilen dosyalar Mac panosuna konur; Finder'da yapıştırılabilir.
+    private async void OnRemoteClipboardFiles(IReadOnlyList<string> paths)
+    {
+        if (_tab is not { } tab || TopLevel.GetTopLevel(this) is not { Clipboard: { } clipboard } top)
+            return;
+        var data = new DataTransfer();
+        foreach (var path in paths)
+        {
+            IStorageItem? item = Directory.Exists(path)
+                ? await top.StorageProvider.TryGetFolderFromPathAsync(new Uri(path))
+                : await top.StorageProvider.TryGetFileFromPathAsync(new Uri(path));
+            if (item is not null)
+                data.Add(DataTransferItem.CreateFile(item));
+        }
+        tab.SharedClipboardText = SharedKey(null, paths);
+        await clipboard.SetDataAsync(data);
+    }
 
     // Panonun iki tarafça bilinen hâli: metin ve dosya yolları birlikte.
     private static string SharedKey(string? text, IReadOnlyList<string> files) => string.Join("\n", files.Prepend(text ?? ""));

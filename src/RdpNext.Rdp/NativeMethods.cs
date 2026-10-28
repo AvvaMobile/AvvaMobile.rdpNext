@@ -10,6 +10,7 @@ internal unsafe struct RnCallbacks
     public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, IntPtr, IntPtr, int, int> VerifyCertificate;
     public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, int, int, int, int, void> Pointer;
     public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> ClipboardText;
+    public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> ClipboardFiles;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -22,6 +23,7 @@ internal struct RnOptions
     public IntPtr Password;
     public int Width;
     public int Height;
+    public IntPtr ClipboardDir;
 }
 
 internal static unsafe partial class NativeMethods
