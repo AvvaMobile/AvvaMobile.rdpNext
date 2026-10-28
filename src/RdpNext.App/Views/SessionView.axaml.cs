@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using RdpNext.App.Rdp;
 using RdpNext.App.ViewModels;
 using RdpNext.Rdp;
@@ -28,12 +29,15 @@ public partial class SessionView : UserControl
         // Oturuma dönülünce bu bilgisayarın panosundaki metin sunucuya duyurulur.
         GotFocus += async (_, _) =>
         {
-            if (Session is { } session && _tab is { } tab && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard
-                && await clipboard.TryGetTextAsync() is { } text && text != tab.SharedClipboardText)
-            {
-                tab.SharedClipboardText = text;
-                session.SetLocalClipboardText(text);
-            }
+            if (Session is not { } session || _tab is not { } tab || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard)
+                return;
+            var text = await clipboard.TryGetTextAsync();
+            var files = (await clipboard.TryGetFilesAsync() ?? []).Select(f => f.TryGetLocalPath()).OfType<string>().ToList();
+            var shared = SharedKey(text, files);
+            if (shared == tab.SharedClipboardText || (text is null && files.Count == 0))
+                return;
+            tab.SharedClipboardText = shared;
+            session.SetLocalClipboard(text, files);
         };
     }
 
@@ -65,6 +69,9 @@ public partial class SessionView : UserControl
 
     private void Redraw() => Screen.InvalidateVisual();
 
+    // Panonun iki tarafça bilinen hâli: metin ve dosya yolları birlikte.
+    private static string SharedKey(string? text, IReadOnlyList<string> files) => string.Join("\n", files.Prepend(text ?? ""));
+
     // Sunucuda kopyalandı. Metinse Mac panosuna yazılır; metin dışıysa (dosya) Mac'teki metin "bilinen" sayılır,
     // böylece sonraki odakta sunucuya duyurulup sunucudaki kopyanın üstüne yazmaz.
     private async void OnRemoteClipboardText(string? text)
@@ -73,10 +80,11 @@ public partial class SessionView : UserControl
             return;
         if (text is null)
         {
-            tab.SharedClipboardText = await clipboard.TryGetTextAsync();
+            var files = (await clipboard.TryGetFilesAsync() ?? []).Select(f => f.TryGetLocalPath()).OfType<string>().ToList();
+            tab.SharedClipboardText = SharedKey(await clipboard.TryGetTextAsync(), files);
             return;
         }
-        tab.SharedClipboardText = text;
+        tab.SharedClipboardText = SharedKey(text, []);
         await clipboard.SetTextAsync(text);
     }
 

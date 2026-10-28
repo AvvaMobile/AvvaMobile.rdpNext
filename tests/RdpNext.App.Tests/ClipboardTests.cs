@@ -118,4 +118,24 @@ public class ClipboardTests
 
         Assert.Equal(before, _sessions[0].LocalClipboardSets);
     }
+
+    // Finder'da kopyalanan dosya, oturuma dönünce sunucuya dosya olarak duyurulur.
+    [AvaloniaFact]
+    public async Task FocusSendsLocalFiles()
+    {
+        var (window, view) = OpenSession();
+        var path = Path.Combine(Path.GetTempPath(), "rdpnext-pano-" + Guid.NewGuid() + ".txt");
+        await File.WriteAllTextAsync(path, "x", TestContext.Current.CancellationToken);
+        var file = await window.StorageProvider.TryGetFileFromPathAsync(new Uri(path));
+        Assert.SkipWhen(file is null, "Başsız depolama dosya veremiyor");
+        var data = new Avalonia.Input.DataTransfer();
+        data.Add(Avalonia.Input.DataTransferItem.CreateFile(file!));
+        await window.Clipboard!.SetDataAsync(data);
+        window.Named<TextBox>("SearchBox").Focus();
+
+        view.Focus();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal([path], _sessions[0].LocalFiles);
+    }
 }

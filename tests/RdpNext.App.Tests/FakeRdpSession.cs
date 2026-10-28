@@ -47,9 +47,12 @@ public sealed class FakeRdpSession : IRdpSession
 
     public int LocalClipboardSets { get; private set; }
 
-    public void SetLocalClipboardText(string text)
+    public IReadOnlyList<string> LocalFiles { get; private set; } = [];
+
+    public void SetLocalClipboard(string? text, IReadOnlyList<string> files)
     {
         LocalClipboard = text;
+        LocalFiles = files;
         LocalClipboardSets++;
     }
 
