@@ -16,7 +16,7 @@ Murat'ın kararları: üst dokümandaki sekiz oturum maddesinin hepsi tek seferd
 2. Tam ekran: sekmeden tam ekrana geçilir, aynı kısayolla geri dönülür.
 3. Metin kopyala-yapıştır iki yönde çalışır.
 4. Dosya kopyala-yapıştır: macOS'ta çalışıp çalışmadığı denenir. Çalışıyorsa açılır; çalışmıyorsa bu sürümde yok sayılır ve Murat'a söylenir.
-   Sonuç (2026-10-27): macOS'ta çalışmıyor, bu sürümde yok (Murat'ın kararı). Metin panosu iki yönde çalışıyor.
+   Sonuç (2026-10-28): macOS'ta iki yönde çalışıyor (Murat denedi). Mac'ten sunucuya FreeRDP'nin dosya bağlamıyla; sunucudan Mac'e FUSE olmadığı için rdpNext dosyaları Windows'ta kopyalandığı anda geçici klasöre indirip Mac panosuna koyuyor, oturum kapanınca siliniyor.
 5. Sunucunun sesi bu bilgisayarda çalar.
 6. Sertifika uyarısı: sertifika ilk bağlantıda doğrulanamazsa kullanıcıya sorulur; "güven" denirse o sunucu için hatırlanır.
 7. Bağlantı koparsa sekme kapanmaz; "Yeniden bağlan" seçeneği gösterilir.
