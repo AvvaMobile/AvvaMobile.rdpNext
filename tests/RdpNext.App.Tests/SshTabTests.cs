@@ -110,6 +110,41 @@ public class SshTabTests
         Assert.Null(Assert.Single(_sessions[0].Starts).KeyPassphrase);
     }
 
+    // Anahtar yolu boş kalmış eski kayıt: şifreyle denenmez, anahtar modunda kalır.
+    [AvaloniaFact]
+    public void KeyServerWithoutKeyFileStaysInKeyMode()
+    {
+        Node("linux-key").Server.KeyFile = null;
+
+        Connect("linux-key");
+
+        var options = Assert.Single(_sessions[0].Starts);
+        Assert.Equal(("", (string?)null), (options.KeyFile, options.Password));
+    }
+
+    // Kullanıcı parmak izine bakarken bağlantı zaman aşımına uğrarsa, "Trust" sonrası kendiliğinden yeniden bağlanılır.
+    [AvaloniaFact]
+    public void TrustAfterTimeoutReconnects()
+    {
+        var tab = Connect();
+        _ = _sessions[0].VerifyHostKey!(HostKey);
+        Dispatcher.UIThread.RunJobs();
+        tab.TrustHostKeyCommand.Execute(null);
+
+        _sessions[0].RaiseEnded(SshEndReason.ConnectFailed);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(2, _sessions.Count);
+        Assert.Equal(SessionState.Connecting, tab.State);
+        Assert.False(tab.ShowDisconnected);
+
+        // Yeniden denemede de olmazsa döngüye girmez, kopuk gösterilir.
+        _sessions[1].RaiseEnded(SshEndReason.ConnectFailed);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(2, _sessions.Count);
+        Assert.True(tab.ShowDisconnected);
+    }
+
     [AvaloniaFact]
     public void KeyServerWithoutUserAsksOnlyUser()
     {

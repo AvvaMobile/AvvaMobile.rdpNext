@@ -13,10 +13,12 @@ public sealed class SshSession : ISshSession
 
     private readonly object _gate = new();
     private SshClient? _client;
-    private ShellStream? _shell;
+    private volatile ShellStream? _shell;
     private PrivateKeyFile? _key;
     private bool _hostKeyRejected;
-    private bool _disposed;
+    private volatile bool _disposed;
+    // Connect sürüyor; Dispose istemciyi kapatmaz, bağlanma bitince arka plan işi kapatır.
+    private bool _connecting;
     private int _ended;
 
     public event Action? Connected;
@@ -62,7 +64,8 @@ public sealed class SshSession : ISshSession
 
     private void Run(SshConnectOptions options)
     {
-        var keyMode = !string.IsNullOrEmpty(options.KeyFile);
+        // KeyFile null değilse (boş olsa bile) yalnız anahtarla girilir; şifreye düşülmez.
+        var keyMode = options.KeyFile is not null;
         AuthenticationMethod[] methods;
         if (keyMode)
         {
@@ -89,10 +92,10 @@ public sealed class SshSession : ISshSession
         // Bağlanırken gelen hatalar Connect'in fırlattığı istisnadan sınıflanır.
         client.ErrorOccurred += (_, e) =>
         {
-            if (_shell is not { } shell)
+            if (_shell is not { } open)
                 return;
             End(SshEndReason.Disconnected, e.Exception.Message);
-            shell.Dispose();
+            open.Dispose();
         };
         client.HostKeyReceived += (_, e) =>
         {
@@ -109,27 +112,52 @@ public sealed class SshSession : ISshSession
                 return;
             }
             _client = client;
+            _connecting = true;
         }
 
+        // Bağlanırken Dispose gelirse istemci burada kapatılır: SSH.NET bağlanma sürerken yapılan Dispose'u
+        // yok sayıp oturumu sonradan kurabiliyor; ikinci Dispose da etkisiz kalıyor.
+        ShellStream? shell = null;
+        Exception? error = null;
         try
         {
             client.Connect();
-            var shell = client.CreateShellStream("xterm-256color", (uint)options.Columns, (uint)options.Rows, 0, 0, 4096);
-            _shell = shell;
+            shell = client.CreateShellStream("xterm-256color", (uint)options.Columns, (uint)options.Rows, 0, 0, 4096);
         }
         catch (Exception e)
         {
-            End(Classify(e, keyMode), e.Message);
+            error = e;
+        }
+        lock (_gate)
+        {
+            _connecting = false;
+            if (_disposed)
+            {
+                shell?.Dispose();
+                client.Dispose();
+                _key?.Dispose();
+                return;
+            }
+            _shell = shell;
+        }
+        if (error is not null)
+        {
+            End(Classify(error, keyMode), error.Message);
             return;
         }
 
         Connected?.Invoke();
-        Read(client, _shell!);
+        Read(client, shell!);
     }
 
     private PrivateKeyFile? LoadKey(SshConnectOptions options)
     {
         var path = ExpandHome(options.KeyFile!);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            End(SshEndReason.KeyUnusable, null);
+            return null;
+        }
         try
         {
             _key = string.IsNullOrEmpty(options.KeyPassphrase) ? new PrivateKeyFile(path) : new PrivateKeyFile(path, options.KeyPassphrase);
@@ -192,14 +220,17 @@ public sealed class SshSession : ISshSession
     public void Dispose()
     {
         SshClient? client;
+        bool connecting;
         lock (_gate)
         {
             _disposed = true;
-            client = _client;
+            connecting = _connecting;
+            client = connecting ? null : _client;
             _client = null;
         }
         _shell?.Dispose();
         client?.Dispose();
-        _key?.Dispose();
+        if (!connecting)
+            _key?.Dispose();
     }
 }

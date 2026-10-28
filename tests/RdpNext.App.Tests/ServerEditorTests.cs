@@ -128,7 +128,7 @@ public class ServerEditorTests
     [Fact]
     public void SwitchingBackToWindowsRestoresRdpDefaults()
     {
-        var editor = SavedSshKeyServer("10.0.2.7");
+        var editor = SavedSshKeyServer("10.0.2.7", "anahtar123");
         var server = Server("10.0.2.7").Server;
         server.HostKeyFingerprint = "SHA256:x";
 
@@ -139,6 +139,27 @@ public class ServerEditorTests
         Assert.Equal((Protocol.Rdp, 3389, SshAuth.Password, (string?)null, (string?)null),
             (saved.Protocol, saved.Port, saved.Auth, saved.KeyFile, saved.HostKeyFingerprint));
         Assert.Equal(ServerIcon.Windows, Server("10.0.2.7").Icon);
+        // Anahtar parolası RDP şifresi olarak kalmaz; klasördeki şifre devralınır.
+        Assert.Null(_vm.Secrets.GetPassword(saved.Id));
+        Assert.Equal("", editor.Password);
+    }
+
+    [Fact]
+    public void KeyAuthNeedsKeyFileToSave()
+    {
+        var editor = NewIn("Üretim");
+        editor.Protocol = Protocol.Ssh;
+        editor.Host = "10.0.2.9";
+        editor.Auth = SshAuth.Key;
+
+        Assert.False(editor.SaveCommand.CanExecute(null));
+        editor.KeyFile = "  ";
+        Assert.False(editor.SaveCommand.CanExecute(null));
+        editor.KeyFile = "/k/id";
+        Assert.True(editor.SaveCommand.CanExecute(null));
+        editor.Auth = SshAuth.Password;
+        editor.KeyFile = "";
+        Assert.True(editor.SaveCommand.CanExecute(null));
     }
 
     [Fact]

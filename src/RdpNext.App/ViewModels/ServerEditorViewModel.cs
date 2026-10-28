@@ -97,6 +97,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     // Bağlantı tipi: Windows (RDP) ya da SSH; formun geri kalanı buna göre değişir.
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRdp), nameof(IsSsh), nameof(IsPasswordAuth), nameof(IsKeyAuth), nameof(PasswordRow), nameof(PasswordColumn))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private Protocol _protocol = Protocol.Rdp;
 
     public bool IsRdp
@@ -113,6 +114,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPasswordAuth), nameof(IsKeyAuth), nameof(PasswordLabel), nameof(PasswordColumn))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private SshAuth _auth = SshAuth.Password;
 
     public bool IsPasswordAuth
@@ -136,6 +138,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     public int PasswordColumn => IsSsh && !IsKeyAuth ? 0 : 2;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string _keyFile = "";
 
     [ObservableProperty]
@@ -188,6 +191,9 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             Port = "3389";
         if (value == Protocol.Ssh)
             ShowAdvanced = false;
+        // Anahtar parolası RDP şifresine dönüşmesin; alan boşalır, kaydedince yuvadan silinir.
+        if (value == Protocol.Rdp && Auth == SshAuth.Key)
+            Password = "";
         OnPropertyChanged(nameof(PasswordLabel));
         UpdateHints();
     }
@@ -206,8 +212,10 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             KeyFile = path;
     }
 
+    // Anahtarla girişte anahtar dosyası zorunlu; yoksa bağlanırken boş şifreyle denenirdi.
     private bool CanSave() =>
-        !string.IsNullOrWhiteSpace(Host) && int.TryParse(Port, out var port) && port is >= 1 and <= 65535;
+        !string.IsNullOrWhiteSpace(Host) && int.TryParse(Port, out var port) && port is >= 1 and <= 65535
+        && (!IsKeyAuth || !string.IsNullOrWhiteSpace(KeyFile));
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()

@@ -50,6 +50,9 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
 
     private TaskCompletionSource<bool>? _hostKeyAnswer;
 
+    // Bu oturumda kullanıcı az önce "Trust" dedi.
+    private bool _retryAfterTrust;
+
     // Anahtar parolası soruluyor (anahtar parolalı, kayıtlı parola yok ya da yanlış).
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowConnecting), nameof(ShowDisconnected))]
@@ -101,13 +104,15 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
         });
         var server = Server.Server;
         _startedSize = _size;
+        // Anahtar modunda yol boş olsa da "" gider; oturum şifreye düşmez, anahtar kullanılamadı der.
         session.Start(new SshConnectOptions(server.Host, server.Port, username,
-            IsKeyAuth ? null : secret, IsKeyAuth ? server.KeyFile : null, IsKeyAuth ? secret : null, _size.Columns, _size.Rows));
+            IsKeyAuth ? null : secret, IsKeyAuth ? server.KeyFile ?? "" : null, IsKeyAuth ? secret : null, _size.Columns, _size.Rows));
     }
 
     // Bağlanırken terminal boyutu değiştiyse sunucuya şimdiki boyut bildirilir.
     private void OnConnected()
     {
+        _retryAfterTrust = false;
         State = SessionState.Connected;
         if (_size != _startedSize)
             Session?.Resize(_size.Columns, _size.Rows);
@@ -115,6 +120,14 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
 
     private void Ended(SshEndReason reason)
     {
+        // Parmak izi incelenirken bağlanma zaman aşımına uğramış olabilir; "Trust" sonrası bir kez yeniden denenir.
+        var retry = _retryAfterTrust;
+        _retryAfterTrust = false;
+        if (retry && reason == SshEndReason.ConnectFailed)
+        {
+            Start(_lastSignIn.Username!, _lastSignIn.Secret);
+            return;
+        }
         switch (reason)
         {
             case SshEndReason.Exited or SshEndReason.HostKeyRejected:
@@ -196,6 +209,7 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
             return;
         Server.Server.HostKeyFingerprint = key.Fingerprint;
         RaiseServerChanged();
+        _retryAfterTrust = true;
         AnswerHostKey(true);
     }
 

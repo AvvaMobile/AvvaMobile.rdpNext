@@ -126,6 +126,34 @@ public sealed class SshSessionTests(SshServerFixture server) : IClassFixture<Ssh
         Assert.Equal(SshEndReason.KeyUnusable, await run.Ended());
     }
 
+    [Fact]
+    public async Task EmptyKeyFileEndsWithKeyUnusable()
+    {
+        SkipWithoutDocker();
+        using var run = new Run(Options(password: SshServerFixture.Password) with { KeyFile = "" });
+
+        Assert.Equal(SshEndReason.KeyUnusable, await run.Ended());
+    }
+
+    // Sekme bağlanırken kapanırsa sunucuda açık oturum kalmaz.
+    [Fact]
+    public async Task DisposeWhileConnectingLeavesNoSessionOnServer()
+    {
+        SkipWithoutDocker();
+        for (var i = 0; i < 5; i++)
+        {
+            var run = new Run(Options());
+            await Task.Delay(40 * i, TestContext.Current.CancellationToken);
+            run.Dispose();
+        }
+        await Task.Delay(3000, TestContext.Current.CancellationToken);
+
+        var ps = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("docker", "exec rdpnext-ssh-test ps -o etime,args")
+            { RedirectStandardOutput = true })!;
+        var processes = await ps.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
+        Assert.DoesNotContain("sshd: deneme", processes);
+    }
+
     // Sunucunun tanımadığı anahtar: şifreye düşülmez.
     [Fact]
     public async Task RejectedKeyEndsWithKeyUnusable()
