@@ -374,6 +374,37 @@ public class MainWindowTests
         Assert.Contains(window.Named<Control>("Tree").Texts(), t => t.Text == "10.0.5.5");
     }
 
+    // Sidebar ile çerçeve arasındaki boşluk ayraçtır: sürükleyince sidebar genişler ya da daralır, 220 ile 520 arasında kalır.
+    [AvaloniaFact]
+    public void DraggingSplitterResizesSidebarWithinLimits()
+    {
+        var (window, _) = TestWindows.Open();
+        var sidebar = window.Named<Views.SidebarView>("Sidebar");
+        var splitter = window.Named<Control>("SidebarSplitter");
+        Assert.Equal(310, sidebar.Bounds.Width);
+        Point Grip() => splitter.TranslatePoint(new Point(splitter.Bounds.Width / 2, 100), window)!.Value;
+
+        void Drag(double dx)
+        {
+            var start = Grip();
+            window.MouseDown(start, MouseButton.Left);
+            window.MouseMove(start + new Point(dx, 0), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(start + new Point(dx, 0), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        Drag(90);
+        Assert.Equal(400, sidebar.Bounds.Width);
+        var frame = window.Named<Border>("ContentFrame");
+        Assert.Equal(400 + splitter.Bounds.Width, frame.TranslatePoint(new Point(0, 0), window)!.Value.X);
+
+        Drag(500);
+        Assert.Equal(520, sidebar.Bounds.Width);
+
+        Drag(-1000);
+        Assert.Equal(220, sidebar.Bounds.Width);
+    }
+
     [AvaloniaFact]
     public void SessionAndEditorOpenInTheSameFrame()
     {

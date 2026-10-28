@@ -110,6 +110,32 @@ public partial class MainWindow : Window
             _sessionWindows.FirstOrDefault(w => w.DataContext == tab)?.Close();
     }
 
+    // Ayraç tutulduğunda farenin x'i ve sidebar'ın genişliği; bırakılınca null.
+    private (double X, double Width)? _splitterDrag;
+
+    private void OnSplitterPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            return;
+        _splitterDrag = (e.GetPosition(this).X, Sidebar.Bounds.Width);
+        e.Pointer.Capture(SidebarSplitter);
+        e.Handled = true;
+    }
+
+    // Genişlik sidebar'ın MinWidth ve MaxWidth'i arasında kalır.
+    private void OnSplitterPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_splitterDrag is not { } drag)
+            return;
+        Sidebar.Width = Math.Clamp(drag.Width + e.GetPosition(this).X - drag.X, Sidebar.MinWidth, Sidebar.MaxWidth);
+    }
+
+    private void OnSplitterPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        _splitterDrag = null;
+        e.Pointer.Capture(null);
+    }
+
     // Başlık çubuğundan pencere taşınmaya başladı.
     public event Action? MoveStarted;
 

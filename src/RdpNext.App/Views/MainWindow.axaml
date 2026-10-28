@@ -27,7 +27,11 @@
         <v:TabStripView x:Name="Tabs" Margin="12,0,0,0" />
       </DockPanel>
     </Border>
-    <v:SidebarView x:Name="Sidebar" DockPanel.Dock="Left" Width="310" IsVisible="{Binding IsSidebarVisible}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0" />
+    <v:SidebarView x:Name="Sidebar" DockPanel.Dock="Left" Width="310" MinWidth="220" MaxWidth="520" IsVisible="{Binding IsSidebarVisible}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0" />
+    <!-- Sidebar ile çerçeve arasındaki boşluk: sürükleyince sidebar genişler ya da daralır. Sidebar kapalıyken yalnız boşluktur. -->
+    <Border x:Name="SidebarSplitter" DockPanel.Dock="Left" Width="12" Background="Transparent" Cursor="SizeWestEast"
+            IsHitTestVisible="{Binding IsSidebarVisible}"
+            PointerPressed="OnSplitterPointerPressed" PointerMoved="OnSplitterPointerMoved" PointerReleased="OnSplitterPointerReleased" />
     <!-- Sağ taraftaki tek çerçeve: oturum da düzenleme formu da hep bunun içinde açılır. -->
     <Border x:Name="ContentFrame" Classes="content-frame">
       <ContentControl x:Name="SessionArea" Content="{Binding Sessions.Selected}">
