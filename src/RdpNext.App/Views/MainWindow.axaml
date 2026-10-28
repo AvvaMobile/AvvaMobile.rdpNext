@@ -18,7 +18,7 @@
   <DockPanel>
     <Border x:Name="TitleBar" DockPanel.Dock="Top" Height="52" Background="{DynamicResource WindowBrush}"
             BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1"
-            DoubleTapped="OnTitleBarDoubleTapped">
+            PointerPressed="OnTitleBarPointerPressed">
       <DockPanel x:Name="TitleContent" Margin="14,0">
         <Button x:Name="SidebarToggle" DockPanel.Dock="Left" Classes="sidebar-toggle" Command="{Binding ToggleSidebarCommand}">
           <Path Data="{StaticResource SidebarIcon}" Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.5"
