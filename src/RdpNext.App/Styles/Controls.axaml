@@ -315,6 +315,10 @@
     <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
     <Setter Property="BorderThickness" Value="1" />
   </Style>
+  <!-- Menüler kısa; macOS'ta birkaç piksellik taşma kaydırma oku çıkarmasın. -->
+  <Style Selector="ContextMenu /template/ ScrollViewer">
+    <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
+  </Style>
   <Style Selector="ContextMenu MenuItem">
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="Padding" Value="12,9" />
