@@ -154,11 +154,17 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void Connect(ServerNodeViewModel server)
     {
         var existing = Sessions.Find<ConnectionTabViewModel>(t => t.Server == server);
+        if (existing is { IsStale: true })
+        {
+            Sessions.Close(existing);
+            existing = null;
+        }
         var tab = Sessions.Open(server);
         if (existing is not null)
             return;
         tab.CloseRequested += () => Sessions.Close(tab);
         tab.ServerChanged += Persist;
+        tab.ReopenRequested += () => Connect(server);
         tab.CredentialsSaved += (username, password, domain) => SaveCredentials(server, username, password, domain);
         var credentials = CredentialResolver.Resolve(server.Server, Secrets);
         if (tab is SshTabViewModel ssh)

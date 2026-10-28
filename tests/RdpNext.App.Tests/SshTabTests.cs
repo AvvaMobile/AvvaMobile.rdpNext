@@ -212,6 +212,25 @@ public class SshTabTests
         Assert.Equal("SHA256:yeni", Reload("linux-01").HostKeyFingerprint);
     }
 
+    // Güvenilen anahtarın türü de saklanır; sonraki bağlantıda sunucudan aynı tür istenir.
+    [AvaloniaFact]
+    public void TrustedKeyTypeIsRequestedNextTime()
+    {
+        var tab = Connect();
+        Assert.Null(_sessions[0].Starts[0].HostKeyType);
+        _ = _sessions[0].VerifyHostKey!(HostKey);
+        Dispatcher.UIThread.RunJobs();
+        tab.TrustHostKeyCommand.Execute(null);
+        _sessions[0].RaiseConnected();
+        _sessions[0].RaiseEnded(SshEndReason.Disconnected);
+        Dispatcher.UIThread.RunJobs();
+
+        tab.ReconnectCommand.Execute(null);
+
+        Assert.Equal("ssh-ed25519", Reload("linux-01").HostKeyType);
+        Assert.Equal("ssh-ed25519", _sessions[1].Starts[0].HostKeyType);
+    }
+
     [AvaloniaFact]
     public void SameHostKeyDoesNotAsk()
     {
@@ -319,6 +338,23 @@ public class SshTabTests
         Assert.Equal(["yeni"], received);
     }
 
+    // Arayüz meşgulken gelen parçalar tek seferde terminale verilir.
+    [AvaloniaFact]
+    public void OutputBurstFedOnce()
+    {
+        var tab = Connected();
+        var received = new List<string>();
+        tab.Output += bytes => received.Add(Encoding.UTF8.GetString(bytes));
+
+        _sessions[0].RaiseOutput("bir "u8.ToArray());
+        _sessions[0].RaiseOutput("iki "u8.ToArray());
+        _sessions[0].RaiseOutput("üç"u8.ToArray());
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(["bir iki üç"], received);
+        Assert.Contains("bir iki üç", string.Join("\n", tab.Terminal.Terminal.Engine.GetVisibleLines()));
+    }
+
     [AvaloniaFact]
     public void SendGoesToSessionOnlyWhenConnected()
     {
@@ -349,6 +385,65 @@ public class SshTabTests
 
         tab.TerminalSizeChanged(100, 30);
         Assert.Equal((100, 30), _sessions[0].Resizes[^1]);
+    }
+
+    [AvaloniaFact]
+    public void ReconnectIgnoredWhileHostKeyCardOpen()
+    {
+        var tab = Connect();
+        _ = _sessions[0].VerifyHostKey!(HostKey);
+        Dispatcher.UIThread.RunJobs();
+
+        tab.ReconnectCommand.Execute(null);
+
+        Assert.Single(_sessions);
+        Assert.Equal(HostKey, tab.HostKeyPrompt);
+    }
+
+    [AvaloniaFact]
+    public void ConnectFailedSaysCouldNotConnectThenDropSaysLost()
+    {
+        var tab = Connect();
+
+        _sessions[0].RaiseEnded(SshEndReason.ConnectFailed);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(tab.ShowDisconnected);
+        Assert.Equal("Could not connect", tab.DisconnectedTitle);
+
+        tab.ReconnectCommand.Execute(null);
+        _sessions[1].RaiseConnected();
+        _sessions[1].RaiseEnded(SshEndReason.Disconnected);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal("Connection lost", tab.DisconnectedTitle);
+    }
+
+    // Sekme açıkken sunucu RDP'ye çevrildi: bağlanınca eski SSH sekmesi kapanır, RDP sekmesi açılır.
+    [AvaloniaFact]
+    public void ProtocolChangeReplacesOpenTab()
+    {
+        var old = Connected();
+        Node("linux-01").Server.Protocol = Protocol.Rdp;
+
+        _vm.ConnectCommand.Execute(Node("linux-01"));
+
+        Assert.IsType<SessionTabViewModel>(_vm.Sessions.Selected);
+        Assert.DoesNotContain(old, _vm.Sessions.Tabs);
+        Assert.True(_sessions[0].Disposed);
+    }
+
+    [AvaloniaFact]
+    public void ReconnectAfterProtocolChangeOpensNewTab()
+    {
+        var old = Connected();
+        _sessions[0].RaiseEnded(SshEndReason.Disconnected);
+        Dispatcher.UIThread.RunJobs();
+        Node("linux-01").Server.Protocol = Protocol.Rdp;
+
+        old.ReconnectCommand.Execute(null);
+
+        Assert.IsType<SessionTabViewModel>(_vm.Sessions.Selected);
+        Assert.DoesNotContain(old, _vm.Sessions.Tabs);
+        Assert.Single(_sessions);
     }
 
     [AvaloniaFact]

@@ -39,6 +39,9 @@ public sealed class Server : Node
     // Kullanıcının "güven" dediği SSH sunucu anahtarı ("SHA256:..."); aynısı gelirse sorulmaz.
     public string? HostKeyFingerprint { get; set; }
 
+    // Güvenilen anahtarın türü ("ssh-ed25519"); sonraki bağlantıda sunucudan aynı tür istenir.
+    public string? HostKeyType { get; set; }
+
     public Server CopyWithNewId(string name) => new()
     {
         Name = name,

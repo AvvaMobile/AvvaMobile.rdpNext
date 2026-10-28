@@ -236,6 +236,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         server.Screen = Screen;
         if (server.Protocol != Protocol)
             server.HostKeyFingerprint = null;
+            server.HostKeyType = null;
         server.Protocol = Protocol;
         server.Domain = IsSsh ? null : Blank(Domain);
         server.Auth = IsSsh ? Auth : SshAuth.Password;

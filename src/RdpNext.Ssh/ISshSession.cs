@@ -2,7 +2,7 @@ namespace RdpNext.Ssh;
 
 // KeyFile doluysa yalnız anahtarla, boşsa yalnız şifreyle girilir. KeyPassphrase anahtar şifreliyse gerekir.
 public sealed record SshConnectOptions(string Host, int Port, string Username, string? Password,
-    string? KeyFile, string? KeyPassphrase, int Columns, int Rows);
+    string? KeyFile, string? KeyPassphrase, int Columns, int Rows, string? HostKeyType = null);
 
 // Sunucu anahtarı; Fingerprint OpenSSH biçiminde ("SHA256:...").
 public sealed record SshHostKey(string Algorithm, string Fingerprint);

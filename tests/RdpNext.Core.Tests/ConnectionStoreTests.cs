@@ -201,15 +201,15 @@ public sealed class ConnectionStoreTests : IDisposable
         var server = new Server
         {
             Name = "linux-01", Host = "10.0.2.5", Port = 22, Protocol = Protocol.Ssh, Auth = SshAuth.Key,
-            KeyFile = "~/.ssh/id_ed25519", HostKeyFingerprint = "SHA256:abc",
+            KeyFile = "~/.ssh/id_ed25519", HostKeyFingerprint = "SHA256:abc", HostKeyType = "ssh-ed25519",
         };
         root.Add(server);
 
         new ConnectionStore(_path).Save(root);
         var loaded = Assert.IsType<Server>(Assert.Single(new ConnectionStore(_path).Load().Root.Children));
 
-        Assert.Equal((Protocol.Ssh, 22, SshAuth.Key, "~/.ssh/id_ed25519", "SHA256:abc"),
-            (loaded.Protocol, loaded.Port, loaded.Auth, loaded.KeyFile, loaded.HostKeyFingerprint));
+        Assert.Equal((Protocol.Ssh, 22, SshAuth.Key, "~/.ssh/id_ed25519", "SHA256:abc", "ssh-ed25519"),
+            (loaded.Protocol, loaded.Port, loaded.Auth, loaded.KeyFile, loaded.HostKeyFingerprint, loaded.HostKeyType));
         Assert.DoesNotContain("\"icon\"", File.ReadAllText(_path));
     }
 

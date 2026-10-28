@@ -146,6 +146,7 @@ public class ServerEditorTests
         var editor = SavedSshKeyServer("10.0.2.7", "anahtar123");
         var server = Server("10.0.2.7").Server;
         server.HostKeyFingerprint = "SHA256:x";
+        server.HostKeyType = "ssh-ed25519";
 
         editor.Protocol = Protocol.Rdp;
         editor.SaveCommand.Execute(null);
@@ -153,6 +154,7 @@ public class ServerEditorTests
         var saved = Reload().AllServers().Single(s => s.Host == "10.0.2.7");
         Assert.Equal((Protocol.Rdp, 3389, SshAuth.Password, (string?)null, (string?)null),
             (saved.Protocol, saved.Port, saved.Auth, saved.KeyFile, saved.HostKeyFingerprint));
+        Assert.Null(saved.HostKeyType);
         Assert.Equal(ServerIcon.Windows, Server("10.0.2.7").Icon);
         // Anahtar parolası RDP şifresi olarak kalmaz; klasördeki şifre devralınır.
         Assert.Null(_vm.Secrets.GetPassword(saved.Id));

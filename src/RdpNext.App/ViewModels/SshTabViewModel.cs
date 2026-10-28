@@ -31,6 +31,8 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
 
     private bool IsKeyAuth => Server.Server.Auth == SshAuth.Key;
 
+    protected override Protocol Protocol => Protocol.Ssh;
+
     public override bool PromptShowsDomain => false;
 
     // Anahtarla girişte soru kartı yalnız kullanıcı adını ister.
@@ -92,21 +94,41 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
         var session = _newSession!();
         Session = session;
         State = SessionState.Connecting;
-        DisconnectedTitle = Strings.Strings.ConnectionLost;
         _lastSignIn = (username, secret);
         session.VerifyHostKey = key => AskHostKey(session, key);
         session.Connected += () => OnUi(session, OnConnected);
         session.Ended += (reason, _) => OnUi(session, () => Ended(reason));
-        session.Output += bytes => OnUi(session, () =>
+        // Arayüz işlemeden önce gelen parçalar biriktirilir, terminale tek seferde verilir.
+        var pending = new MemoryStream();
+        var scheduled = false;
+        session.Output += bytes =>
         {
-            Terminal.Feed(bytes, bytes.Length);
-            Output?.Invoke(bytes);
-        });
+            lock (pending)
+            {
+                pending.Write(bytes);
+                if (scheduled)
+                    return;
+                scheduled = true;
+            }
+            OnUi(session, () =>
+            {
+                byte[] chunk;
+                lock (pending)
+                {
+                    chunk = pending.ToArray();
+                    pending.SetLength(0);
+                    scheduled = false;
+                }
+                Terminal.Feed(chunk, chunk.Length);
+                Output?.Invoke(chunk);
+            });
+        };
         var server = Server.Server;
         _startedSize = _size;
         // Anahtar modunda yol boş olsa da "" gider; oturum şifreye düşmez, anahtar kullanılamadı der.
         session.Start(new SshConnectOptions(server.Host, server.Port, username,
-            IsKeyAuth ? null : secret, IsKeyAuth ? server.KeyFile ?? "" : null, IsKeyAuth ? secret : null, _size.Columns, _size.Rows));
+            IsKeyAuth ? null : secret, IsKeyAuth ? server.KeyFile ?? "" : null, IsKeyAuth ? secret : null, _size.Columns, _size.Rows,
+            server.HostKeyType));
     }
 
     // Bağlanırken terminal boyutu değiştiyse sunucuya şimdiki boyut bildirilir.
@@ -146,7 +168,7 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
                 State = SessionState.Disconnected;
                 break;
             default:
-                State = SessionState.Disconnected;
+                ShowEnded(reason == SshEndReason.ConnectFailed);
                 break;
         }
     }
@@ -173,7 +195,7 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
 
     protected override void ReconnectCore()
     {
-        if (_newSession is null || IsAskingPassphrase)
+        if (_newSession is null)
             return;
         if (_lastSignIn.Username is null)
             AskCredentials(null, null);
@@ -208,6 +230,7 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
         if (HostKeyPrompt is not { } key)
             return;
         Server.Server.HostKeyFingerprint = key.Fingerprint;
+        Server.Server.HostKeyType = key.Algorithm;
         RaiseServerChanged();
         _retryAfterTrust = true;
         AnswerHostKey(true);

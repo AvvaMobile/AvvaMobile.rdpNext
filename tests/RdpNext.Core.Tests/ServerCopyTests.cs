@@ -33,12 +33,14 @@ public class ServerCopyTests
         var server = new Server
         {
             Protocol = Protocol.Ssh, Port = 22, Auth = SshAuth.Key, KeyFile = "~/.ssh/id_ed25519", HostKeyFingerprint = "SHA256:abc",
+            HostKeyType = "ssh-ed25519",
         };
 
         var copy = server.CopyWithNewId("kopya");
 
         Assert.Equal((Protocol.Ssh, 22, SshAuth.Key, "~/.ssh/id_ed25519"), (copy.Protocol, copy.Port, copy.Auth, copy.KeyFile));
         Assert.Null(copy.HostKeyFingerprint);
+        Assert.Null(copy.HostKeyType);
     }
 
     [Fact]

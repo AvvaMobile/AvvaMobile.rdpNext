@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -20,6 +21,8 @@ public sealed class SshSession : ISshSession
     // Connect sürüyor; Dispose istemciyi kapatmaz, bağlanma bitince arka plan işi kapatır.
     private bool _connecting;
     private int _ended;
+    // Yazılanlar sırayla ayrı iş parçacığında gönderilir; sunucu okumazken çağıran beklemez.
+    private readonly BlockingCollection<byte[]> _outgoing = new();
 
     public event Action? Connected;
 
@@ -37,13 +40,27 @@ public sealed class SshSession : ISshSession
 
     public void Send(byte[] data)
     {
-        var shell = _shell;
-        if (shell is null)
+        if (_shell is null)
             return;
         try
         {
-            shell.Write(data, 0, data.Length);
-            shell.Flush();
+            _outgoing.Add(data);
+        }
+        catch (InvalidOperationException)
+        {
+            // Oturum kapandı.
+        }
+    }
+
+    private void Write(ShellStream shell)
+    {
+        try
+        {
+            foreach (var data in _outgoing.GetConsumingEnumerable())
+            {
+                shell.Write(data, 0, data.Length);
+                shell.Flush();
+            }
         }
         catch (Exception e) when (e is ObjectDisposedException or SshException or IOException or SocketException)
         {
@@ -87,6 +104,7 @@ public sealed class SshSession : ISshSession
         }
 
         var connection = new ConnectionInfo(options.Host, options.Port, options.Username, methods) { Timeout = ConnectTimeout };
+        PreferHostKeyType(connection, options.HostKeyType);
         var client = new SshClient(connection) { KeepAliveInterval = KeepAlive };
         // Bağlantı koparsa ShellStream.Read kendiliğinden dönmez; kabuk kapatılıp okuma döngüsü uyandırılır.
         // Bağlanırken gelen hatalar Connect'in fırlattığı istisnadan sınıflanır.
@@ -146,8 +164,19 @@ public sealed class SshSession : ISshSession
             return;
         }
 
+        new Thread(() => Write(shell!)) { IsBackground = true, Name = "ssh-write" }.Start();
         Connected?.Invoke();
         Read(client, shell!);
+    }
+
+    // Güvenilen tür başa alınır; sunucunun birden çok anahtarı varsa hep aynısı seçilir.
+    private static void PreferHostKeyType(ConnectionInfo connection, string? type)
+    {
+        var algorithms = connection.HostKeyAlgorithms;
+        if (type is null || !algorithms.TryGetValue(type, out var factory))
+            return;
+        algorithms.Remove(type);
+        algorithms.Insert(0, type, factory);
     }
 
     private PrivateKeyFile? LoadKey(SshConnectOptions options)
@@ -195,6 +224,11 @@ public sealed class SshSession : ISshSession
             End(SshEndReason.Disconnected, e.Message);
             return;
         }
+        finally
+        {
+            // Yazma iş parçacığı da sonlanır.
+            _outgoing.CompleteAdding();
+        }
         // Kabuk kapandı; bağlantı da gittiyse kopmadır.
         End(client.IsConnected ? SshEndReason.Exited : SshEndReason.Disconnected, null);
     }
@@ -228,6 +262,7 @@ public sealed class SshSession : ISshSession
             client = connecting ? null : _client;
             _client = null;
         }
+        _outgoing.CompleteAdding();
         _shell?.Dispose();
         client?.Dispose();
         if (!connecting)
