@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>SSH Form Taslağı</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; padding:32px; background:#dfe2ea; font-family:Inter,-apple-system,sans-serif; }
+  h2 { margin:0 0 4px; font-size:18px; } p.s { margin:0 0 18px; color:#6b7085; font-size:14px; }
+  .tw { --side:#f7f8fb; --card:#fff; --hover:#e6e9f1; --tx:#1b1e2b; --tx2:#6b7085; --line:#d9dce6; --acc:#3d6dfd;
+        max-width:900px; font-size:15px; color:var(--tx); background:var(--card); border-radius:16px; overflow:hidden; border:1px solid var(--line); box-shadow:0 20px 50px rgba(0,0,0,.15); }
+  .subtabs { display:flex; gap:4px; border-bottom:1px solid var(--line); padding:0 28px; background:var(--side); }
+  .subtabs div { padding:12px 18px; color:var(--tx2); font-weight:500; }
+  .subtabs div.on { color:var(--tx); box-shadow:inset 0 -2px 0 var(--acc); }
+  .subtabs div.off { opacity:.35; }
+  .f { padding:24px 28px; display:flex; flex-direction:column; gap:18px; }
+  .r { display:grid; gap:12px; grid-template-columns:1fr 1fr; }
+  .r.ap { grid-template-columns:1fr 140px; }
+  label { display:block; font-size:14px; color:var(--tx2); margin-bottom:6px; }
+  .fld { background:var(--side); border:1px solid var(--line); border-radius:9px; padding:10px 12px; display:flex; align-items:center; gap:8px; min-height:20px; }
+  .fld .ph { color:var(--tx2); flex:1; } .fld .v { flex:1; } .fld .end { color:var(--tx2); font-size:14px; }
+  .btn2 { background:var(--hover); border-radius:7px; padding:3px 10px; font-size:13px; font-weight:500; }
+  .sw { display:flex; gap:8px; padding-top:4px; }
+  .sw i { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#2d6cdf; }
+  .sw i.on { outline:3px solid var(--acc); outline-offset:2px; }
+  .sw i svg { width:15px; height:15px; fill:#fff; }
+  .seg { display:flex; background:var(--side); border:1px solid var(--line); border-radius:9px; padding:3px; }
+  .seg div { flex:1; text-align:center; padding:7px; border-radius:7px; color:var(--tx2); font-weight:500; cursor:pointer; }
+  .seg .tl { display:inline-flex; width:20px; height:20px; border-radius:6px; background:#2d6cdf; align-items:center; justify-content:center; margin-right:8px; vertical-align:-5px; }
+  .seg .tl svg { width:11px; height:11px; fill:#fff; }
+  .seg div.on { background:var(--card); color:var(--tx); box-shadow:0 1px 3px rgba(0,0,0,.12); }
+  .save { background:var(--acc); color:#fff; border-radius:10px; padding:10px 26px; font-weight:600; width:fit-content; }
+  .note { margin-top:20px; max-width:900px; color:#6b7085; font-size:13px; }
+  .hide { display:none !important; }
+  .ssh-only.hide, .rdp-only.hide { display:none; }
+</style></head><body>
+<h2>Sunucu ekle: ikon seçimine göre form</h2>
+<p class="s">En üstte bağlantı tipi; ikon tipe göre kendiliğinden gelir, aşağısı tipe göre değişir.</p>
+
+<div class="tw">
+  <div class="subtabs"><div class="on">Genel</div><div id="adv">Gelişmiş</div></div>
+  <div class="f">
+    <div class="r">
+      <div><label>Bağlantı tipi</label>
+        <div class="seg" id="icons">
+          <div data-p="rdp" class="on"><span class="tl"><svg viewBox="0 0 16 16"><rect width="7.4" height="7.4"/><rect x="8.6" width="7.4" height="7.4"/><rect y="8.6" width="7.4" height="7.4"/><rect x="8.6" y="8.6" width="7.4" height="7.4"/></svg></span>Windows</div>
+          <div data-p="ssh"><span class="tl"><svg viewBox="0 0 24 24"><path d="M2,5.4 L3.4,4 L11.4,12 L3.4,20 L2,18.6 L8.6,12 Z M12,18 H22 V20 H12 Z"/></svg></span>SSH</div>
+        </div>
+      </div>
+      <div><label>Renk</label><div class="sw"><i class="on"></i><i style="background:#12a594"></i><i style="background:#e5673a"></i><i style="background:#7b5cf0"></i><i style="background:#2fbf71"></i></div></div>
+    </div>
+    <div class="r">
+      <div><label>Görünen ad</label><div class="fld"><span class="ph" id="nm">10.0.1.11</span></div></div>
+      <div><label>Klasör</label><div class="fld"><span class="v">Üretim</span><span class="end">▾</span></div></div>
+    </div>
+    <div class="r ap">
+      <div><label>Adres</label><div class="fld"><span class="v">10.0.1.11</span></div></div>
+      <div><label>Port</label><div class="fld"><span class="v" id="port">3389</span></div></div>
+    </div>
+
+    <!-- SSH: giriş yöntemi -->
+    <div class="r ssh-only hide">
+      <div><label>Kullanıcı</label><div class="fld"><span class="ph">root</span><span class="end">Üretim'den</span></div></div>
+      <div><label>Giriş yöntemi</label><div class="seg" id="auth"><div class="on" data-a="pw">Şifre</div><div data-a="key">Anahtar dosyası</div></div></div>
+    </div>
+    <div class="r ssh-only pw-only hide">
+      <div><label>Şifre</label><div class="fld"><span class="ph">••••••••</span></div></div>
+    </div>
+    <div class="r ssh-only key-only hide">
+      <div><label>Anahtar dosyası</label><div class="fld"><span class="v">~/.ssh/id_ed25519</span><span class="btn2">Seç…</span></div></div>
+      <div><label>Anahtar parolası</label><div class="fld"><span class="ph">yoksa boş bırak</span></div></div>
+    </div>
+
+    <!-- RDP: bugünkü alanlar -->
+    <div class="r rdp-only">
+      <div><label>Kullanıcı</label><div class="fld"><span class="ph">admin</span><span class="end">Üretim'den</span></div></div>
+      <div><label>Şifre</label><div class="fld"><span class="ph">••••••••</span></div></div>
+    </div>
+    <div class="r rdp-only">
+      <div><label>Domain</label><div class="fld"><span class="ph">AVVA</span><span class="end">Üretim'den</span></div></div>
+    </div>
+
+    <div class="save">Kaydet</div>
+  </div>
+</div>
+<p class="note">Gelişmiş sekmesi (ekran: tam ekran / pencere) yalnız RDP'de; SSH'de soluk.</p>
+
+<script>
+  const icons = document.querySelectorAll('#icons div'), auths = document.querySelectorAll('#auth div');
+  let proto = 'rdp', auth = 'pw';
+  function render() {
+    document.querySelectorAll('.rdp-only').forEach(e => e.classList.toggle('hide', proto !== 'rdp'));
+    document.querySelectorAll('.ssh-only').forEach(e => e.classList.toggle('hide', proto !== 'ssh'));
+    if (proto === 'ssh') {
+      document.querySelectorAll('.pw-only').forEach(e => e.classList.toggle('hide', auth !== 'pw'));
+      document.querySelectorAll('.key-only').forEach(e => e.classList.toggle('hide', auth !== 'key'));
+    }
+    document.getElementById('port').textContent = proto === 'rdp' ? '3389' : '22';
+    document.getElementById('adv').className = proto === 'rdp' ? '' : 'off';
+  }
+  icons.forEach(i => i.onclick = () => { icons.forEach(x => x.classList.remove('on')); i.classList.add('on'); proto = i.dataset.p; render(); });
+  auths.forEach(a => a.onclick = () => { auths.forEach(x => x.classList.remove('on')); a.classList.add('on'); auth = a.dataset.a; render(); });
+  render();
+</script>
+</body></html>
