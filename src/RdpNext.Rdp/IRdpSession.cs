@@ -49,6 +49,9 @@ public interface IRdpSession : IDisposable
     // Sunucuda kopyalanan metin; null ise sunucuda metin dışı bir şey (dosya gibi) kopyalandı.
     event Action<string?>? RemoteClipboardText;
 
+    // Sunucuda kopyalanan dosyalar bu bilgisayara indirildi (tam yollar, en üstteki öğeler).
+    event Action<IReadOnlyList<string>>? RemoteClipboardFiles;
+
     // null: sistemin varsayılan oku.
     event Action<RdpPointer?>? PointerChanged;
 

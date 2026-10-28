@@ -24,6 +24,8 @@ typedef struct
 	void (*pointer)(void* user, const uint8_t* bgra, int width, int height, int hot_x, int hot_y);
 	/* text NULL ise sunucuda metin dışı bir şey kopyalandı. */
 	void (*clipboard_text)(void* user, const char* text);
+	/* Sunucuda kopyalanan dosyalar indirildi: en üstteki öğelerin tam yolları, "\n" ile ayrılmış. */
+	void (*clipboard_files)(void* user, const char* paths);
 } rn_callbacks;
 
 typedef struct
@@ -35,6 +37,8 @@ typedef struct
 	const char* password;
 	int width;
 	int height;
+	/* Sunucudan kopyalanan dosyaların indirileceği klasör. */
+	const char* clipboard_dir;
 } rn_options;
 
 RN_API rdpContext* rn_create(const rn_callbacks* callbacks, void* user);

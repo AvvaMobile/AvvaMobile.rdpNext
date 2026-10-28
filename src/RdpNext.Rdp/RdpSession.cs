@@ -31,6 +31,11 @@ public sealed unsafe class RdpSession : IRdpSession
 
     public event Action<string?>? RemoteClipboardText;
 
+    public event Action<IReadOnlyList<string>>? RemoteClipboardFiles;
+
+    // Sunucudan kopyalanan dosyaların indirildiği klasör; oturum kapanınca silinir.
+    private readonly string _clipboardDir = Path.Combine(Path.GetTempPath(), "rdpNext-clipboard", Guid.NewGuid().ToString("N"));
+
     // C katmanı ve FreeRDP bu makinede yüklenebiliyor mu.
     public static bool IsAvailable { get; } =
         NativeLibrary.TryLoad(NativeMethods.Library, typeof(RdpSession).Assembly, null, out _);
@@ -100,6 +105,14 @@ public sealed unsafe class RdpSession : IRdpSession
         }
         if (thread is not null && thread != Thread.CurrentThread)
             thread.Join(DisposeWait);
+        try
+        {
+            if (Directory.Exists(_clipboardDir))
+                Directory.Delete(_clipboardDir, recursive: true);
+        }
+        catch (IOException)
+        {
+        }
     }
 
     private void Run(RdpConnectOptions options)
@@ -107,6 +120,7 @@ public sealed unsafe class RdpSession : IRdpSession
         var callbacks = new RnCallbacks
         {
             Frame = &OnFrame, VerifyCertificate = &OnVerifyCertificate, Pointer = &OnPointer, ClipboardText = &OnClipboardText,
+            ClipboardFiles = &OnClipboardFiles,
         };
         var ctx = NativeMethods.Create(&callbacks, GCHandle.ToIntPtr(_self));
         lock (_gate)
@@ -121,7 +135,7 @@ public sealed unsafe class RdpSession : IRdpSession
             _ctx = ctx;
         }
 
-        var error = Connect(ctx, options);
+        var error = Connect(ctx, options, _clipboardDir);
         if (error != 0)
         {
             var reason = _certificateRejected
@@ -142,8 +156,9 @@ public sealed unsafe class RdpSession : IRdpSession
         Finish(ctx, RdpErrors.Classify(NativeMethods.LastError(ctx), NativeMethods.EndReason(ctx), wasConnected: true));
     }
 
-    private static uint Connect(IntPtr ctx, RdpConnectOptions o)
+    private static uint Connect(IntPtr ctx, RdpConnectOptions o, string clipboardDir)
     {
+        var dir = Marshal.StringToCoTaskMemUTF8(clipboardDir);
         var host = Marshal.StringToCoTaskMemUTF8(o.Host);
         var user = Marshal.StringToCoTaskMemUTF8(o.Username);
         var domain = o.Domain is null ? IntPtr.Zero : Marshal.StringToCoTaskMemUTF8(o.Domain);
@@ -153,7 +168,7 @@ public sealed unsafe class RdpSession : IRdpSession
             var native = new RnOptions
             {
                 Host = host, Port = o.Port, Username = user, Domain = domain, Password = password,
-                Width = o.Width, Height = o.Height,
+                Width = o.Width, Height = o.Height, ClipboardDir = dir,
             };
             return NativeMethods.Connect(ctx, &native);
         }
@@ -163,6 +178,7 @@ public sealed unsafe class RdpSession : IRdpSession
             Marshal.FreeCoTaskMem(host);
             Marshal.FreeCoTaskMem(user);
             Marshal.FreeCoTaskMem(domain);
+            Marshal.FreeCoTaskMem(dir);
         }
     }
 
@@ -226,6 +242,14 @@ public sealed unsafe class RdpSession : IRdpSession
     private static void OnClipboardText(IntPtr user, IntPtr text)
     {
         From(user)?.RemoteClipboardText?.Invoke(Marshal.PtrToStringUTF8(text));
+    }
+
+    // C katmanı satır satır tam yollar verir ("\n" ile ayrılmış).
+    [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void OnClipboardFiles(IntPtr user, IntPtr paths)
+    {
+        var list = (Marshal.PtrToStringUTF8(paths) ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        From(user)?.RemoteClipboardFiles?.Invoke(list);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]

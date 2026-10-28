@@ -17,6 +17,10 @@
 #include <freerdp/client/client_cliprdr_file.h>
 #include <freerdp/utils/cliprdr_utils.h>
 #include <string.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <winpr/interlocked.h>
+#include <winpr/shell.h>
 #include <winpr/synch.h>
 #include <stdatomic.h>
 
@@ -43,6 +47,16 @@ typedef struct
 	char* local_files;
 	wClipboard* system;
 	CliprdrFileContext* file;
+	/* Sunucudan dosya indirme: en son kopyalanan dosya listesi sırayla, parça parça indirilir. */
+	char* clipboard_dir;
+	UINT32 requested_format;
+	FILEDESCRIPTORW* dl_files;
+	UINT32 dl_count;
+	UINT32 dl_index;
+	UINT64 dl_size;
+	UINT64 dl_offset;
+	FILE* dl_out;
+	char* dl_root;
 } rnContext;
 
 /* ---- Pano (cliprdr): metin (CF_UNICODETEXT) ve Mac'ten sunucuya dosya (FileGroupDescriptorW) ---- */
@@ -115,6 +129,218 @@ static UINT rn_clip_server_capabilities(CliprdrClientContext* clip, const CLIPRD
 	return CHANNEL_RC_OK;
 }
 
+/* ---- Sunucudan Mac'e dosya: FileGroupDescriptorW listesi alınır, içerikler parça parça indirilir ---- */
+
+#define RN_CHUNK (1024 * 1024)
+
+static void rn_dl_reset(rnContext* rc)
+{
+	if (rc->dl_out)
+		fclose(rc->dl_out);
+	rc->dl_out = NULL;
+	free(rc->dl_files);
+	rc->dl_files = NULL;
+	rc->dl_count = rc->dl_index = 0;
+	rc->dl_size = rc->dl_offset = 0;
+	free(rc->dl_root);
+	rc->dl_root = NULL;
+}
+
+/* Sunucudaki göreli yol ("klasör\\dosya") indirme klasöründe güvenli bir yola çevrilir; ".." kabul edilmez. */
+static char* rn_dl_path(rnContext* rc, const FILEDESCRIPTORW* d)
+{
+	char* name = ConvertWCharNToUtf8Alloc(d->cFileName, ARRAYSIZE(d->cFileName), NULL);
+	if (!name || !*name || strstr(name, ".."))
+	{
+		free(name);
+		return NULL;
+	}
+	for (char* p = name; *p; p++)
+		if (*p == '\\')
+			*p = '/';
+	size_t len = strlen(rc->dl_root) + 1 + strlen(name) + 1;
+	char* path = malloc(len);
+	if (path)
+		snprintf(path, len, "%s/%s", rc->dl_root, name);
+	free(name);
+	return path;
+}
+
+static void rn_mkdirs(const char* path)
+{
+	char* copy = _strdup(path);
+	if (!copy)
+		return;
+	for (char* p = copy + 1; *p; p++)
+	{
+		if (*p != '/')
+			continue;
+		*p = '\0';
+		mkdir(copy, 0700);
+		*p = '/';
+	}
+	mkdir(copy, 0700);
+	free(copy);
+}
+
+static UINT rn_dl_request(rnContext* rc, UINT32 flags)
+{
+	CLIPRDR_FILE_CONTENTS_REQUEST request = { 0 };
+	request.common.msgType = CB_FILECONTENTS_REQUEST;
+	request.streamId = rc->dl_index;
+	request.listIndex = rc->dl_index;
+	request.dwFlags = flags;
+	if (flags == FILECONTENTS_SIZE)
+		request.cbRequested = 8;
+	else
+	{
+		request.nPositionLow = (UINT32)(rc->dl_offset & 0xFFFFFFFF);
+		request.nPositionHigh = (UINT32)(rc->dl_offset >> 32);
+		UINT64 left = rc->dl_size - rc->dl_offset;
+		request.cbRequested = left < RN_CHUNK ? (UINT32)left : RN_CHUNK;
+	}
+	return rc->clip->ClientFileContentsRequest(rc->clip, &request);
+}
+
+/* İndirme bitti: en üstteki öğelerin (göreli yolunda '\\' olmayanlar) tam yolları bildirilir. */
+static void rn_dl_finish(rnContext* rc)
+{
+	size_t cap = 1, len = 0;
+	char* list = calloc(1, cap);
+	for (UINT32 i = 0; list && i < rc->dl_count; i++)
+	{
+		const FILEDESCRIPTORW* d = &rc->dl_files[i];
+		BOOL top = TRUE;
+		for (size_t k = 0; k < ARRAYSIZE(d->cFileName) && d->cFileName[k]; k++)
+			if (d->cFileName[k] == '\\')
+				top = FALSE;
+		char* path = top ? rn_dl_path(rc, d) : NULL;
+		if (!path)
+			continue;
+		size_t add = strlen(path) + 1;
+		char* grown = realloc(list, cap + add);
+		if (grown)
+		{
+			list = grown;
+			cap += add;
+			memcpy(list + len, path, add - 1);
+			len += add - 1;
+			list[len++] = '\n';
+			list[len] = '\0';
+		}
+		free(path);
+	}
+	if (list && len && rc->callbacks.clipboard_files)
+		rc->callbacks.clipboard_files(rc->user, list);
+	free(list);
+	rn_dl_reset(rc);
+}
+
+/* Sıradaki öğeye geçer: klasörse oluşturulur, dosyaysa açılıp ilk parça (ya da boyut) istenir. */
+static UINT rn_dl_next(rnContext* rc)
+{
+	for (; rc->dl_index < rc->dl_count; rc->dl_index++)
+	{
+		const FILEDESCRIPTORW* d = &rc->dl_files[rc->dl_index];
+		char* path = rn_dl_path(rc, d);
+		if (!path)
+			continue;
+		if (d->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			rn_mkdirs(path);
+			free(path);
+			continue;
+		}
+		char* slash = strrchr(path, '/');
+		if (slash)
+		{
+			*slash = '\0';
+			rn_mkdirs(path);
+			*slash = '/';
+		}
+		rc->dl_out = fopen(path, "wb");
+		free(path);
+		if (!rc->dl_out)
+			continue;
+		rc->dl_offset = 0;
+		if (d->dwFlags & FD_FILESIZE)
+		{
+			rc->dl_size = ((UINT64)d->nFileSizeHigh << 32) | d->nFileSizeLow;
+			if (rc->dl_size == 0)
+			{
+				fclose(rc->dl_out);
+				rc->dl_out = NULL;
+				continue;
+			}
+			return rn_dl_request(rc, FILECONTENTS_RANGE);
+		}
+		return rn_dl_request(rc, FILECONTENTS_SIZE);
+	}
+	rn_dl_finish(rc);
+	return CHANNEL_RC_OK;
+}
+
+static void rn_dl_start(rnContext* rc, const BYTE* data, UINT32 length)
+{
+	rn_dl_reset(rc);
+	if (!rc->clipboard_dir || cliprdr_parse_file_list(data, length, &rc->dl_files, &rc->dl_count) != 0 || rc->dl_count == 0)
+	{
+		rn_dl_reset(rc);
+		return;
+	}
+	/* Her kopya kendi alt klasörüne iner; aynı adlı dosyalar birbirini ezmez. */
+	static volatile LONG counter = 0;
+	size_t len = strlen(rc->clipboard_dir) + 32;
+	rc->dl_root = malloc(len);
+	if (!rc->dl_root)
+	{
+		rn_dl_reset(rc);
+		return;
+	}
+	snprintf(rc->dl_root, len, "%s/%ld", rc->clipboard_dir, (long)InterlockedIncrement(&counter));
+	rn_mkdirs(rc->dl_root);
+	rn_dl_next(rc);
+}
+
+static UINT rn_clip_server_file_contents_response(CliprdrClientContext* clip, const CLIPRDR_FILE_CONTENTS_RESPONSE* response)
+{
+	rnContext* rc = rn_clip_owner(clip);
+	if (!rc->dl_files || response->streamId != rc->dl_index || !rc->dl_out)
+		return CHANNEL_RC_OK;
+	if (response->common.msgFlags != CB_RESPONSE_OK)
+	{
+		rn_dl_reset(rc);
+		return CHANNEL_RC_OK;
+	}
+	if (rc->dl_size == 0 && rc->dl_offset == 0 && response->cbRequested == 8 && !(rc->dl_files[rc->dl_index].dwFlags & FD_FILESIZE))
+	{
+		/* FILECONTENTS_SIZE cevabı: 64 bit boyut. */
+		UINT64 size = 0;
+		memcpy(&size, response->requestedData, 8);
+		rc->dl_size = size;
+		if (size == 0)
+		{
+			fclose(rc->dl_out);
+			rc->dl_out = NULL;
+			rc->dl_index++;
+			return rn_dl_next(rc);
+		}
+		return rn_dl_request(rc, FILECONTENTS_RANGE);
+	}
+	if (response->cbRequested && fwrite(response->requestedData, 1, response->cbRequested, rc->dl_out) != response->cbRequested)
+	{
+		rn_dl_reset(rc);
+		return CHANNEL_RC_OK;
+	}
+	rc->dl_offset += response->cbRequested;
+	if (response->cbRequested && rc->dl_offset < rc->dl_size)
+		return rn_dl_request(rc, FILECONTENTS_RANGE);
+	fclose(rc->dl_out);
+	rc->dl_out = NULL;
+	rc->dl_index++;
+	return rn_dl_next(rc);
+}
+
 /* Sunucuda kopyalandı: metin varsa hemen istenir. */
 static UINT rn_clip_server_format_list(CliprdrClientContext* clip, const CLIPRDR_FORMAT_LIST* list)
 {
@@ -124,16 +350,24 @@ static UINT rn_clip_server_format_list(CliprdrClientContext* clip, const CLIPRDR
 	UINT rv = clip->ClientFormatListResponse(clip, &response);
 	if (rv != CHANNEL_RC_OK)
 		return rv;
+	rnContext* rc = rn_clip_owner(clip);
+	/* Dosya varsa dosya listesi istenir (Explorer dosya kopyalarken yanında metin de verebilir), yoksa metin. */
+	UINT32 wanted = 0;
 	for (UINT32 i = 0; i < list->numFormats; i++)
 	{
-		if (list->formats[i].formatId != CF_UNICODETEXT)
-			continue;
+		if (list->formats[i].formatName && strcmp(list->formats[i].formatName, rn_format_files) == 0)
+			wanted = list->formats[i].formatId;
+		else if (!wanted && list->formats[i].formatId == CF_UNICODETEXT)
+			wanted = CF_UNICODETEXT;
+	}
+	if (wanted)
+	{
+		rc->requested_format = wanted;
 		CLIPRDR_FORMAT_DATA_REQUEST request = { 0 };
 		request.common.msgType = CB_FORMAT_DATA_REQUEST;
-		request.requestedFormatId = CF_UNICODETEXT;
+		request.requestedFormatId = wanted;
 		return clip->ClientFormatDataRequest(clip, &request);
 	}
-	rnContext* rc = rn_clip_owner(clip);
 	if (rc->callbacks.clipboard_text)
 		rc->callbacks.clipboard_text(rc->user, NULL);
 	return CHANNEL_RC_OK;
@@ -147,7 +381,17 @@ static UINT rn_clip_server_format_list_response(CliprdrClientContext* clip, cons
 static UINT rn_clip_server_format_data_response(CliprdrClientContext* clip, const CLIPRDR_FORMAT_DATA_RESPONSE* response)
 {
 	rnContext* rc = rn_clip_owner(clip);
-	if (response->common.msgFlags != CB_RESPONSE_OK || !response->requestedFormatData || !rc->callbacks.clipboard_text)
+	if (response->common.msgFlags != CB_RESPONSE_OK || !response->requestedFormatData)
+		return CHANNEL_RC_OK;
+	if (rc->requested_format != CF_UNICODETEXT)
+	{
+		/* Dosya listesi geldi: Mac'teki eski metin sunucuya geri duyurulmasın diye önce haber verilir, sonra indirilir. */
+		if (rc->callbacks.clipboard_text)
+			rc->callbacks.clipboard_text(rc->user, NULL);
+		rn_dl_start(rc, response->requestedFormatData, response->common.dataLen);
+		return CHANNEL_RC_OK;
+	}
+	if (!rc->callbacks.clipboard_text)
 		return CHANNEL_RC_OK;
 	char* text = ConvertWCharNToUtf8Alloc((const WCHAR*)response->requestedFormatData, response->common.dataLen / sizeof(WCHAR), NULL);
 	if (text)
@@ -225,6 +469,8 @@ static void rn_clip_init(rnContext* rc, CliprdrClientContext* clip)
 	clip->ServerFormatDataRequest = rn_clip_server_format_data_request;
 	/* Dosya içeriği istekleri (FileContentsRequest) ve kilitleme FreeRDP'nin dosya bağlamında; custom'ı o alır. */
 	cliprdr_file_context_init(rc->file, clip);
+	/* FUSE yok (macOS): sunucudan dosya içeriğini kendimiz istiyor ve diske yazıyoruz. */
+	clip->ServerFileContentsResponse = rn_clip_server_file_contents_response;
 }
 
 static BOOL rn_send_layout(rnContext* rc, UINT32 width, UINT32 height)
@@ -464,6 +710,9 @@ rdpContext* rn_create(const rn_callbacks* callbacks, void* user)
 uint32_t rn_connect(rdpContext* ctx, const rn_options* o)
 {
 	rdpSettings* s = ctx->settings;
+	rnContext* rc = (rnContext*)ctx;
+	free(rc->clipboard_dir);
+	rc->clipboard_dir = o->clipboard_dir && *o->clipboard_dir ? _strdup(o->clipboard_dir) : NULL;
 	freerdp_settings_set_string(s, FreeRDP_ServerHostname, o->host);
 	freerdp_settings_set_uint32(s, FreeRDP_ServerPort, (UINT32)o->port);
 	freerdp_settings_set_string(s, FreeRDP_Username, o->username);
@@ -558,6 +807,8 @@ void rn_free(rdpContext* ctx)
 	rnContext* rc = (rnContext*)ctx;
 	free(rc->local_text);
 	free(rc->local_files);
+	rn_dl_reset(rc);
+	free(rc->clipboard_dir);
 	CliprdrFileContext* file = rc->file;
 	wClipboard* system = rc->system;
 	freerdp_disconnect(ctx->instance);

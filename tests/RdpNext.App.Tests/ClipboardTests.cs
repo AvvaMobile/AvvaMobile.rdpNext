@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using RdpNext.App.ViewModels;
 
@@ -137,5 +138,20 @@ public class ClipboardTests
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal([path], _sessions[0].LocalFiles);
+    }
+
+    // Windows'ta kopyalanan dosyalar indirildikten sonra Mac panosuna dosya olarak konur; Finder'da yapıştırılır.
+    [AvaloniaFact]
+    public async Task RemoteFilesGoToLocalClipboard()
+    {
+        var (window, _) = OpenSession();
+        var path = Path.Combine(Path.GetTempPath(), "rdpnext-gelen-" + Guid.NewGuid() + ".txt");
+        await File.WriteAllTextAsync(path, "x", TestContext.Current.CancellationToken);
+
+        _sessions[0].RaiseClipboardFiles([path]);
+        Dispatcher.UIThread.RunJobs();
+        var files = await window.Clipboard!.TryGetFilesAsync();
+
+        Assert.Equal([path], (files ?? []).Select(f => f.TryGetLocalPath()));
     }
 }
