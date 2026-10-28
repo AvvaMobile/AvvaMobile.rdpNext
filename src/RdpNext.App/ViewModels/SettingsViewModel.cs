@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RdpNext.Core.Import;
 using RdpNext.Core.Storage;
 
 namespace RdpNext.App.ViewModels;
@@ -114,5 +115,45 @@ public sealed partial class SettingsViewModel(MainWindowViewModel owner) : TabVi
             return;
         owner.ReplaceTree(root, keep: this);
         Status = string.Format(Strings.Strings.ImportDone, root.AllServers().Count());
+    }
+
+    // mRemoteNG dosyası ana parolayla korunuyorsa; boşsa mRemoteNG'nin varsayılan parolası denenir.
+    [ObservableProperty]
+    private string _masterPassword = "";
+
+    [ObservableProperty]
+    private bool _isMasterPasswordVisible;
+
+    // mRemoteNG bölümündeki son işlemin sonucu ya da hatası.
+    [ObservableProperty]
+    private string? _mRemoteNgStatus;
+
+    [RelayCommand]
+    private async Task ImportMRemoteNg()
+    {
+        var path = await owner.Files.OpenMRemoteNgAsync();
+        if (path is null)
+            return;
+        try
+        {
+            var import = MRemoteNgReader.Read(path, MasterPassword.Length == 0 ? null : MasterPassword);
+            var added = owner.MergeTree(import.Root, import.Passwords);
+            MRemoteNgStatus = import.Skipped == 0
+                ? string.Format(Strings.Strings.ImportAdded, added)
+                : string.Format(Strings.Strings.ImportAddedSkipped, added, import.Skipped);
+        }
+        catch (MRemoteNgException e)
+        {
+            MRemoteNgStatus = e.Error switch
+            {
+                MRemoteNgError.PasswordNeeded => Strings.Strings.MasterPasswordNeeded,
+                MRemoteNgError.WrongPassword => Strings.Strings.WrongMasterPassword,
+                _ => string.Format(Strings.Strings.ImportFailed, Path.GetFileName(path)),
+            };
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            MRemoteNgStatus = string.Format(Strings.Strings.ImportFailed, Path.GetFileName(path));
+        }
     }
 }

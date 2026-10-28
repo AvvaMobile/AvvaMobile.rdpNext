@@ -9,4 +9,7 @@ public interface IFileDialogService
 
     // SSH özel anahtarı; filtre yok, ~/.ssh'tan başlar.
     Task<string?> OpenKeyFileAsync();
+
+    // mRemoteNG bağlantı dosyası (.xml).
+    Task<string?> OpenMRemoteNgAsync();
 }

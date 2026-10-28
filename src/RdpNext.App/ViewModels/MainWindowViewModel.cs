@@ -130,6 +130,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     // İçe aktarma, ekleyerek; eklenen sunucu sayısını döner.
+    // İçe aktarılan ağaç eklenir; şifreler yalnız yeni eklenen kayıtlar için yazılır, var olanınki ezilmez.
+    public int MergeTree(Group root, IReadOnlyDictionary<Guid, string> passwords)
+    {
+        var fresh = passwords.Where(p => !Tree.Contains(p.Key)).ToList();
+        var added = MergeTree(root);
+        foreach (var (id, password) in fresh)
+            Secrets.SetPassword(id, password);
+        return added;
+    }
+
     public int MergeTree(Group root)
     {
         var added = Tree.Merge(root);

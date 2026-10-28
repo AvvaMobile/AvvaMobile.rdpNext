@@ -219,6 +219,8 @@ public class ServerEditorTests
         public Task<string?> OpenAsync() => Task.FromResult<string?>(null);
 
         public Task<string?> OpenKeyFileAsync() => Task.FromResult(path);
+
+        public Task<string?> OpenMRemoteNgAsync() => Task.FromResult<string?>(null);
     }
 
     [Fact]

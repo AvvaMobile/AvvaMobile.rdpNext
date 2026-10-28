@@ -121,10 +121,11 @@ Devralma: sunucunun kullanıcı adı, şifre ya da domain alanı boşsa en yakı
 
 ## mRemoteNG içe aktarma
 
-1. Kullanıcı `confCons.xml` dosyasını seçer; klasör yapısı gruplar olarak, RDP bağlantıları sunucular olarak gelir. RDP dışındaki bağlantılar atlanır ve sonunda kaç tanesinin atlandığı tek satırla söylenir.
-2. Şifreler çözülüp anahtar zincirine yazılır. Dosya özel bir ana parolayla korunuyorsa kullanıcıdan istenir.
+1. Kullanıcı `confCons.xml` dosyasını seçer; klasör yapısı gruplar olarak, RDP ve SSH bağlantıları sunucular olarak gelir. Diğer bağlantılar atlanır ve sonunda kaç tanesinin atlandığı tek satırla söylenir.
+2. Şifreler çözülüp anahtar zincirine yazılır. Dosya özel bir ana parolayla korunuyorsa parola, bölümdeki isteğe bağlı "Master password" alanından alınır.
 3. mRemoteNG'deki devralma (inheritance) ayarları bizim devralma kuralına çevrilir.
-4. İçe aktarılanlar ağaçta ayrı bir üst grup altına konur, mevcut bağlantılar bozulmaz.
+4. İçe aktarılanlar ağaçta "mRemoteNG" adlı üst klasörün altına konur, mevcut bağlantılar bozulmaz. Aynı dosya tekrar alınınca var olanlar eklenmez, şifreleri ezilmez.
+5. Ekran: Ayarlar > Import sekmesinde alt alta "Import from rdpNext File" ve "Import from mRemoteNG File" bölümleri (docs/tasarim/mremoteng-ice-aktarma.html).
 
 ## Yedek dışa ve içe aktarma
 

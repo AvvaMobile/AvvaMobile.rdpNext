@@ -36,6 +36,8 @@ public class SettingsTests
         public Task<string?> OpenAsync() => Task.FromResult(path);
 
         public Task<string?> OpenKeyFileAsync() => Task.FromResult<string?>(null);
+
+        public Task<string?> OpenMRemoteNgAsync() => Task.FromResult(path);
     }
 
     private readonly string _path = TestWindows.SampleFile();
@@ -179,6 +181,73 @@ public class SettingsTests
         Assert.NotNull(settings.Status);
     }
 
+    private static string MRemoteNg(string name) => Path.Combine(AppContext.BaseDirectory, "Fixtures", "mRemoteNG", name);
+
+    private static readonly Guid Web02 = new("6f1c2a10-0000-4000-8000-000000000012");
+
+    [Fact]
+    public async Task MRemoteNgImportAddsFolderWithPasswords()
+    {
+        var vm = Create(MRemoteNg("confCons.xml"));
+        var settings = OpenSettings(vm);
+
+        await settings.ImportMRemoteNgCommand.ExecuteAsync(null);
+
+        Assert.Equal(["Üretim", "Test", "Müşteriler", "mRemoteNG"], vm.Tree.Roots.Select(n => n.Name));
+        Assert.Equal("ali-ğüş", vm.Secrets.GetPassword(Web02));
+        Assert.Equal("Imported, 4 new servers added. 2 connections skipped (only RDP and SSH are supported).", settings.MRemoteNgStatus);
+        Assert.Null(settings.Status);
+        Assert.Equal("mRemoteNG", new ConnectionStore(_path).Load().Root.Children.Last().Name);
+    }
+
+    // Aynı dosya tekrar alınınca kayıt çoğalmaz, sonradan değiştirilen şifre ezilmez.
+    [Fact]
+    public async Task MRemoteNgImportTwiceKeepsChangedPassword()
+    {
+        var vm = Create(MRemoteNg("confCons.xml"));
+        var settings = OpenSettings(vm);
+        await settings.ImportMRemoteNgCommand.ExecuteAsync(null);
+        var count = vm.Tree.Root.AllServers().Count();
+        vm.Secrets.SetPassword(Web02, "degisti");
+
+        await settings.ImportMRemoteNgCommand.ExecuteAsync(null);
+
+        Assert.Equal(count, vm.Tree.Root.AllServers().Count());
+        Assert.Equal("degisti", vm.Secrets.GetPassword(Web02));
+        Assert.StartsWith("Imported, 0 new servers added.", settings.MRemoteNgStatus);
+    }
+
+    [Fact]
+    public async Task MRemoteNgMasterPasswordAskedThenChecked()
+    {
+        var vm = Create(MRemoteNg("confCons-master.xml"));
+        var settings = OpenSettings(vm);
+
+        await settings.ImportMRemoteNgCommand.ExecuteAsync(null);
+        Assert.Equal("This file is protected with a master password. Enter it above and import again.", settings.MRemoteNgStatus);
+
+        settings.MasterPassword = "yanlis";
+        await settings.ImportMRemoteNgCommand.ExecuteAsync(null);
+        Assert.Equal("Wrong master password.", settings.MRemoteNgStatus);
+        Assert.Equal(3, vm.Tree.Roots.Count);
+
+        settings.MasterPassword = "ana-parola";
+        await settings.ImportMRemoteNgCommand.ExecuteAsync(null);
+        Assert.Equal("ali-ğüş", vm.Secrets.GetPassword(Web02));
+    }
+
+    [Fact]
+    public async Task MRemoteNgOtherFileShowsCouldNotRead()
+    {
+        var vm = Create(MRemoteNg("not-mremoteng.xml"));
+        var settings = OpenSettings(vm);
+
+        await settings.ImportMRemoteNgCommand.ExecuteAsync(null);
+
+        Assert.Equal("Could not read the file: not-mremoteng.xml", settings.MRemoteNgStatus);
+        Assert.Equal(3, vm.Tree.Roots.Count);
+    }
+
     [AvaloniaFact]
     public void SidebarButtonOpensSettingsWithBackupButtons()
     {
@@ -209,5 +278,15 @@ public class SettingsTests
         Assert.True(view.Named<Button>("ImportButton").IsEffectivelyVisible);
         Assert.True(view.Named<TextBlock>("ImportHint").IsEffectivelyVisible);
         Assert.False(view.Named<CheckBox>("DeleteOldBox").IsChecked);
+
+        // İçe aktar alt alta iki bölüm: rdpNext dosyası ve mRemoteNG dosyası, her biri kendi düğmesiyle.
+        var texts = view.Texts().Where(t => t.IsEffectivelyVisible).Select(t => t.Text).ToList();
+        Assert.True(texts.IndexOf("Import from rdpNext File") < texts.IndexOf("Import from mRemoteNG File"));
+        Assert.True(view.Named<Button>("ImportMRemoteNgButton").IsEffectivelyVisible);
+        Assert.True(view.Named<TextBlock>("MRemoteNgHint").IsEffectivelyVisible);
+        var password = view.Named<TextBox>("MasterPasswordBox");
+        Assert.Equal('•', password.PasswordChar);
+        Assert.Contains("Master password", texts);
+        Assert.Contains("Only needed if you set a master password for the file in mRemoteNG. Leave it empty otherwise.", texts);
     }
 }

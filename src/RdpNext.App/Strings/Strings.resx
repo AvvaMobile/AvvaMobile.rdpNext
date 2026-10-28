@@ -51,6 +51,15 @@
   <data name="ImportDone" xml:space="preserve"><value>Backup restored, {0} servers.</value></data>
   <data name="ImportFailed" xml:space="preserve"><value>Could not read the file: {0}</value></data>
   <data name="ImportAdded" xml:space="preserve"><value>Imported, {0} new servers added.</value></data>
+  <data name="ImportFromRdpNext" xml:space="preserve"><value>Import from rdpNext File</value></data>
+  <data name="ImportFromMRemoteNg" xml:space="preserve"><value>Import from mRemoteNG File</value></data>
+  <data name="MRemoteNgHint" xml:space="preserve"><value>Choose your mRemoteNG connections file (confCons.xml). RDP and SSH connections are added with their folders and passwords under a new "mRemoteNG" folder; other connection types are skipped. Entries already in the list are not added again.</value></data>
+  <data name="MasterPassword" xml:space="preserve"><value>Master password</value></data>
+  <data name="Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="MasterPasswordHint" xml:space="preserve"><value>Only needed if you set a master password for the file in mRemoteNG. Leave it empty otherwise.</value></data>
+  <data name="ImportAddedSkipped" xml:space="preserve"><value>Imported, {0} new servers added. {1} connections skipped (only RDP and SSH are supported).</value></data>
+  <data name="MasterPasswordNeeded" xml:space="preserve"><value>This file is protected with a master password. Enter it above and import again.</value></data>
+  <data name="WrongMasterPassword" xml:space="preserve"><value>Wrong master password.</value></data>
   <data name="DeleteOld" xml:space="preserve"><value>Delete all existing entries</value></data>
   <data name="ImportDeleteConfirm" xml:space="preserve"><value>All current servers and folders will be deleted. Are you sure?</value></data>
   <data name="DeleteAndImport" xml:space="preserve"><value>Delete and import</value></data>
