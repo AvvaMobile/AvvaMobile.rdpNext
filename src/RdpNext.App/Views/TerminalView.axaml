@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:v="using:RdpNext.App.Views"
+             xmlns:s="using:RdpNext.App.Strings"
+             xmlns:t="using:SvcSystems.UI.Terminal"
+             x:Class="RdpNext.App.Views.TerminalView"
+             x:DataType="vm:SshTabViewModel">
+  <Panel>
+    <Border Background="{StaticResource SessionBrush}" Padding="10,8">
+      <t:TerminalControl x:Name="Terminal" FontSize="14" />
+    </Border>
+
+    <v:ConnectionCards />
+
+    <!-- Sunucu anahtarı sorusu: ilk bağlantıda "Trust", anahtar değiştiyse eski ve yeni parmak iziyle "Trust new key". -->
+    <Panel IsVisible="{Binding HostKeyPrompt, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <Border Background="#99000000" />
+      <Border x:Name="HostKeyCard" Classes="session-card">
+        <StackPanel Spacing="14">
+          <Panel>
+            <TextBlock Classes="card-title" Text="{x:Static s:Strings.UnknownHostKey}" IsVisible="{Binding !IsHostKeyChanged}" />
+            <TextBlock Classes="card-title" Foreground="{DynamicResource NoticeBrush}" Text="{x:Static s:Strings.HostKeyChanged}"
+                       IsVisible="{Binding IsHostKeyChanged}" />
+          </Panel>
+          <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+            <TextBlock Classes="secondary" Text="{x:Static s:Strings.CertificateServer}" />
+            <TextBlock Grid.Column="1" Text="{Binding Title}" TextWrapping="Wrap" />
+            <TextBlock Grid.Row="1" Classes="secondary" Text="{x:Static s:Strings.HostKeyType}" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding HostKeyPrompt.Algorithm}" TextWrapping="Wrap" />
+            <TextBlock Grid.Row="2" Classes="secondary" Text="{x:Static s:Strings.CertificateFingerprint}" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Classes="mono" Text="{Binding HostKeyPrompt.Fingerprint}" TextWrapping="Wrap" />
+            <TextBlock Grid.Row="3" Classes="secondary" Text="{x:Static s:Strings.PreviousFingerprint}" IsVisible="{Binding IsHostKeyChanged}" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Classes="mono" Text="{Binding PreviousHostKey}" TextWrapping="Wrap"
+                       IsVisible="{Binding IsHostKeyChanged}" />
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+            <Button Classes="secondary" Content="{x:Static s:Strings.Cancel}" Command="{Binding CancelHostKeyCommand}" />
+            <Button Classes="primary" Content="{x:Static s:Strings.Trust}" Command="{Binding TrustHostKeyCommand}" IsVisible="{Binding !IsHostKeyChanged}" />
+            <Button Classes="primary" Content="{x:Static s:Strings.TrustNewKey}" Command="{Binding TrustHostKeyCommand}" IsVisible="{Binding IsHostKeyChanged}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Panel>
+
+    <!-- Anahtar parolası sorusu: tek alan. -->
+    <Panel IsVisible="{Binding IsAskingPassphrase}">
+      <Border Background="#99000000" />
+      <Border x:Name="PassphraseCard" Classes="session-card">
+        <StackPanel Spacing="14">
+          <TextBlock Classes="card-title" Text="{Binding SignInTitle}" />
+          <StackPanel>
+            <TextBlock Classes="label" Text="{x:Static s:Strings.KeyPassphrase}" />
+            <TextBox Classes="field" PasswordChar="•" Text="{Binding PromptPassphrase}" />
+          </StackPanel>
+          <CheckBox Content="{x:Static s:Strings.Save}" IsChecked="{Binding PromptSave}" />
+          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+            <Button Classes="secondary" Content="{x:Static s:Strings.Cancel}" Command="{Binding CancelPassphraseCommand}" IsCancel="True" />
+            <Button Classes="primary" Content="{x:Static s:Strings.Connect}" Command="{Binding SubmitPassphraseCommand}" IsDefault="True" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Panel>
+  </Panel>
+</UserControl>

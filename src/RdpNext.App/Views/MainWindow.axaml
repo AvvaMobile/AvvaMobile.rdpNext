@@ -35,6 +35,9 @@
           <DataTemplate DataType="vm:SessionTabViewModel">
             <v:SessionView Name="SessionViewRoot" />
           </DataTemplate>
+          <DataTemplate DataType="vm:SshTabViewModel">
+            <v:TerminalView />
+          </DataTemplate>
           <DataTemplate DataType="vm:ServerEditorViewModel">
             <v:ServerEditorView />
           </DataTemplate>

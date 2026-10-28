@@ -4,13 +4,23 @@ using CommunityToolkit.Mvvm.Input;
 using RdpNext.Core.Credentials;
 using RdpNext.Core.Model;
 using RdpNext.Ssh;
+using SvcSystems.UI.Terminal;
 
 namespace RdpNext.App.ViewModels;
 
 // Bir sunucunun SSH terminal oturumu. Oturumdan gelen olaylar arayüz iş parçacığına aktarılır;
 // eski bir oturumdan geç gelen olay yok sayılır.
-public sealed partial class SshTabViewModel(ServerNodeViewModel server) : ConnectionTabViewModel(server)
+public sealed partial class SshTabViewModel : ConnectionTabViewModel
 {
+    public SshTabViewModel(ServerNodeViewModel server) : base(server)
+    {
+        Terminal.UserInput += (_, e) => Send(e.Data.ToArray());
+        Terminal.SizeChanged += (_, e) => TerminalSizeChanged(e.Cols, e.Rows);
+    }
+
+    // Terminalin ekranı ve geçmişi; sekme değişince görünüm yeniden kurulduğu için burada durur.
+    public TerminalControlModel Terminal { get; } = new(new TerminalOptions { TermName = "xterm-256color" });
+
     public ISshSession? Session { get; private set; }
 
     // Sunucudan gelen terminal çıktısı; görünüm terminale besler.
@@ -84,7 +94,11 @@ public sealed partial class SshTabViewModel(ServerNodeViewModel server) : Connec
         session.VerifyHostKey = key => AskHostKey(session, key);
         session.Connected += () => OnUi(session, OnConnected);
         session.Ended += (reason, _) => OnUi(session, () => Ended(reason));
-        session.Output += bytes => OnUi(session, () => Output?.Invoke(bytes));
+        session.Output += bytes => OnUi(session, () =>
+        {
+            Terminal.Feed(bytes, bytes.Length);
+            Output?.Invoke(bytes);
+        });
         var server = Server.Server;
         _startedSize = _size;
         session.Start(new SshConnectOptions(server.Host, server.Port, username,
@@ -225,5 +239,6 @@ public sealed partial class SshTabViewModel(ServerNodeViewModel server) : Connec
         Session?.Dispose();
         Session = null;
         base.OnClosed();
+        Terminal.Dispose();
     }
 }

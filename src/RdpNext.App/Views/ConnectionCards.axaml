@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RdpNext.App.ViewModels"
+             xmlns:s="using:RdpNext.App.Strings"
+             x:Class="RdpNext.App.Views.ConnectionCards"
+             x:DataType="vm:ConnectionTabViewModel">
+  <!-- RDP ve SSH oturumunda ortak kartlar: bağlanıyor, koptu, kullanıcı adı ve şifre sorusu. -->
+  <Panel>
+    <!-- Bağlanıyor (docs/tasarim/rdp-oturumu.png, c). -->
+    <StackPanel x:Name="ConnectingCard" Classes="session-state" IsVisible="{Binding ShowConnecting}">
+      <Arc Classes="spinner" Width="28" Height="28" StartAngle="0" SweepAngle="90" Stroke="White" StrokeThickness="3" />
+      <TextBlock Foreground="White" Text="{Binding ConnectingTitle}" />
+    </StackPanel>
+
+    <!-- Bağlantı koptu: son görüntü karartılır (d). -->
+    <Panel IsVisible="{Binding ShowDisconnected}">
+      <Border Background="#B3000000" />
+      <StackPanel x:Name="DisconnectedCard" Classes="session-state">
+        <TextBlock Foreground="White" Text="{Binding DisconnectedTitle}" />
+        <Button Classes="primary" HorizontalAlignment="Center" Content="{x:Static s:Strings.Reconnect}" Command="{Binding ReconnectCommand}" />
+      </StackPanel>
+    </Panel>
+
+    <!-- Kullanıcı adı ve şifre sorusu (docs/tasarim/rdp-oturumu.png, b). SSH'de domain yok; anahtarla girişte şifre de yok. -->
+    <Panel IsVisible="{Binding IsAskingCredentials}">
+      <Border Background="#99000000" />
+      <Border x:Name="CredentialsCard" Classes="session-card">
+        <StackPanel Spacing="14">
+          <TextBlock Classes="card-title" Text="{Binding SignInTitle}" />
+          <Grid ColumnDefinitions="*,10,*">
+            <StackPanel>
+              <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
+              <TextBox x:Name="PromptUserBox" Classes="field" Text="{Binding PromptUsername}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" IsVisible="{Binding PromptNeedsPassword}">
+              <TextBlock Classes="label" Text="{x:Static s:Strings.Password}" />
+              <TextBox x:Name="PromptPasswordBox" Classes="field" PasswordChar="•" Text="{Binding PromptPassword}" />
+            </StackPanel>
+          </Grid>
+          <StackPanel IsVisible="{Binding PromptShowsDomain}">
+            <TextBlock Classes="label" Text="{x:Static s:Strings.Domain}" />
+            <TextBox Classes="field" Text="{Binding PromptDomain}" />
+          </StackPanel>
+          <CheckBox Content="{x:Static s:Strings.Save}" IsChecked="{Binding PromptSave}" />
+          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+            <Button Classes="secondary" Content="{x:Static s:Strings.Cancel}" Command="{Binding CancelSignInCommand}" IsCancel="True" />
+            <Button Classes="primary" Content="{x:Static s:Strings.Connect}" Command="{Binding SignInCommand}" IsDefault="True" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Panel>
+  </Panel>
+</UserControl>

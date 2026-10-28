@@ -94,7 +94,7 @@ public partial class MainWindow : Window
     {
         if (_watched is not { } vm)
             return;
-        foreach (var tab in e.NewItems?.OfType<SessionTabViewModel>() ?? [])
+        foreach (var tab in e.NewItems?.OfType<ConnectionTabViewModel>() ?? [])
         {
             var window = new SessionWindow(vm, tab);
             window.Closed += (_, _) =>
@@ -106,7 +106,7 @@ public partial class MainWindow : Window
             _sessionWindows.Add(window);
             window.Show();
         }
-        foreach (var tab in e.OldItems?.OfType<SessionTabViewModel>() ?? [])
+        foreach (var tab in e.OldItems?.OfType<ConnectionTabViewModel>() ?? [])
             _sessionWindows.FirstOrDefault(w => w.DataContext == tab)?.Close();
     }
 

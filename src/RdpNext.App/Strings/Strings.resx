@@ -71,6 +71,11 @@
   <data name="ConnectingTo" xml:space="preserve"><value>Connecting to {0}</value></data>
   <data name="ConnectionLost" xml:space="preserve"><value>Connection lost</value></data>
   <data name="KeyUnusable" xml:space="preserve"><value>The key file could not be used.</value></data>
+  <data name="UnknownHostKey" xml:space="preserve"><value>Unknown host key</value></data>
+  <data name="HostKeyChanged" xml:space="preserve"><value>Host key changed</value></data>
+  <data name="HostKeyType" xml:space="preserve"><value>Key type</value></data>
+  <data name="PreviousFingerprint" xml:space="preserve"><value>Previous</value></data>
+  <data name="TrustNewKey" xml:space="preserve"><value>Trust new key</value></data>
   <data name="Reconnect" xml:space="preserve"><value>Reconnect</value></data>
   <data name="TooLargeToCopy" xml:space="preserve"><value>Too large to copy to Mac</value></data>
   <data name="Theme" xml:space="preserve"><value>Theme</value></data>
