@@ -49,7 +49,14 @@ typedef struct
 	CliprdrFileContext* file;
 	/* Sunucudan dosya indirme: en son kopyalanan dosya listesi sırayla, parça parça indirilir. */
 	char* clipboard_dir;
-	UINT32 requested_format;
+	/* İstenen pano biçimleri sırayla; cevaplar aynı sırayla gelir (iki hızlı kopyada karışmasın). */
+	UINT32 requested_formats[8];
+	UINT32 requested_head;
+	UINT32 requested_tail;
+	/* Her yeni dosya listesinde artar; eski indirmeye gelen geç cevaplar streamId'den tanınıp atılır. */
+	UINT32 dl_generation;
+	/* local_text ve local_files oturum iş parçacığında değişir, kanal iş parçacığında okunur. */
+	CRITICAL_SECTION clip_lock;
 	FILEDESCRIPTORW* dl_files;
 	UINT32 dl_count;
 	UINT32 dl_index;
@@ -74,13 +81,17 @@ static UINT rn_clip_send_format_list(rnContext* rc)
 {
 	CLIPRDR_FORMAT formats[2] = { 0 };
 	UINT32 count = 0;
-	if (rc->local_files)
+	EnterCriticalSection(&rc->clip_lock);
+	BOOL has_files = rc->local_files != NULL;
+	BOOL has_text = rc->local_text != NULL;
+	LeaveCriticalSection(&rc->clip_lock);
+	if (has_files)
 	{
 		formats[count].formatId = ClipboardGetFormatId(rc->system, rn_format_files);
 		formats[count].formatName = (char*)rn_format_files;
 		count++;
 	}
-	if (rc->local_text)
+	if (has_text)
 	{
 		formats[count].formatId = CF_UNICODETEXT;
 		count++;
@@ -135,6 +146,7 @@ static UINT rn_clip_server_capabilities(CliprdrClientContext* clip, const CLIPRD
 
 static void rn_dl_reset(rnContext* rc)
 {
+	rc->dl_generation = (rc->dl_generation + 1) & 0xFFFF;
 	if (rc->dl_out)
 		fclose(rc->dl_out);
 	rc->dl_out = NULL;
@@ -187,7 +199,7 @@ static UINT rn_dl_request(rnContext* rc, UINT32 flags)
 {
 	CLIPRDR_FILE_CONTENTS_REQUEST request = { 0 };
 	request.common.msgType = CB_FILECONTENTS_REQUEST;
-	request.streamId = rc->dl_index;
+	request.streamId = (rc->dl_generation << 16) | (rc->dl_index & 0xFFFF);
 	request.listIndex = rc->dl_index;
 	request.dwFlags = flags;
 	if (flags == FILECONTENTS_SIZE)
@@ -305,7 +317,7 @@ static void rn_dl_start(rnContext* rc, const BYTE* data, UINT32 length)
 static UINT rn_clip_server_file_contents_response(CliprdrClientContext* clip, const CLIPRDR_FILE_CONTENTS_RESPONSE* response)
 {
 	rnContext* rc = rn_clip_owner(clip);
-	if (!rc->dl_files || response->streamId != rc->dl_index || !rc->dl_out)
+	if (!rc->dl_files || response->streamId != ((rc->dl_generation << 16) | (rc->dl_index & 0xFFFF)) || !rc->dl_out)
 		return CHANNEL_RC_OK;
 	if (response->common.msgFlags != CB_RESPONSE_OK)
 	{
@@ -351,6 +363,8 @@ static UINT rn_clip_server_format_list(CliprdrClientContext* clip, const CLIPRDR
 	if (rv != CHANNEL_RC_OK)
 		return rv;
 	rnContext* rc = rn_clip_owner(clip);
+	/* Sunucuda yeni bir şey kopyalandı: süren indirme bırakılır, eski kopya yenisinin üstüne yazılmasın. */
+	rn_dl_reset(rc);
 	/* Dosya varsa dosya listesi istenir (Explorer dosya kopyalarken yanında metin de verebilir), yoksa metin. */
 	UINT32 wanted = 0;
 	for (UINT32 i = 0; i < list->numFormats; i++)
@@ -362,7 +376,7 @@ static UINT rn_clip_server_format_list(CliprdrClientContext* clip, const CLIPRDR
 	}
 	if (wanted)
 	{
-		rc->requested_format = wanted;
+		rc->requested_formats[rc->requested_tail++ % ARRAYSIZE(rc->requested_formats)] = wanted;
 		CLIPRDR_FORMAT_DATA_REQUEST request = { 0 };
 		request.common.msgType = CB_FORMAT_DATA_REQUEST;
 		request.requestedFormatId = wanted;
@@ -381,9 +395,15 @@ static UINT rn_clip_server_format_list_response(CliprdrClientContext* clip, cons
 static UINT rn_clip_server_format_data_response(CliprdrClientContext* clip, const CLIPRDR_FORMAT_DATA_RESPONSE* response)
 {
 	rnContext* rc = rn_clip_owner(clip);
+	UINT32 format = rc->requested_head == rc->requested_tail
+	                    ? CF_UNICODETEXT
+	                    : rc->requested_formats[rc->requested_head++ % ARRAYSIZE(rc->requested_formats)];
+	/* Arkadan daha yeni bir istek varsa bu cevap eskidir; yalnız en son istenen işlenir. */
+	if (rc->requested_head != rc->requested_tail)
+		return CHANNEL_RC_OK;
 	if (response->common.msgFlags != CB_RESPONSE_OK || !response->requestedFormatData)
 		return CHANNEL_RC_OK;
-	if (rc->requested_format != CF_UNICODETEXT)
+	if (format != CF_UNICODETEXT)
 	{
 		/* Dosya listesi geldi: Mac'teki eski metin sunucuya geri duyurulmasın diye önce haber verilir, sonra indirilir. */
 		if (rc->callbacks.clipboard_text)
@@ -407,14 +427,22 @@ static UINT rn_clip_server_format_data_response(CliprdrClientContext* clip, cons
 static BYTE* rn_clip_file_list(rnContext* rc, UINT32* length)
 {
 	*length = 0;
-	size_t uri_len = strlen(rc->local_files);
-	if (!cliprdr_file_context_update_client_data(rc->file, rc->local_files, uri_len))
+	EnterCriticalSection(&rc->clip_lock);
+	char* files = rc->local_files ? _strdup(rc->local_files) : NULL;
+	LeaveCriticalSection(&rc->clip_lock);
+	if (!files)
 		return NULL;
+	size_t uri_len = strlen(files);
+	if (!cliprdr_file_context_update_client_data(rc->file, files, uri_len))
+	{
+		free(files);
+		return NULL;
+	}
 	UINT32 uri_id = ClipboardGetFormatId(rc->system, rn_mime_uri_list);
 	UINT32 files_id = ClipboardGetFormatId(rc->system, rn_format_files);
 	BYTE* result = NULL;
 	ClipboardLock(rc->system);
-	if (ClipboardSetData(rc->system, uri_id, rc->local_files, (UINT32)uri_len))
+	if (ClipboardSetData(rc->system, uri_id, files, (UINT32)uri_len))
 	{
 		UINT32 size = 0;
 		FILEDESCRIPTORW* descriptors = (FILEDESCRIPTORW*)ClipboardGetData(rc->system, files_id, &size);
@@ -431,6 +459,7 @@ static BYTE* rn_clip_file_list(rnContext* rc, UINT32* length)
 	}
 	ClipboardEmpty(rc->system);
 	ClipboardUnlock(rc->system);
+	free(files);
 	return result;
 }
 
@@ -442,13 +471,18 @@ static UINT rn_clip_server_format_data_request(CliprdrClientContext* clip, const
 	response.common.msgType = CB_FORMAT_DATA_RESPONSE;
 	BYTE* data = NULL;
 	UINT32 length = 0;
-	if (request->requestedFormatId == CF_UNICODETEXT && rc->local_text)
+	EnterCriticalSection(&rc->clip_lock);
+	char* text = request->requestedFormatId == CF_UNICODETEXT && rc->local_text ? _strdup(rc->local_text) : NULL;
+	BOOL has_files = rc->local_files != NULL;
+	LeaveCriticalSection(&rc->clip_lock);
+	if (text)
 	{
 		size_t size = 0;
-		data = (BYTE*)ConvertUtf8ToWCharAlloc(rc->local_text, &size);
+		data = (BYTE*)ConvertUtf8ToWCharAlloc(text, &size);
 		length = data ? (UINT32)((size + 1) * sizeof(WCHAR)) : 0;
+		free(text);
 	}
-	else if (rc->local_files && request->requestedFormatId == ClipboardGetFormatId(rc->system, rn_format_files))
+	else if (has_files && request->requestedFormatId == ClipboardGetFormatId(rc->system, rn_format_files))
 		data = rn_clip_file_list(rc, &length);
 	response.common.msgFlags = data ? CB_RESPONSE_OK : CB_RESPONSE_FAIL;
 	response.common.dataLen = length;
@@ -700,6 +734,7 @@ rdpContext* rn_create(const rn_callbacks* callbacks, void* user)
 	if (callbacks)
 		rc->callbacks = *callbacks;
 	rc->user = user;
+	InitializeCriticalSection(&rc->clip_lock);
 	rc->system = ClipboardCreate();
 	rc->file = cliprdr_file_context_new(rc);
 	/* Dosya aktarım yeteneği sunucuya bildirilsin (Mac'ten sunucuya dosya). */
@@ -784,10 +819,16 @@ int rn_resize(rdpContext* ctx, int width, int height)
 void rn_set_clipboard(rdpContext* ctx, const char* text, const char* uri_list)
 {
 	rnContext* rc = (rnContext*)ctx;
-	free(rc->local_text);
-	free(rc->local_files);
-	rc->local_text = text && *text ? _strdup(text) : NULL;
-	rc->local_files = uri_list && *uri_list ? _strdup(uri_list) : NULL;
+	char* new_text = text && *text ? _strdup(text) : NULL;
+	char* new_files = uri_list && *uri_list ? _strdup(uri_list) : NULL;
+	EnterCriticalSection(&rc->clip_lock);
+	char* old_text = rc->local_text;
+	char* old_files = rc->local_files;
+	rc->local_text = new_text;
+	rc->local_files = new_files;
+	LeaveCriticalSection(&rc->clip_lock);
+	free(old_text);
+	free(old_files);
 	if (rc->clip)
 		rn_clip_send_format_list(rc);
 }
@@ -805,13 +846,18 @@ void rn_unicode(rdpContext* ctx, uint16_t code, int down)
 void rn_free(rdpContext* ctx)
 {
 	rnContext* rc = (rnContext*)ctx;
+	/* Önce bağlantı ve kanal iş parçacıkları durur; pano ve indirme alanları ancak sonra bırakılır. */
+	freerdp_disconnect(ctx->instance);
 	free(rc->local_text);
+	rc->local_text = NULL;
 	free(rc->local_files);
+	rc->local_files = NULL;
 	rn_dl_reset(rc);
 	free(rc->clipboard_dir);
+	rc->clipboard_dir = NULL;
+	DeleteCriticalSection(&rc->clip_lock);
 	CliprdrFileContext* file = rc->file;
 	wClipboard* system = rc->system;
-	freerdp_disconnect(ctx->instance);
 	freerdp_client_context_free(ctx);
 	cliprdr_file_context_free(file);
 	ClipboardDestroy(system);

@@ -114,14 +114,27 @@ public partial class SessionView : UserControl
             ShowPointer(_tab?.Pointer);
     }
 
+    // Sunucunun imleci; özel imleç ve bitmap'i yenisi gelince bırakılır (imleç her metin/ok geçişinde değişir).
+    private Cursor? _customCursor;
+    private Bitmap? _customCursorBitmap;
+
     private void ShowPointer(RdpPointer? pointer)
     {
+        var (oldCursor, oldBitmap) = (_customCursor, _customCursorBitmap);
+        (_customCursor, _customCursorBitmap) = (null, null);
+        if (pointer is { Width: > 0 })
+        {
+            _customCursorBitmap = ToBitmap(pointer);
+            _customCursor = new Cursor(_customCursorBitmap, new PixelPoint(pointer.HotX, pointer.HotY));
+        }
         Cursor = pointer switch
         {
             null => Cursor.Default,
             { Width: 0 } => new Cursor(StandardCursorType.None),
-            _ => new Cursor(ToBitmap(pointer), new PixelPoint(pointer.HotX, pointer.HotY)),
+            _ => _customCursor,
         };
+        oldCursor?.Dispose();
+        oldBitmap?.Dispose();
     }
 
     private static unsafe Bitmap ToBitmap(RdpPointer pointer)

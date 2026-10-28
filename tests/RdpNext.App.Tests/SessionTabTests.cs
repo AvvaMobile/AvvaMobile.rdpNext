@@ -161,6 +161,25 @@ public class SessionTabTests
         Assert.True(_sessions[1].Disposed);
     }
 
+    // Kapanan sekme sunucuya bağlı kalmaz ve görüntüsünü bırakır; yoksa her aç-kapa belleği büyütür.
+    [AvaloniaFact]
+    public void ClosedTabReleasesServerAndBitmap()
+    {
+        GiveUretimCredentials();
+        var tab = Connect("web-01");
+        _sessions[0].RaiseFrame(new byte[2 * 2 * 4], 2, 2);
+        Dispatcher.UIThread.RunJobs();
+        var changes = 0;
+        tab.PropertyChanged += (_, _) => changes++;
+
+        _vm.CloseTabCommand.Execute(tab);
+        Dispatcher.UIThread.RunJobs();
+        Server("web-01").Refresh();
+
+        Assert.Equal(0, changes);
+        Assert.Null(tab.Screen.Bitmap);
+    }
+
     [AvaloniaFact]
     public void ShutdownDisposesAllSessions()
     {

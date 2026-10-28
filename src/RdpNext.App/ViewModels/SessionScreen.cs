@@ -19,6 +19,15 @@ public sealed partial class SessionScreen : ObservableObject
     // Görüntü değişti; görünüm kendini yeniden çizer.
     public event Action? Invalidated;
 
+    // Sekme kapanınca görüntü bırakılır (büyük ekranda onlarca MB).
+    public void Clear()
+    {
+        var old = _bitmap;
+        _bitmap = null;
+        OnPropertyChanged(nameof(Bitmap));
+        old?.Dispose();
+    }
+
     public unsafe void CopyFrame(RdpFrame frame)
     {
         var bitmap = _bitmap;

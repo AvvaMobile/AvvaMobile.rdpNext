@@ -184,4 +184,43 @@ public class SmokeTests
             await Task.Delay(800, ct);
         }
     }
+
+    // İndirme sürerken oturum kapatılır: uygulama çökmemeli (C katmanı bellek sırası).
+    [Fact]
+    public async Task DisposeDuringFileDownloadDoesNotCrash()
+    {
+        var options = SmokeServer.Options();
+        Assert.SkipWhen(options is null, "RDPNEXT_SMOKE ayarlı değil");
+        var session = new RdpSession { VerifyCertificate = _ => Task.FromResult(true) };
+        var connected = new TaskCompletionSource();
+        session.Connected += () => connected.TrySetResult();
+        var ct = TestContext.Current.CancellationToken;
+        void Tap(ushort code, bool extended = false)
+        {
+            session.SendKey(code, extended, true);
+            session.SendKey(code, extended, false);
+        }
+
+        session.Start(options!);
+        await connected.Task.WaitAsync(TimeSpan.FromSeconds(20), ct);
+        await Task.Delay(3000, ct);
+        session.SendKey(0x5B, true, true);
+        Tap(0x13);
+        session.SendKey(0x5B, true, false);
+        await Task.Delay(1500, ct);
+        foreach (var c in @"explorer /select,C:\Windows\explorer.exe")
+            session.SendUnicode(c);
+        Tap(0x1C);
+        await Task.Delay(3000, ct);
+        session.SendKey(0x1D, false, true);
+        Tap(0x2E);
+        session.SendKey(0x1D, false, false);
+        await Task.Delay(400, ct);
+        // Explorer penceresi açık kalır; kapatmak için yeni oturum gerekmesin diye önce Alt+F4, hemen ardından kapat.
+        session.SendKey(0x38, false, true);
+        Tap(0x3E);
+        session.SendKey(0x38, false, false);
+        session.Dispose();
+        await Task.Delay(1000, ct);
+    }
 }

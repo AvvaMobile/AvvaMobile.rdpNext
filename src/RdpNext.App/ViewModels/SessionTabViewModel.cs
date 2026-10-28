@@ -30,16 +30,18 @@ public sealed partial class SessionTabViewModel : TabViewModel
         Server = server;
         _time = time ?? TimeProvider.System;
         server.State = SessionState.Connecting;
-        // Sunucunun adı, rengi ya da ikonu değişince sekme de güncellenir.
-        server.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName is nameof(ServerNodeViewModel.State) or nameof(ServerNodeViewModel.IsConnected)
-                or nameof(ServerNodeViewModel.IsConnecting) or nameof(ServerNodeViewModel.IsDisconnected))
-                return;
-            TitleChanged();
-            OnPropertyChanged(nameof(Color));
-            OnPropertyChanged(nameof(Icon));
-        };
+        server.PropertyChanged += OnServerChanged;
+    }
+
+    // Sunucunun adı, rengi ya da ikonu değişince sekme de güncellenir. Sekme kapanınca bağ çözülür.
+    private void OnServerChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(ServerNodeViewModel.State) or nameof(ServerNodeViewModel.IsConnected)
+            or nameof(ServerNodeViewModel.IsConnecting) or nameof(ServerNodeViewModel.IsDisconnected))
+            return;
+        TitleChanged();
+        OnPropertyChanged(nameof(Color));
+        OnPropertyChanged(nameof(Icon));
     }
 
     public ServerNodeViewModel Server { get; }
@@ -295,6 +297,8 @@ public sealed partial class SessionTabViewModel : TabViewModel
             _resizeTimer?.Dispose();
         Session?.Dispose();
         Session = null;
+        Server.PropertyChanged -= OnServerChanged;
         Server.State = null;
+        Screen.Clear();
     }
 }
