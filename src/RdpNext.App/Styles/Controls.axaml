@@ -245,7 +245,7 @@
     <Setter Property="FontSize" Value="14" />
   </Style>
   <Style Selector="Border.content-frame">
-    <Setter Property="Margin" Value="12" />
+    <Setter Property="Margin" Value="0,12,12,12" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
     <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
     <Setter Property="BorderThickness" Value="1" />
