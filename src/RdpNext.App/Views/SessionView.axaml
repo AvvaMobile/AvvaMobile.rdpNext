@@ -15,11 +15,11 @@
 
     <v:ConnectionCards />
 
-    <!-- Sunucu ayarında açıksa üst ortada ad ve adres; tıklamalar oturuma geçer. -->
+    <!-- Sunucu ayarında açıksa üst ortada iki satır: ad, altında adres; tıklamalar oturuma geçer. -->
     <Border x:Name="InfoOverlay" Classes="info-overlay" IsVisible="{Binding Server.ShowInfoOverlay}" IsHitTestVisible="False">
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock FontWeight="SemiBold" Text="{Binding Server.Name}" />
-        <TextBlock Opacity="0.75" Text="{Binding Server.Host}" />
+      <StackPanel Spacing="2">
+        <TextBlock HorizontalAlignment="Center" FontSize="15" FontWeight="SemiBold" Text="{Binding Server.Name}" />
+        <TextBlock HorizontalAlignment="Center" Opacity="0.75" Text="{Binding Server.Host}" />
       </StackPanel>
     </Border>
 
