@@ -26,6 +26,8 @@ typedef struct
 	void (*clipboard_text)(void* user, const char* text);
 	/* Sunucuda kopyalanan dosyalar indirildi: en üstteki öğelerin tam yolları, "\n" ile ayrılmış. */
 	void (*clipboard_files)(void* user, const char* paths);
+	/* Sunucudaki kopya sınırdan (2 GB) büyük, Mac'e indirilmedi. */
+	void (*clipboard_too_large)(void* user);
 } rn_callbacks;
 
 typedef struct

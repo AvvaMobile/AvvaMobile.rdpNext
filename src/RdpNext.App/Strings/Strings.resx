@@ -65,6 +65,7 @@
   <data name="ConnectingTo" xml:space="preserve"><value>Connecting to {0}</value></data>
   <data name="ConnectionLost" xml:space="preserve"><value>Connection lost</value></data>
   <data name="Reconnect" xml:space="preserve"><value>Reconnect</value></data>
+  <data name="TooLargeToCopy" xml:space="preserve"><value>Too large to copy to Mac</value></data>
   <data name="Theme" xml:space="preserve"><value>Theme</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>

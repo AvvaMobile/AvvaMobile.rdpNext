@@ -27,6 +27,8 @@ public sealed class FakeRdpSession : IRdpSession
 
     public event Action<IReadOnlyList<string>>? RemoteClipboardFiles;
 
+    public event Action? RemoteClipboardTooLarge;
+
     public event Action<RdpPointer?>? PointerChanged;
 
     public event Action? Connected;
@@ -61,6 +63,8 @@ public sealed class FakeRdpSession : IRdpSession
     public void Dispose() => Disposed = true;
 
     public void RaiseClipboardFiles(IReadOnlyList<string> files) => RemoteClipboardFiles?.Invoke(files);
+
+    public void RaiseClipboardTooLarge() => RemoteClipboardTooLarge?.Invoke();
 
     public void RaiseClipboardText(string? text) => RemoteClipboardText?.Invoke(text);
 
