@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\samples\connections.sample.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures\mRemoteNG\*.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\RdpNext.Core\RdpNext.Core.csproj" />
