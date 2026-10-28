@@ -21,9 +21,9 @@
           <ColumnDefinition Width="1000*" MaxWidth="876" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Classes="form">
-        <StackPanel Spacing="18" IsVisible="{Binding ShowGeneral}">
-          <Grid ColumnDefinitions="*,12,*">
+        <StackPanel Classes="form" Spacing="24">
+        <StackPanel Spacing="24" IsVisible="{Binding ShowGeneral}">
+          <Grid ColumnDefinitions="*,30,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.ConnectionType}" />
               <Border Classes="segmented">
@@ -72,7 +72,7 @@
               </ListBox>
             </StackPanel>
           </Grid>
-          <Grid ColumnDefinitions="*,12,*">
+          <Grid ColumnDefinitions="*,30,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.DisplayName}" />
               <TextBox Classes="field" Text="{Binding Name}" PlaceholderText="{Binding Host}" />
@@ -88,7 +88,7 @@
               </ComboBox>
             </StackPanel>
           </Grid>
-          <Grid ColumnDefinitions="*,12,140">
+          <Grid ColumnDefinitions="*,30,140">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Address}" />
               <TextBox x:Name="HostBox" Classes="field" Text="{Binding Host}" />
@@ -99,7 +99,7 @@
             </StackPanel>
           </Grid>
           <!-- Şifre alanı tek; yeri tipe göre değişir: RDP'de kullanıcının yanı, SSH'de alt satır. -->
-          <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,18,Auto">
+          <Grid ColumnDefinitions="*,30,*" RowDefinitions="Auto,24,Auto">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.User}" />
               <TextBox Classes="field" Text="{Binding Username}" PlaceholderText="{Binding UsernameHint}">
@@ -150,8 +150,8 @@
             </StackPanel>
           </Grid>
         </StackPanel>
-        <StackPanel Spacing="18" IsVisible="{Binding ShowAdvanced}">
-          <Grid ColumnDefinitions="*,12,*">
+        <StackPanel Spacing="24" IsVisible="{Binding ShowAdvanced}">
+          <Grid ColumnDefinitions="*,30,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Screen}" />
               <ComboBox x:Name="ScreenBox" Classes="field" SelectedIndex="{Binding ScreenIndex}">
