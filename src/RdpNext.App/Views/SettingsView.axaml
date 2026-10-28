@@ -21,7 +21,7 @@
         </Grid.ColumnDefinitions>
         <Panel>
           <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}">
-            <Grid ColumnDefinitions="*,12,*">
+            <Grid ColumnDefinitions="*,20,*">
               <StackPanel>
                 <TextBlock Classes="label" Text="{x:Static s:Strings.Theme}" />
                 <ComboBox x:Name="ThemeBox" Classes="field" SelectedIndex="{Binding ThemeIndex}">

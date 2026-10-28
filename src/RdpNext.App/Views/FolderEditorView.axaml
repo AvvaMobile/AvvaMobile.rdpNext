@@ -21,13 +21,13 @@
           </Grid.ColumnDefinitions>
         <StackPanel Classes="form">
           <!-- Şimdilik ad ve renk; kimlik bilgileri ve üst klasör ekrandan kaldırıldı. -->
-          <Grid ColumnDefinitions="*,12,*">
+          <Grid ColumnDefinitions="*,20,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Name}" />
               <TextBox x:Name="FolderNameBox" Classes="field" Text="{Binding Name}" />
             </StackPanel>
           </Grid>
-          <Grid ColumnDefinitions="*,12,*">
+          <Grid ColumnDefinitions="*,20,*">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static s:Strings.Color}" />
               <ListBox Classes="swatches" ItemsSource="{Binding Colors}" SelectedItem="{Binding Color}">
