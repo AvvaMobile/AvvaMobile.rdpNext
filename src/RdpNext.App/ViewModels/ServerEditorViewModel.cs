@@ -30,6 +30,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             _auth = existing.Auth;
             _keyFile = existing.KeyFile ?? "";
             _screen = existing.Screen;
+            _showInfoOverlay = existing.ShowInfoOverlay;
             folder = existing.Parent;
         }
         _folder = _folders.FirstOrDefault(f => f.Group == (folder == owner.Tree.Root ? null : folder)) ?? _folders[0];
@@ -177,6 +178,9 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         set => Screen = value == 0 ? ScreenMode.FullScreen : ScreenMode.FitToWindow;
     }
 
+    [ObservableProperty]
+    private bool _showInfoOverlay;
+
     // Gruptan gelen değer alanda soluk görünür, kaynağı ("Üretim'den") alanın sağında.
     [ObservableProperty]
     private string? _usernameHint;
@@ -259,6 +263,7 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         server.Username = Blank(Username);
         server.Color = Color;
         server.Screen = Screen;
+        server.ShowInfoOverlay = ShowInfoOverlay;
         if (server.Protocol != Protocol)
         {
             server.HostKeyFingerprint = null;

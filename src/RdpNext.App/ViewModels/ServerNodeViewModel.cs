@@ -13,6 +13,8 @@ public sealed partial class ServerNodeViewModel(Server server) : TreeNodeViewMod
 
     public ServerIcon Icon => Server.Icon;
 
+    public bool ShowInfoOverlay => Server.ShowInfoOverlay;
+
     // Açık sekmesi yoksa null.
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsConnected), nameof(IsConnecting), nameof(IsDisconnected))]
