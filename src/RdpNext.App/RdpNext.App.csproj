@@ -29,5 +29,6 @@
   <ItemGroup>
     <ProjectReference Include="..\RdpNext.Core\RdpNext.Core.csproj" />
     <ProjectReference Include="..\RdpNext.Rdp\RdpNext.Rdp.csproj" />
+    <ProjectReference Include="..\RdpNext.Ssh\RdpNext.Ssh.csproj" />
   </ItemGroup>
 </Project>

@@ -7,15 +7,17 @@ using RdpNext.Core.Model;
 using RdpNext.Core.Secrets;
 using RdpNext.Core.Storage;
 using RdpNext.Rdp;
+using RdpNext.Ssh;
 
 namespace RdpNext.App.ViewModels;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel(ConnectionStore store, ISecretStore secrets, IConfirmService? confirm = null, IFileDialogService? files = null, SettingsStore? settings = null,
-        Func<IRdpSession>? rdp = null, TimeProvider? time = null)
+        Func<IRdpSession>? rdp = null, TimeProvider? time = null, Func<ISshSession>? ssh = null)
     {
         _rdp = rdp ?? (() => new RdpSession());
+        _ssh = ssh ?? (() => new SshSession());
         _time = time ?? TimeProvider.System;
         Sessions = new SessionsViewModel(time);
         Store = store;
@@ -35,6 +37,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public ConnectionStore Store { get; }
 
     private readonly Func<IRdpSession> _rdp;
+    private readonly Func<ISshSession> _ssh;
     private readonly TimeProvider _time;
     private ITimer? _toastTimer;
 
@@ -150,25 +153,34 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void Connect(ServerNodeViewModel server)
     {
-        var existing = Sessions.Find<SessionTabViewModel>(t => t.Server == server);
+        var existing = Sessions.Find<ConnectionTabViewModel>(t => t.Server == server);
         var tab = Sessions.Open(server);
         if (existing is not null)
             return;
         tab.CloseRequested += () => Sessions.Close(tab);
         tab.ServerChanged += Persist;
-        tab.ClipboardTooLarge += () => ShowToast(Strings.Strings.TooLargeToCopy);
         tab.CredentialsSaved += (username, password, domain) => SaveCredentials(server, username, password, domain);
-        tab.Connect(_rdp, CredentialResolver.Resolve(server.Server, Secrets), SessionAreaSize);
+        var credentials = CredentialResolver.Resolve(server.Server, Secrets);
+        if (tab is SshTabViewModel ssh)
+        {
+            ssh.PassphraseSaved += passphrase => Secrets.SetPassword(server.Server.Id, passphrase);
+            ssh.Connect(_ssh, credentials);
+            return;
+        }
+        var rdp = (SessionTabViewModel)tab;
+        rdp.ClipboardTooLarge += () => ShowToast(Strings.Strings.TooLargeToCopy);
+        rdp.Connect(_rdp, credentials, SessionAreaSize);
         if (server.Server.Screen == ScreenMode.FullScreen)
-            Sessions.Detach(tab);
+            Sessions.Detach(rdp);
     }
 
-    // Şifre sorusunda "Save" işaretliyse: kullanıcı ve domain sunucuya, şifre anahtar zincirine.
-    private void SaveCredentials(ServerNodeViewModel server, string username, string password, string? domain)
+    // Şifre sorusunda "Save" işaretliyse: kullanıcı ve domain sunucuya, şifre (sorulduysa) anahtar zincirine.
+    private void SaveCredentials(ServerNodeViewModel server, string username, string? password, string? domain)
     {
         server.Server.Username = username;
         server.Server.Domain = domain;
-        Secrets.SetPassword(server.Server.Id, password);
+        if (password is not null)
+            Secrets.SetPassword(server.Server.Id, password);
         server.Refresh();
         Persist();
     }

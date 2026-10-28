@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RdpNext.Core.Model;
 
 namespace RdpNext.App.ViewModels;
 
@@ -13,14 +14,15 @@ public sealed partial class SessionsViewModel(TimeProvider? time = null) : Obser
     [ObservableProperty]
     private TabViewModel? _selected;
 
-    public SessionTabViewModel Open(ServerNodeViewModel server)
+    // Sunucunun açık sekmesi varsa ona geçer; yoksa protokolüne göre RDP ya da SSH sekmesi açar.
+    public ConnectionTabViewModel Open(ServerNodeViewModel server)
     {
-        var tab = Find<SessionTabViewModel>(t => t.Server == server);
+        var tab = Find<ConnectionTabViewModel>(t => t.Server == server);
         if (tab is not null && Windows.Contains(tab))
             return tab;
         if (tab is null)
         {
-            tab = new SessionTabViewModel(server, time);
+            tab = server.Server.Protocol == Protocol.Ssh ? new SshTabViewModel(server) : new SessionTabViewModel(server, time);
             Tabs.Add(tab);
         }
         Selected = tab;

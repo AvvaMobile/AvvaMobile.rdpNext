@@ -48,7 +48,11 @@ public abstract partial class ConnectionTabViewModel : TabViewModel
     // "Bağlanıyor" yazısı soru kartı açıkken gizlenir.
     public bool ShowConnecting => State == SessionState.Connecting && !IsAskingCredentials && !HasPrompt;
 
-    public bool ShowDisconnected => State == SessionState.Disconnected && !IsAskingCredentials;
+    public bool ShowDisconnected => State == SessionState.Disconnected && !IsAskingCredentials && !HasPrompt;
+
+    // Koptu kartındaki yazı; bağlantı hatasına göre değişebilir.
+    [ObservableProperty]
+    private string _disconnectedTitle = Strings.Strings.ConnectionLost;
 
     // Protokole özgü bir soru kartı (sertifika, sunucu anahtarı, anahtar parolası) açık mı.
     protected virtual bool HasPrompt => false;
@@ -88,8 +92,14 @@ public abstract partial class ConnectionTabViewModel : TabViewModel
 
     public string SignInTitle => string.Format(Strings.Strings.SignInTo, Title);
 
-    // "Save" işaretliyken girilen kullanıcı, şifre ve domain; sunucuya yazılmalı.
-    public event Action<string, string, string?>? CredentialsSaved;
+    // Soru kartında domain alanı görünür mü (SSH'de yok).
+    public virtual bool PromptShowsDomain => true;
+
+    // Soru kartı şifre ister mi (SSH anahtarla girişte istemez).
+    public virtual bool PromptNeedsPassword => true;
+
+    // "Save" işaretliyken girilen kullanıcı, şifre ve domain; sunucuya yazılmalı. Şifre istenmediyse null.
+    public event Action<string, string?, string?>? CredentialsSaved;
 
     protected void AskCredentials(string? username, string? domain)
     {
@@ -103,14 +113,14 @@ public abstract partial class ConnectionTabViewModel : TabViewModel
     [RelayCommand]
     private void SignIn()
     {
-        if (string.IsNullOrWhiteSpace(PromptUsername) || PromptPassword.Length == 0)
+        if (string.IsNullOrWhiteSpace(PromptUsername) || (PromptNeedsPassword && PromptPassword.Length == 0))
             return;
         var (username, password) = (PromptUsername.Trim(), PromptPassword);
-        var domain = string.IsNullOrWhiteSpace(PromptDomain) ? null : PromptDomain.Trim();
+        var domain = !PromptShowsDomain || string.IsNullOrWhiteSpace(PromptDomain) ? null : PromptDomain.Trim();
         IsAskingCredentials = false;
         PromptPassword = "";
         if (PromptSave)
-            CredentialsSaved?.Invoke(username, password, domain);
+            CredentialsSaved?.Invoke(username, PromptNeedsPassword ? password : null, domain);
         StartWith(username, password, domain);
     }
 

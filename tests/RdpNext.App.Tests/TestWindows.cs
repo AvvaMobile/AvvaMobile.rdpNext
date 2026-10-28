@@ -33,7 +33,7 @@ public static class TestWindows
 
     // Bağlanınca gerçek RDP yerine sahte oturum açılır; açılanlar istenirse sessions listesine eklenir.
     public static MainWindowViewModel ViewModel(string? path = null, List<FakeRdpSession>? sessions = null, bool? confirm = null,
-        TimeProvider? time = null) =>
+        TimeProvider? time = null, List<FakeSshSession>? sshSessions = null) =>
         new(new ConnectionStore(path ?? SampleFile()), new InMemorySecretStore(),
             confirm is { } sure ? new FixedConfirm(sure) : null,
             time: time,
@@ -41,6 +41,12 @@ public static class TestWindows
             {
                 var session = new FakeRdpSession();
                 sessions?.Add(session);
+                return session;
+            },
+            ssh: () =>
+            {
+                var session = new FakeSshSession();
+                sshSessions?.Add(session);
                 return session;
             });
 
