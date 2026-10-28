@@ -52,6 +52,9 @@ public interface IRdpSession : IDisposable
     // Sunucuda kopyalanan dosyalar bu bilgisayara indirildi (tam yollar, en üstteki öğeler).
     event Action<IReadOnlyList<string>>? RemoteClipboardFiles;
 
+    // Sunucudaki kopya 2 GB'tan büyük; bu bilgisayara indirilmedi.
+    event Action? RemoteClipboardTooLarge;
+
     // null: sistemin varsayılan oku.
     event Action<RdpPointer?>? PointerChanged;
 

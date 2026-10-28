@@ -154,4 +154,16 @@ public class ClipboardTests
 
         Assert.Equal([path], (files ?? []).Select(f => f.TryGetLocalPath()));
     }
+
+    // Sunucuda 2 GB'tan büyük kopya Mac'e inmez; sağ üstte bildirim çıkar.
+    [AvaloniaFact]
+    public void TooLargeServerCopyShowsToast()
+    {
+        var (window, _) = OpenSession();
+
+        _sessions[0].RaiseClipboardTooLarge();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal("Too large to copy to Mac", ((MainWindowViewModel)window.DataContext!).ToastMessage);
+    }
 }

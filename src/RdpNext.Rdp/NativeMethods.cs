@@ -11,6 +11,7 @@ internal unsafe struct RnCallbacks
     public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, int, int, int, int, void> Pointer;
     public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> ClipboardText;
     public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> ClipboardFiles;
+    public delegate* unmanaged[Cdecl]<IntPtr, void> ClipboardTooLarge;
 }
 
 [StructLayout(LayoutKind.Sequential)]

@@ -33,6 +33,8 @@ public sealed unsafe class RdpSession : IRdpSession
 
     public event Action<IReadOnlyList<string>>? RemoteClipboardFiles;
 
+    public event Action? RemoteClipboardTooLarge;
+
     // Sunucudan kopyalanan dosyaların indirildiği klasör; oturum kapanınca silinir.
     private readonly string _clipboardDir = Path.Combine(Path.GetTempPath(), "rdpNext-clipboard", Guid.NewGuid().ToString("N"));
 
@@ -120,7 +122,7 @@ public sealed unsafe class RdpSession : IRdpSession
         var callbacks = new RnCallbacks
         {
             Frame = &OnFrame, VerifyCertificate = &OnVerifyCertificate, Pointer = &OnPointer, ClipboardText = &OnClipboardText,
-            ClipboardFiles = &OnClipboardFiles,
+            ClipboardFiles = &OnClipboardFiles, ClipboardTooLarge = &OnClipboardTooLarge,
         };
         var ctx = NativeMethods.Create(&callbacks, GCHandle.ToIntPtr(_self));
         lock (_gate)
@@ -243,6 +245,9 @@ public sealed unsafe class RdpSession : IRdpSession
     {
         From(user)?.RemoteClipboardText?.Invoke(Marshal.PtrToStringUTF8(text));
     }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void OnClipboardTooLarge(IntPtr user) => From(user)?.RemoteClipboardTooLarge?.Invoke();
 
     // C katmanı satır satır tam yollar verir ("\n" ile ayrılmış).
     [UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]

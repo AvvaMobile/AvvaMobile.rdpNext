@@ -62,6 +62,7 @@ typedef struct
 	UINT32 dl_index;
 	UINT64 dl_size;
 	UINT64 dl_offset;
+	UINT64 dl_total;
 	FILE* dl_out;
 	char* dl_root;
 } rnContext;
@@ -143,6 +144,8 @@ static UINT rn_clip_server_capabilities(CliprdrClientContext* clip, const CLIPRD
 /* ---- Sunucudan Mac'e dosya: FileGroupDescriptorW listesi alınır, içerikler parça parça indirilir ---- */
 
 #define RN_CHUNK (1024 * 1024)
+/* Sunucudan Mac'e bir kopyada en fazla bu kadar indirilir (Murat'ın kararı: 2 GB). */
+#define RN_DL_LIMIT (2ULL * 1024 * 1024 * 1024)
 
 static void rn_dl_reset(rnContext* rc)
 {
@@ -153,7 +156,7 @@ static void rn_dl_reset(rnContext* rc)
 	free(rc->dl_files);
 	rc->dl_files = NULL;
 	rc->dl_count = rc->dl_index = 0;
-	rc->dl_size = rc->dl_offset = 0;
+	rc->dl_size = rc->dl_offset = rc->dl_total = 0;
 	free(rc->dl_root);
 	rc->dl_root = NULL;
 }
@@ -292,12 +295,29 @@ static UINT rn_dl_next(rnContext* rc)
 	return CHANNEL_RC_OK;
 }
 
+static void rn_dl_too_large(rnContext* rc)
+{
+	rn_dl_reset(rc);
+	if (rc->callbacks.clipboard_too_large)
+		rc->callbacks.clipboard_too_large(rc->user);
+}
+
 static void rn_dl_start(rnContext* rc, const BYTE* data, UINT32 length)
 {
 	rn_dl_reset(rc);
 	if (!rc->clipboard_dir || cliprdr_parse_file_list(data, length, &rc->dl_files, &rc->dl_count) != 0 || rc->dl_count == 0)
 	{
 		rn_dl_reset(rc);
+		return;
+	}
+	/* Boyutu bilinen dosyaların toplamı sınırı aşıyorsa hiç indirilmez. */
+	UINT64 total = 0;
+	for (UINT32 i = 0; i < rc->dl_count; i++)
+		if (rc->dl_files[i].dwFlags & FD_FILESIZE)
+			total += ((UINT64)rc->dl_files[i].nFileSizeHigh << 32) | rc->dl_files[i].nFileSizeLow;
+	if (total > RN_DL_LIMIT)
+	{
+		rn_dl_too_large(rc);
 		return;
 	}
 	/* Her kopya kendi alt klasörüne iner; aynı adlı dosyalar birbirini ezmez. */
@@ -345,6 +365,13 @@ static UINT rn_clip_server_file_contents_response(CliprdrClientContext* clip, co
 		return CHANNEL_RC_OK;
 	}
 	rc->dl_offset += response->cbRequested;
+	/* Boyutu baştan bilinmeyen dosyalarda da sınır indirirken korunur. */
+	rc->dl_total += response->cbRequested;
+	if (rc->dl_total > RN_DL_LIMIT)
+	{
+		rn_dl_too_large(rc);
+		return CHANNEL_RC_OK;
+	}
 	if (response->cbRequested && rc->dl_offset < rc->dl_size)
 		return rn_dl_request(rc, FILECONTENTS_RANGE);
 	fclose(rc->dl_out);
