@@ -47,6 +47,17 @@ public class InfoOverlayTests
         Assert.False(overlay.IsHitTestVisible);
     }
 
+    // İki satır: üstte ad, altta adres.
+    [AvaloniaFact]
+    public void NameAboveHost()
+    {
+        var (window, _, _) = Open(overlay: true);
+
+        var lines = Overlay(window).GetVisualDescendants().OfType<TextBlock>().ToList();
+        Assert.Equal(["web-01", "10.0.1.11"], lines.Select(t => t.Text));
+        Assert.True(lines[1].Bounds.Top >= lines[0].Bounds.Bottom);
+    }
+
     [AvaloniaFact]
     public void HiddenByDefault()
     {
