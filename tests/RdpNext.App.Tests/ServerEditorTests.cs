@@ -26,6 +26,21 @@ public class ServerEditorTests
     private Group Reload() => new ConnectionStore(_path).Load().Root;
 
     [Fact]
+    public void ServerBlackColorSavedAndDrawn()
+    {
+        var editor = NewIn("Üretim");
+        Assert.Equal(ServerColor.Black, editor.Colors[^1]);
+        editor.Name = "web-03";
+        editor.Host = "10.0.1.51";
+        editor.Color = ServerColor.Black;
+
+        editor.SaveCommand.Execute(null);
+
+        Assert.Equal(ServerColor.Black, Reload().AllServers().Single(s => s.Name == "web-03").Color);
+        Assert.All(editor.Colors, c => Assert.NotNull(Views.Converters.ServerColorBrush.Convert(c, typeof(Avalonia.Media.IBrush), null, System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
+    [Fact]
     public void NewServerSavesToTreeFileAndKeychain()
     {
         var editor = NewIn("Üretim");

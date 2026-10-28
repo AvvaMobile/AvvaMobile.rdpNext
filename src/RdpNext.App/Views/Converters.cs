@@ -13,6 +13,7 @@ public static class Converters
         [ServerColor.Orange] = new SolidColorBrush(Color.Parse("#e5673a")),
         [ServerColor.Violet] = new SolidColorBrush(Color.Parse("#7b5cf0")),
         [ServerColor.Green] = new SolidColorBrush(Color.Parse("#2fbf71")),
+        [ServerColor.Black] = new SolidColorBrush(Color.Parse("#111318")),
     };
 
     private static readonly IBrush EditorTile = new SolidColorBrush(Color.Parse("#8080a0"), 0.18);

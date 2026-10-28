@@ -7,7 +7,7 @@ public enum SshAuth { Password, Key }
 
 public enum ScreenMode { FitToWindow, FullScreen }
 
-public enum ServerColor { Blue, Teal, Orange, Violet, Green }
+public enum ServerColor { Blue, Teal, Orange, Violet, Green, Black }
 
 // Yalnız görüntü; protokolden türetilir.
 public enum ServerIcon { Windows, Ssh }
