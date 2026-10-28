@@ -127,7 +127,8 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
         _startedSize = _size;
         // Anahtar modunda yol boş olsa da "" gider; oturum şifreye düşmez, anahtar kullanılamadı der.
         session.Start(new SshConnectOptions(server.Host, server.Port, username,
-            IsKeyAuth ? null : secret, IsKeyAuth ? server.KeyFile ?? "" : null, IsKeyAuth ? secret : null, _size.Columns, _size.Rows));
+            IsKeyAuth ? null : secret, IsKeyAuth ? server.KeyFile ?? "" : null, IsKeyAuth ? secret : null, _size.Columns, _size.Rows,
+            server.HostKeyType));
     }
 
     // Bağlanırken terminal boyutu değiştiyse sunucuya şimdiki boyut bildirilir.
@@ -229,6 +230,7 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
         if (HostKeyPrompt is not { } key)
             return;
         Server.Server.HostKeyFingerprint = key.Fingerprint;
+        Server.Server.HostKeyType = key.Algorithm;
         RaiseServerChanged();
         _retryAfterTrust = true;
         AnswerHostKey(true);

@@ -104,6 +104,7 @@ public sealed class SshSession : ISshSession
         }
 
         var connection = new ConnectionInfo(options.Host, options.Port, options.Username, methods) { Timeout = ConnectTimeout };
+        PreferHostKeyType(connection, options.HostKeyType);
         var client = new SshClient(connection) { KeepAliveInterval = KeepAlive };
         // Bağlantı koparsa ShellStream.Read kendiliğinden dönmez; kabuk kapatılıp okuma döngüsü uyandırılır.
         // Bağlanırken gelen hatalar Connect'in fırlattığı istisnadan sınıflanır.
@@ -166,6 +167,16 @@ public sealed class SshSession : ISshSession
         new Thread(() => Write(shell!)) { IsBackground = true, Name = "ssh-write" }.Start();
         Connected?.Invoke();
         Read(client, shell!);
+    }
+
+    // Güvenilen tür başa alınır; sunucunun birden çok anahtarı varsa hep aynısı seçilir.
+    private static void PreferHostKeyType(ConnectionInfo connection, string? type)
+    {
+        var algorithms = connection.HostKeyAlgorithms;
+        if (type is null || !algorithms.TryGetValue(type, out var factory))
+            return;
+        algorithms.Remove(type);
+        algorithms.Insert(0, type, factory);
     }
 
     private PrivateKeyFile? LoadKey(SshConnectOptions options)

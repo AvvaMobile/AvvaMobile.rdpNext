@@ -208,6 +208,22 @@ public sealed class SshSessionTests(SshServerFixture server) : IClassFixture<Ssh
         Assert.Matches("^SHA256:[A-Za-z0-9+/]{43}$", asked.Fingerprint);
     }
 
+    // Daha önce güvenilen anahtar türü istenir; sunucunun başka anahtarları olsa da aynı parmak izi gelir.
+    [Fact]
+    public async Task PreferredHostKeyTypeIsUsed()
+    {
+        SkipWithoutDocker();
+        SshHostKey? asked = null;
+        using var run = new Run(Options() with { HostKeyType = "ecdsa-sha2-nistp256" }, key =>
+        {
+            asked = key;
+            return Task.FromResult(true);
+        });
+        await run.Connected();
+
+        Assert.Equal("ecdsa-sha2-nistp256", asked!.Algorithm);
+    }
+
     [Fact]
     public async Task RejectedHostKeyEndsWithHostKeyRejected()
     {

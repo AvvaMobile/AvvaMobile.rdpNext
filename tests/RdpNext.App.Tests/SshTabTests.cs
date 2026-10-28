@@ -212,6 +212,25 @@ public class SshTabTests
         Assert.Equal("SHA256:yeni", Reload("linux-01").HostKeyFingerprint);
     }
 
+    // Güvenilen anahtarın türü de saklanır; sonraki bağlantıda sunucudan aynı tür istenir.
+    [AvaloniaFact]
+    public void TrustedKeyTypeIsRequestedNextTime()
+    {
+        var tab = Connect();
+        Assert.Null(_sessions[0].Starts[0].HostKeyType);
+        _ = _sessions[0].VerifyHostKey!(HostKey);
+        Dispatcher.UIThread.RunJobs();
+        tab.TrustHostKeyCommand.Execute(null);
+        _sessions[0].RaiseConnected();
+        _sessions[0].RaiseEnded(SshEndReason.Disconnected);
+        Dispatcher.UIThread.RunJobs();
+
+        tab.ReconnectCommand.Execute(null);
+
+        Assert.Equal("ssh-ed25519", Reload("linux-01").HostKeyType);
+        Assert.Equal("ssh-ed25519", _sessions[1].Starts[0].HostKeyType);
+    }
+
     [AvaloniaFact]
     public void SameHostKeyDoesNotAsk()
     {
