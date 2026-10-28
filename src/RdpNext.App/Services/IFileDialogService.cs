@@ -6,4 +6,7 @@ public interface IFileDialogService
     Task<string?> SaveAsync(string suggestedName);
 
     Task<string?> OpenAsync();
+
+    // SSH özel anahtarı; filtre yok, ~/.ssh'tan başlar.
+    Task<string?> OpenKeyFileAsync();
 }

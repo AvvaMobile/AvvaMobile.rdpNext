@@ -25,7 +25,9 @@ public sealed partial class ServerEditorViewModel : TabViewModel
             _domain = existing.Domain ?? "";
             _password = _savedPassword = owner.Secrets.GetPassword(existing.Id) ?? "";
             _color = existing.Color;
-            _icon = existing.Icon;
+            _protocol = existing.Protocol;
+            _auth = existing.Auth;
+            _keyFile = existing.KeyFile ?? "";
             _screen = existing.Screen;
             folder = existing.Parent;
         }
@@ -48,8 +50,6 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     private IReadOnlyList<FolderOption> _folders;
 
     public IReadOnlyList<ServerColor> Colors { get; } = Enum.GetValues<ServerColor>();
-
-    public IReadOnlyList<ServerIcon> Icons { get; } = Enum.GetValues<ServerIcon>();
 
     [ObservableProperty]
     private string _name = "";
@@ -94,8 +94,49 @@ public sealed partial class ServerEditorViewModel : TabViewModel
     [ObservableProperty]
     private ServerColor _color = ServerColor.Blue;
 
+    // Bağlantı tipi: Windows (RDP) ya da SSH; formun geri kalanı buna göre değişir.
     [ObservableProperty]
-    private ServerIcon _icon = ServerIcon.Windows;
+    [NotifyPropertyChangedFor(nameof(IsRdp), nameof(IsSsh), nameof(IsPasswordAuth), nameof(IsKeyAuth), nameof(PasswordRow), nameof(PasswordColumn))]
+    private Protocol _protocol = Protocol.Rdp;
+
+    public bool IsRdp
+    {
+        get => Protocol == Protocol.Rdp;
+        set { if (value) Protocol = Protocol.Rdp; }
+    }
+
+    public bool IsSsh
+    {
+        get => Protocol == Protocol.Ssh;
+        set { if (value) Protocol = Protocol.Ssh; }
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPasswordAuth), nameof(IsKeyAuth), nameof(PasswordLabel), nameof(PasswordColumn))]
+    private SshAuth _auth = SshAuth.Password;
+
+    public bool IsPasswordAuth
+    {
+        get => IsRdp || Auth == SshAuth.Password;
+        set { if (value) Auth = SshAuth.Password; }
+    }
+
+    public bool IsKeyAuth
+    {
+        get => IsSsh && Auth == SshAuth.Key;
+        set { if (value) Auth = SshAuth.Key; }
+    }
+
+    // Anahtarla girişte şifre alanı anahtar parolasıdır (aynı gizli bilgi yuvası).
+    public string PasswordLabel => IsKeyAuth ? Strings.Strings.KeyPassphrase : Strings.Strings.Password;
+
+    // Formdaki şifre alanının yeri: RDP'de kullanıcının yanı, SSH şifrede alt satırın solu, SSH anahtarda anahtar dosyasının yanı.
+    public int PasswordRow => IsRdp ? 0 : 2;
+
+    public int PasswordColumn => IsSsh && !IsKeyAuth ? 0 : 2;
+
+    [ObservableProperty]
+    private string _keyFile = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ScreenIndex))]
@@ -138,6 +179,33 @@ public sealed partial class ServerEditorViewModel : TabViewModel
 
     partial void OnFolderChanged(FolderOption value) => UpdateHints();
 
+    // Port öbür tipin varsayılanındaysa yeni tipin varsayılanına geçer; elle yazılan port korunur.
+    partial void OnProtocolChanged(Protocol value)
+    {
+        if (value == Protocol.Ssh && Port == "3389")
+            Port = "22";
+        else if (value == Protocol.Rdp && Port == "22")
+            Port = "3389";
+        if (value == Protocol.Ssh)
+            ShowAdvanced = false;
+        OnPropertyChanged(nameof(PasswordLabel));
+        UpdateHints();
+    }
+
+    // Giriş yöntemi değişince yuvadaki bilgi başka bir şey olur (şifre ya da anahtar parolası); alan boşalır.
+    partial void OnAuthChanged(SshAuth value)
+    {
+        Password = "";
+        UpdateHints();
+    }
+
+    [RelayCommand]
+    private async Task ChooseKeyFile()
+    {
+        if (await _owner.Files.OpenKeyFileAsync() is { } path)
+            KeyFile = path;
+    }
+
     private bool CanSave() =>
         !string.IsNullOrWhiteSpace(Host) && int.TryParse(Port, out var port) && port is >= 1 and <= 65535;
 
@@ -156,10 +224,14 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         server.Name = string.IsNullOrWhiteSpace(Name) ? server.Host : Name.Trim();
         server.Port = int.Parse(Port);
         server.Username = Blank(Username);
-        server.Domain = Blank(Domain);
         server.Color = Color;
-        server.Icon = Icon;
         server.Screen = Screen;
+        if (server.Protocol != Protocol)
+            server.HostKeyFingerprint = null;
+        server.Protocol = Protocol;
+        server.Domain = IsSsh ? null : Blank(Domain);
+        server.Auth = IsSsh ? Auth : SshAuth.Password;
+        server.KeyFile = IsKeyAuth ? Blank(KeyFile) : null;
 
         ServerNodeViewModel node;
         if (Existing is null)
@@ -208,8 +280,10 @@ public sealed partial class ServerEditorViewModel : TabViewModel
         UsernameSource = Source(inherited.Username);
         DomainHint = inherited.Domain?.Value;
         DomainSource = Source(inherited.Domain);
-        PasswordHint = inherited.Password is null ? null : "••••••";
-        PasswordSource = Source(inherited.Password);
+        // Anahtar parolası klasörden devralınmaz.
+        var password = IsKeyAuth ? null : inherited.Password;
+        PasswordHint = password is null ? null : "••••••";
+        PasswordSource = Source(password);
     }
 
     private static string? Source(InheritedValue? value) => value is null ? null : string.Format(Strings.Strings.InheritedFrom, value.FromGroup);

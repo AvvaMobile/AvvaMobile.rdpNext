@@ -54,7 +54,13 @@
   <data name="DeleteOld" xml:space="preserve"><value>Delete all existing entries</value></data>
   <data name="ImportDeleteConfirm" xml:space="preserve"><value>All current servers and folders will be deleted. Are you sure?</value></data>
   <data name="DeleteAndImport" xml:space="preserve"><value>Delete and import</value></data>
-  <data name="Icon" xml:space="preserve"><value>Icon</value></data>
+  <data name="ConnectionType" xml:space="preserve"><value>Connection type</value></data>
+  <data name="WindowsType" xml:space="preserve"><value>Windows</value></data>
+  <data name="SshType" xml:space="preserve"><value>SSH</value></data>
+  <data name="SignInMethod" xml:space="preserve"><value>Sign-in method</value></data>
+  <data name="KeyFile" xml:space="preserve"><value>Key file</value></data>
+  <data name="Choose" xml:space="preserve"><value>Choose…</value></data>
+  <data name="KeyPassphrase" xml:space="preserve"><value>Key passphrase</value></data>
   <data name="UntrustedCertificate" xml:space="preserve"><value>Untrusted certificate</value></data>
   <data name="CertificateServer" xml:space="preserve"><value>Server</value></data>
   <data name="CertificateIssuedTo" xml:space="preserve"><value>Issued to</value></data>
