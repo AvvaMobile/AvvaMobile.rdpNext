@@ -74,9 +74,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     // Oturum kendi tam ekran penceresine geçer ya da oradan sekmesine döner. Yalnız oturum sekmesi tam ekran olur.
     [RelayCommand]
-    private void ToggleFullScreen(SessionTabViewModel? tab)
+    private void ToggleFullScreen(ConnectionTabViewModel? tab)
     {
-        tab ??= Sessions.Selected as SessionTabViewModel;
+        tab ??= Sessions.Selected as ConnectionTabViewModel;
         if (tab is null)
             return;
         if (Sessions.Windows.Contains(tab))
@@ -176,7 +176,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     // Uygulama kapanırken açık oturumların hepsi kapatılır.
     public void Shutdown()
     {
-        foreach (var tab in Sessions.Tabs.OfType<SessionTabViewModel>().Concat(Sessions.Windows).ToList())
+        foreach (var tab in Sessions.Tabs.OfType<ConnectionTabViewModel>().Concat(Sessions.Windows).ToList())
             Sessions.Close(tab);
     }
 
@@ -191,7 +191,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void CloseTab(TabViewModel tab) => Sessions.Close(tab);
 
     [RelayCommand]
-    private void ReconnectTab(TabViewModel tab) => (tab as SessionTabViewModel)?.ReconnectCommand.Execute(null);
+    private void ReconnectTab(TabViewModel tab) => (tab as ConnectionTabViewModel)?.ReconnectCommand.Execute(null);
 
     [RelayCommand]
     private void CloseOtherTabs(TabViewModel tab) => Sessions.CloseOthers(tab);
@@ -247,7 +247,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private static Node? TabNode(TabViewModel tab) => tab switch
     {
-        SessionTabViewModel session => session.Server.Server,
+        ConnectionTabViewModel session => session.Server.Server,
         ServerEditorViewModel editor => editor.Existing,
         FolderEditorViewModel editor => editor.Existing,
         _ => null,

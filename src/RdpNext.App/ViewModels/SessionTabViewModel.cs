@@ -8,16 +8,9 @@ using RdpNext.Rdp;
 
 namespace RdpNext.App.ViewModels;
 
-public enum SessionState
-{
-    Connecting,
-    Connected,
-    Disconnected,
-}
-
 // Bir sunucunun RDP oturumu. Oturumdan gelen olaylar arayüz iş parçacığına aktarılır;
 // eski bir oturumdan geç gelen olay yok sayılır.
-public sealed partial class SessionTabViewModel : TabViewModel
+public sealed partial class SessionTabViewModel : ConnectionTabViewModel
 {
     private static readonly TimeSpan ResizeDelay = TimeSpan.FromMilliseconds(300);
     private readonly TimeProvider _time;
@@ -25,62 +18,21 @@ public sealed partial class SessionTabViewModel : TabViewModel
     private ITimer? _resizeTimer;
     private (int Width, int Height) _pendingSize;
 
-    public SessionTabViewModel(ServerNodeViewModel server, TimeProvider? time = null)
+    public SessionTabViewModel(ServerNodeViewModel server, TimeProvider? time = null) : base(server)
     {
-        Server = server;
         _time = time ?? TimeProvider.System;
-        server.State = SessionState.Connecting;
-        server.PropertyChanged += OnServerChanged;
     }
-
-    // Sunucunun adı, rengi ya da ikonu değişince sekme de güncellenir. Sekme kapanınca bağ çözülür.
-    private void OnServerChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is nameof(ServerNodeViewModel.State) or nameof(ServerNodeViewModel.IsConnected)
-            or nameof(ServerNodeViewModel.IsConnecting) or nameof(ServerNodeViewModel.IsDisconnected))
-            return;
-        TitleChanged();
-        OnPropertyChanged(nameof(Color));
-        OnPropertyChanged(nameof(Icon));
-    }
-
-    public ServerNodeViewModel Server { get; }
-
-    public override string Title => Server.Name;
-
-    public override ServerColor? Color => Server.Color;
-
-    public override ServerIcon Icon => Server.Icon;
 
     public SessionScreen Screen { get; } = new();
 
-    public override bool CanReconnect => true;
-
-    public string ConnectingTitle => string.Format(Strings.Strings.ConnectingTo, Title);
-
-    // "Bağlanıyor" yazısı soru kartı açıkken gizlenir.
-    public bool ShowConnecting => State == SessionState.Connecting && !IsAskingCredentials && CertificatePrompt is null;
-
-    public bool ShowDisconnected => State == SessionState.Disconnected && !IsAskingCredentials;
-
     public IRdpSession? Session { get; private set; }
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowConnecting), nameof(ShowDisconnected))]
-    private SessionState _state = SessionState.Connecting;
-
-    partial void OnStateChanged(SessionState value) => Server.State = value;
-
-    // Sekme kendini kapatmak istiyor (sertifika reddedildi gibi).
-    public event Action? CloseRequested;
-
-    // Sunucu kaydı değişti (güvenilen sertifika gibi); diske yazılmalı.
-    public event Action? ServerChanged;
 
     // Doğrulanamayan sertifika soruluyor; cevap gelene kadar bağlanma bekler.
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowConnecting))]
     private RdpCertificate? _certificatePrompt;
+
+    protected override bool HasPrompt => CertificatePrompt is not null;
 
     private TaskCompletionSource<bool>? _certificateAnswer;
 
@@ -107,28 +59,6 @@ public sealed partial class SessionTabViewModel : TabViewModel
     // Son bağlanılan bilgiler; Reconnect aynı bilgilerle bağlanır (şifre yalnız bellekte).
     private (string Username, string Password, string? Domain) _lastSignIn;
 
-    // Kullanıcı adı ve şifre soruluyor (bulunamadı ya da sunucu reddetti).
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowConnecting), nameof(ShowDisconnected))]
-    private bool _isAskingCredentials;
-
-    [ObservableProperty]
-    private string _promptUsername = "";
-
-    [ObservableProperty]
-    private string _promptPassword = "";
-
-    [ObservableProperty]
-    private string _promptDomain = "";
-
-    [ObservableProperty]
-    private bool _promptSave;
-
-    public string SignInTitle => string.Format(Strings.Strings.SignInTo, Title);
-
-    // "Save" işaretliyken girilen kullanıcı, şifre ve domain; sunucuya yazılmalı.
-    public event Action<string, string, string?>? CredentialsSaved;
-
     // Kullanıcı ya da şifre bulunamazsa bağlanmadan önce sorulur.
     public void Connect(Func<IRdpSession> newSession, ResolvedCredentials credentials, Size size)
     {
@@ -139,6 +69,8 @@ public sealed partial class SessionTabViewModel : TabViewModel
         else
             Start(credentials.Username, credentials.Password, credentials.Domain);
     }
+
+    protected override void StartWith(string username, string password, string? domain) => Start(username, password, domain);
 
     private void Start(string username, string password, string? domain)
     {
@@ -159,36 +91,6 @@ public sealed partial class SessionTabViewModel : TabViewModel
         session.Start(new RdpConnectOptions(Server.Host, Server.Server.Port, username, domain, password, width, height));
     }
 
-    private void AskCredentials(string? username, string? domain)
-    {
-        PromptUsername = username ?? "";
-        PromptDomain = domain ?? "";
-        PromptPassword = "";
-        PromptSave = false;
-        IsAskingCredentials = true;
-    }
-
-    [RelayCommand]
-    private void SignIn()
-    {
-        if (string.IsNullOrWhiteSpace(PromptUsername) || PromptPassword.Length == 0)
-            return;
-        var (username, password) = (PromptUsername.Trim(), PromptPassword);
-        var domain = string.IsNullOrWhiteSpace(PromptDomain) ? null : PromptDomain.Trim();
-        IsAskingCredentials = false;
-        PromptPassword = "";
-        if (PromptSave)
-            CredentialsSaved?.Invoke(username, password, domain);
-        Start(username, password, domain);
-    }
-
-    [RelayCommand]
-    private void CancelSignIn()
-    {
-        IsAskingCredentials = false;
-        CloseRequested?.Invoke();
-    }
-
     // Bağlanırken görünüm boyutu değiştiyse sunucudan şimdiki boyut istenir.
     private void OnConnected()
     {
@@ -200,20 +102,18 @@ public sealed partial class SessionTabViewModel : TabViewModel
     private void Ended(RdpEndReason reason)
     {
         if (reason == RdpEndReason.CertificateRejected)
-            CloseRequested?.Invoke();
+            RequestClose();
         else if (reason == RdpEndReason.AuthFailed)
             AskCredentials(_lastSignIn.Username, _lastSignIn.Domain);
         else if (reason == RdpEndReason.UserLogoff)
-            CloseRequested?.Invoke();
+            RequestClose();
         else
             State = SessionState.Disconnected;
     }
 
-    // Kopan oturum aynı sekmede, aynı bilgilerle yeniden açılır.
-    [RelayCommand]
-    private void Reconnect()
+    protected override void ReconnectCore()
     {
-        if (_newSession is null || IsAskingCredentials)
+        if (_newSession is null)
             return;
         if (_lastSignIn.Username is null)
             AskCredentials(null, null);
@@ -247,7 +147,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
         if (CertificatePrompt is not { } certificate)
             return;
         Server.Server.CertificateFingerprint = certificate.Fingerprint;
-        ServerChanged?.Invoke();
+        RaiseServerChanged();
         AnswerCertificate(true);
     }
 
@@ -301,8 +201,7 @@ public sealed partial class SessionTabViewModel : TabViewModel
             _resizeTimer?.Dispose();
         Session?.Dispose();
         Session = null;
-        Server.PropertyChanged -= OnServerChanged;
-        Server.State = null;
+        base.OnClosed();
         Screen.Clear();
     }
 }
