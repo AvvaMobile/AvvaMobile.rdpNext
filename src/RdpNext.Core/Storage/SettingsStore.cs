@@ -13,6 +13,10 @@ public enum AppTheme
 public sealed class AppSettings
 {
     public AppTheme Theme { get; set; }
+
+    public const double DefaultSidebarWidth = 310;
+
+    public double SidebarWidth { get; set; } = DefaultSidebarWidth;
 }
 
 // Uygulama ayarları; bağlantı dosyasının yanında settings.json.
