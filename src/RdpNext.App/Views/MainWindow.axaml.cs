@@ -110,13 +110,24 @@ public partial class MainWindow : Window
             _sessionWindows.FirstOrDefault(w => w.DataContext == tab)?.Close();
     }
 
-    // Başlık çubuğunun boş yerine çift tık: ekranı doldur ya da eski boyuta dön.
-    private void OnTitleBarDoubleTapped(object? sender, TappedEventArgs e)
+    // Başlık çubuğundan pencere taşınmaya başladı.
+    public event Action? MoveStarted;
+
+    // Başlık çubuğunun boş yeri: basılı tutup sürükleyince pencere taşınır; çift tık ekranı doldurur ya da eski boyuta döner.
+    private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (e.Source is Visual source
-            && (source.FindAncestorOfType<ListBoxItem>(includeSelf: true) is not null
-                || source.FindAncestorOfType<Button>(includeSelf: true) is not null))
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+            || (e.Source is Visual source
+                && (source.FindAncestorOfType<ListBoxItem>(includeSelf: true) is not null
+                    || source.FindAncestorOfType<Button>(includeSelf: true) is not null)))
             return;
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        e.Handled = true;
+        if (e.ClickCount % 2 == 0)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+        MoveStarted?.Invoke();
+        BeginMoveDrag(e);
     }
 }

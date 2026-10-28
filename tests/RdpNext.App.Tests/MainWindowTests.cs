@@ -178,6 +178,29 @@ public class MainWindowTests
         Assert.Equal(WindowState.Maximized, window.WindowState);
     }
 
+    // Başlık çubuğunun boş yerinden basılı tutunca pencere taşınır; sekme ve düğmeler kendi işini yapar.
+    [AvaloniaFact]
+    public void PressOnEmptyTitleBarMovesWindow()
+    {
+        var (window, vm) = TestWindows.Open();
+        vm.Tree.Query = "web";
+        vm.ConnectFirstMatchCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var moves = 0;
+        window.MoveStarted += () => moves++;
+
+        var tab = window.Named<Control>("TabStrip").Texts().First();
+        window.MouseDown(tab.TranslatePoint(new Point(5, 5), window)!.Value, MouseButton.Left);
+        window.MouseUp(tab.TranslatePoint(new Point(5, 5), window)!.Value, MouseButton.Left);
+        var toggle = window.Named<Control>("SidebarToggle");
+        window.MouseDown(toggle.TranslatePoint(new Point(5, 5), window)!.Value, MouseButton.Left);
+        window.MouseUp(toggle.TranslatePoint(new Point(5, 5), window)!.Value, MouseButton.Left);
+        Assert.Equal(0, moves);
+
+        window.MouseDown(new Point(window.Bounds.Width - 200, 26), MouseButton.Left);
+        Assert.Equal(1, moves);
+    }
+
     [AvaloniaFact]
     public void DoubleClickOnTabDoesNotMaximize()
     {
