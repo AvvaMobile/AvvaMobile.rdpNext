@@ -70,6 +70,7 @@
   <data name="SignInTo" xml:space="preserve"><value>Sign in to {0}</value></data>
   <data name="ConnectingTo" xml:space="preserve"><value>Connecting to {0}</value></data>
   <data name="ConnectionLost" xml:space="preserve"><value>Connection lost</value></data>
+  <data name="CouldNotConnect" xml:space="preserve"><value>Could not connect</value></data>
   <data name="KeyUnusable" xml:space="preserve"><value>The key file could not be used.</value></data>
   <data name="UnknownHostKey" xml:space="preserve"><value>Unknown host key</value></data>
   <data name="HostKeyChanged" xml:space="preserve"><value>Host key changed</value></data>

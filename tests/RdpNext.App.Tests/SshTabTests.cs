@@ -352,6 +352,65 @@ public class SshTabTests
     }
 
     [AvaloniaFact]
+    public void ReconnectIgnoredWhileHostKeyCardOpen()
+    {
+        var tab = Connect();
+        _ = _sessions[0].VerifyHostKey!(HostKey);
+        Dispatcher.UIThread.RunJobs();
+
+        tab.ReconnectCommand.Execute(null);
+
+        Assert.Single(_sessions);
+        Assert.Equal(HostKey, tab.HostKeyPrompt);
+    }
+
+    [AvaloniaFact]
+    public void ConnectFailedSaysCouldNotConnectThenDropSaysLost()
+    {
+        var tab = Connect();
+
+        _sessions[0].RaiseEnded(SshEndReason.ConnectFailed);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(tab.ShowDisconnected);
+        Assert.Equal("Could not connect", tab.DisconnectedTitle);
+
+        tab.ReconnectCommand.Execute(null);
+        _sessions[1].RaiseConnected();
+        _sessions[1].RaiseEnded(SshEndReason.Disconnected);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal("Connection lost", tab.DisconnectedTitle);
+    }
+
+    // Sekme açıkken sunucu RDP'ye çevrildi: bağlanınca eski SSH sekmesi kapanır, RDP sekmesi açılır.
+    [AvaloniaFact]
+    public void ProtocolChangeReplacesOpenTab()
+    {
+        var old = Connected();
+        Node("linux-01").Server.Protocol = Protocol.Rdp;
+
+        _vm.ConnectCommand.Execute(Node("linux-01"));
+
+        Assert.IsType<SessionTabViewModel>(_vm.Sessions.Selected);
+        Assert.DoesNotContain(old, _vm.Sessions.Tabs);
+        Assert.True(_sessions[0].Disposed);
+    }
+
+    [AvaloniaFact]
+    public void ReconnectAfterProtocolChangeOpensNewTab()
+    {
+        var old = Connected();
+        _sessions[0].RaiseEnded(SshEndReason.Disconnected);
+        Dispatcher.UIThread.RunJobs();
+        Node("linux-01").Server.Protocol = Protocol.Rdp;
+
+        old.ReconnectCommand.Execute(null);
+
+        Assert.IsType<SessionTabViewModel>(_vm.Sessions.Selected);
+        Assert.DoesNotContain(old, _vm.Sessions.Tabs);
+        Assert.Single(_sessions);
+    }
+
+    [AvaloniaFact]
     public void RdpServerStillOpensRdpTab()
     {
         _vm.Tree.AddServer(new Server { Name = "web-01", Host = "10.0.1.11" }, null);

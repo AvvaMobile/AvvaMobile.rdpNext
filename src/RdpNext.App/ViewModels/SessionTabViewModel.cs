@@ -32,6 +32,8 @@ public sealed partial class SessionTabViewModel : ConnectionTabViewModel
     [NotifyPropertyChangedFor(nameof(ShowConnecting))]
     private RdpCertificate? _certificatePrompt;
 
+    protected override Protocol Protocol => Protocol.Rdp;
+
     protected override bool HasPrompt => CertificatePrompt is not null;
 
     private TaskCompletionSource<bool>? _certificateAnswer;
@@ -108,7 +110,7 @@ public sealed partial class SessionTabViewModel : ConnectionTabViewModel
         else if (reason == RdpEndReason.UserLogoff)
             RequestClose();
         else
-            State = SessionState.Disconnected;
+            ShowEnded(reason == RdpEndReason.ConnectFailed);
     }
 
     protected override void ReconnectCore()

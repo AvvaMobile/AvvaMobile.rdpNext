@@ -43,6 +43,11 @@ public abstract partial class ConnectionTabViewModel : TabViewModel
 
     public override bool CanReconnect => true;
 
+    // Sekmenin bağlandığı protokol; sunucu kaydı sonradan değişirse sekme eskir.
+    protected abstract Protocol Protocol { get; }
+
+    public bool IsStale => Server.Server.Protocol != Protocol;
+
     public string ConnectingTitle => string.Format(Strings.Strings.ConnectingTo, Title);
 
     // "Bağlanıyor" yazısı soru kartı açıkken gizlenir.
@@ -68,6 +73,9 @@ public abstract partial class ConnectionTabViewModel : TabViewModel
 
     // Sunucu kaydı değişti (güvenilen sertifika gibi); diske yazılmalı.
     public event Action? ServerChanged;
+
+    // Sunucunun protokolü değişti; sekme kapatılıp yeni protokolle açılmalı.
+    public event Action? ReopenRequested;
 
     protected void RequestClose() => CloseRequested?.Invoke();
 
@@ -134,12 +142,23 @@ public abstract partial class ConnectionTabViewModel : TabViewModel
     // Sorudan gelen bilgilerle bağlanır.
     protected abstract void StartWith(string username, string password, string? domain);
 
-    // Kopan oturum aynı sekmede, aynı bilgilerle yeniden açılır.
+    // Kopan oturum aynı sekmede, aynı bilgilerle yeniden açılır. Soru kartı açıkken yok sayılır.
     [RelayCommand]
     private void Reconnect()
     {
-        if (!IsAskingCredentials)
+        if (IsAskingCredentials || HasPrompt)
+            return;
+        if (IsStale)
+            ReopenRequested?.Invoke();
+        else
             ReconnectCore();
+    }
+
+    // İlk bağlanma başarısızsa "Could not connect", kurulmuş bağlantı koptuysa "Connection lost".
+    protected void ShowEnded(bool connectFailed)
+    {
+        DisconnectedTitle = connectFailed ? Strings.Strings.CouldNotConnect : Strings.Strings.ConnectionLost;
+        State = SessionState.Disconnected;
     }
 
     protected abstract void ReconnectCore();

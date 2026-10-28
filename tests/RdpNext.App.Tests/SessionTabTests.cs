@@ -134,6 +134,25 @@ public class SessionTabTests
     }
 
     [AvaloniaFact]
+    public void ConnectFailedSaysCouldNotConnect()
+    {
+        GiveUretimCredentials();
+        var tab = Connect("web-01");
+
+        _sessions[0].RaiseEnded(RdpEndReason.ConnectFailed);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.True(tab.ShowDisconnected);
+        Assert.Equal("Could not connect", tab.DisconnectedTitle);
+
+        tab.ReconnectCommand.Execute(null);
+        _sessions[1].RaiseConnected();
+        _sessions[1].RaiseEnded(RdpEndReason.Disconnected);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal("Connection lost", tab.DisconnectedTitle);
+    }
+
+    [AvaloniaFact]
     public void ClosingTabDisposesSession()
     {
         GiveUretimCredentials();

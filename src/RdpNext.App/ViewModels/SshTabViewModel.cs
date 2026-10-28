@@ -31,6 +31,8 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
 
     private bool IsKeyAuth => Server.Server.Auth == SshAuth.Key;
 
+    protected override Protocol Protocol => Protocol.Ssh;
+
     public override bool PromptShowsDomain => false;
 
     // Anahtarla girişte soru kartı yalnız kullanıcı adını ister.
@@ -92,7 +94,6 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
         var session = _newSession!();
         Session = session;
         State = SessionState.Connecting;
-        DisconnectedTitle = Strings.Strings.ConnectionLost;
         _lastSignIn = (username, secret);
         session.VerifyHostKey = key => AskHostKey(session, key);
         session.Connected += () => OnUi(session, OnConnected);
@@ -146,7 +147,7 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
                 State = SessionState.Disconnected;
                 break;
             default:
-                State = SessionState.Disconnected;
+                ShowEnded(reason == SshEndReason.ConnectFailed);
                 break;
         }
     }
@@ -173,7 +174,7 @@ public sealed partial class SshTabViewModel : ConnectionTabViewModel
 
     protected override void ReconnectCore()
     {
-        if (_newSession is null || IsAskingPassphrase)
+        if (_newSession is null)
             return;
         if (_lastSignIn.Username is null)
             AskCredentials(null, null);
