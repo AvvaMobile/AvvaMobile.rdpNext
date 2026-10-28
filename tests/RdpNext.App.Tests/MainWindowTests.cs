@@ -405,6 +405,32 @@ public class MainWindowTests
         Assert.Equal(220, sidebar.Bounds.Width);
     }
 
+    // Son genişlik ayarlara yazılır, uygulama o genişlikle açılır; ayraca çift tık varsayılan genişliğe döndürür.
+    [AvaloniaFact]
+    public void SidebarWidthIsRememberedAndDoubleClickResetsIt()
+    {
+        var path = TestWindows.SampleFile();
+        var (window, _) = TestWindows.Open(path);
+        var splitter = window.Named<Control>("SidebarSplitter");
+        var start = splitter.TranslatePoint(new Point(splitter.Bounds.Width / 2, 100), window)!.Value;
+        window.MouseDown(start, MouseButton.Left);
+        window.MouseMove(start + new Point(90, 0), RawInputModifiers.LeftMouseButton);
+        window.MouseUp(start + new Point(90, 0), MouseButton.Left);
+        window.Close();
+
+        (window, _) = TestWindows.Open(path);
+        Assert.Equal(400, window.Named<Views.SidebarView>("Sidebar").Bounds.Width);
+
+        splitter = window.Named<Control>("SidebarSplitter");
+        DoubleClick(window, splitter.TranslatePoint(new Point(splitter.Bounds.Width / 2, 100), window)!.Value);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(310, window.Named<Views.SidebarView>("Sidebar").Bounds.Width);
+        window.Close();
+
+        (window, _) = TestWindows.Open(path);
+        Assert.Equal(310, window.Named<Views.SidebarView>("Sidebar").Bounds.Width);
+    }
+
     [AvaloniaFact]
     public void SessionAndEditorOpenInTheSameFrame()
     {

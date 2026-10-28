@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.Input;
 using RdpNext.App.ViewModels;
+using RdpNext.Core.Storage;
 
 namespace RdpNext.App.Views;
 
@@ -44,6 +45,7 @@ public partial class MainWindow : Window
         WatchFullScreen(DataContext as MainWindowViewModel);
         if (DataContext is not MainWindowViewModel vm || Application.Current is not { } app)
             return;
+        Sidebar.Width = Math.Clamp(vm.Settings.Load().SidebarWidth, Sidebar.MinWidth, Sidebar.MaxWidth);
         var menu = NativeMenu.GetMenu(app);
         if (menu is null)
             NativeMenu.SetMenu(app, menu = new NativeMenu());
@@ -117,9 +119,15 @@ public partial class MainWindow : Window
     {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             return;
+        e.Handled = true;
+        if (e.ClickCount % 2 == 0)
+        {
+            Sidebar.Width = AppSettings.DefaultSidebarWidth;
+            SaveSidebarWidth();
+            return;
+        }
         _splitterDrag = (e.GetPosition(this).X, Sidebar.Bounds.Width);
         e.Pointer.Capture(SidebarSplitter);
-        e.Handled = true;
     }
 
     // Genişlik sidebar'ın MinWidth ve MaxWidth'i arasında kalır.
@@ -130,10 +138,24 @@ public partial class MainWindow : Window
         Sidebar.Width = Math.Clamp(drag.Width + e.GetPosition(this).X - drag.X, Sidebar.MinWidth, Sidebar.MaxWidth);
     }
 
+    // Bırakınca genişlik yazılır; uygulama bir dahaki açılışta bu genişlikle gelir.
     private void OnSplitterPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
+        if (_splitterDrag is not { } drag)
+            return;
         _splitterDrag = null;
         e.Pointer.Capture(null);
+        if (Sidebar.Width != drag.Width)
+            SaveSidebarWidth();
+    }
+
+    private void SaveSidebarWidth()
+    {
+        if (DataContext is not MainWindowViewModel vm)
+            return;
+        var settings = vm.Settings.Load();
+        settings.SidebarWidth = Sidebar.Width;
+        vm.Settings.Save(settings);
     }
 
     // Başlık çubuğundan pencere taşınmaya başladı.
