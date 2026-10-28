@@ -1,5 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RdpNext.App.ViewModels;
@@ -28,11 +30,17 @@ public class InfoOverlayTests
         return (window, vm, server);
     }
 
-    private static Border Overlay(Window window) =>
-        window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "InfoOverlay");
+    private static Control Overlay(Window window) =>
+        window.GetVisualDescendants().OfType<Control>().Single(b => b.Name == "InfoOverlay");
 
-    private static string Text(Border overlay) =>
-        string.Join(" ", overlay.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text));
+    private static Button CloseButton(Window window) =>
+        Overlay(window).GetVisualDescendants().OfType<Button>().Single();
+
+    // × düğmesinin yazısı hariç etiket satırları.
+    private static List<TextBlock> Lines(Control overlay) =>
+        overlay.GetVisualDescendants().OfType<TextBlock>().Where(t => t.FindAncestorOfType<Button>() is null).ToList();
+
+    private static string Text(Control overlay) => string.Join(" ", Lines(overlay).Select(t => t.Text));
 
     [AvaloniaFact]
     public void ShowsNameAndHostAtTopCenter()
@@ -44,7 +52,39 @@ public class InfoOverlayTests
         Assert.Equal("web-01 10.0.1.11", Text(overlay));
         Assert.Equal((Avalonia.Layout.HorizontalAlignment.Center, Avalonia.Layout.VerticalAlignment.Top),
             (overlay.HorizontalAlignment, overlay.VerticalAlignment));
-        Assert.False(overlay.IsHitTestVisible);
+    }
+
+    // Yazının üstüne tıklama oturuma geçer; yalnız × düğmesi tıklanır.
+    [AvaloniaFact]
+    public void OnlyCloseButtonTakesClicks()
+    {
+        var (window, _, _) = Open(overlay: true);
+
+        var name = Overlay(window).GetVisualDescendants().OfType<TextBlock>().First();
+        var onName = window.InputHitTest(name.TranslatePoint(new Avalonia.Point(name.Bounds.Width / 2, name.Bounds.Height / 2), window)!.Value);
+        Assert.DoesNotContain(onName as Visual, Overlay(window).GetVisualDescendants());
+        var close = CloseButton(window);
+        var onClose = window.InputHitTest(close.TranslatePoint(new Avalonia.Point(close.Bounds.Width / 2, close.Bounds.Height / 2), window)!.Value);
+        Assert.True(onClose == close || close.IsVisualAncestorOf((Visual)onClose!));
+    }
+
+    // × yalnız bu oturumdaki etiketi kapatır; sunucu ayarı kalır, yeniden bağlanınca etiket gelir.
+    [AvaloniaFact]
+    public void CloseHidesOverlayForThisSessionOnly()
+    {
+        var (window, vm, server) = Open(overlay: true);
+
+        CloseButton(window).Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.False(Overlay(window).IsEffectivelyVisible);
+        Assert.True(server.Server.ShowInfoOverlay);
+
+        vm.CloseTabCommand.Execute(vm.Sessions.Selected!);
+        vm.ConnectCommand.Execute(server);
+        _sessions[^1].RaiseConnected();
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(Overlay(window).IsEffectivelyVisible);
     }
 
     // İki satır: üstte ad, altta adres.
@@ -53,7 +93,7 @@ public class InfoOverlayTests
     {
         var (window, _, _) = Open(overlay: true);
 
-        var lines = Overlay(window).GetVisualDescendants().OfType<TextBlock>().ToList();
+        var lines = Lines(Overlay(window));
         Assert.Equal(["web-01", "10.0.1.11"], lines.Select(t => t.Text));
         Assert.True(lines[1].Bounds.Top >= lines[0].Bounds.Bottom);
     }

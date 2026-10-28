@@ -34,6 +34,13 @@ public sealed partial class SessionTabViewModel : ConnectionTabViewModel
 
     protected override Protocol Protocol => Protocol.Rdp;
 
+    // Ad/adres etiketi bu oturumda × ile kapatıldı; sunucu ayarı değişmez.
+    [ObservableProperty]
+    private bool _isInfoOverlayClosed;
+
+    [RelayCommand]
+    private void CloseInfoOverlay() => IsInfoOverlayClosed = true;
+
     protected override bool HasPrompt => CertificatePrompt is not null;
 
     private TaskCompletionSource<bool>? _certificateAnswer;

@@ -15,13 +15,24 @@
 
     <v:ConnectionCards />
 
-    <!-- Sunucu ayarında açıksa üst ortada iki satır: ad, altında adres; tıklamalar oturuma geçer. -->
-    <Border x:Name="InfoOverlay" Classes="info-overlay" IsVisible="{Binding Server.ShowInfoOverlay}" IsHitTestVisible="False">
-      <StackPanel Spacing="2">
-        <TextBlock HorizontalAlignment="Center" FontSize="15" FontWeight="SemiBold" Text="{Binding Server.Name}" />
-        <TextBlock HorizontalAlignment="Center" Opacity="0.75" Text="{Binding Server.Host}" />
+    <!-- Sunucu ayarında açıksa üst ortada iki satır: ad, altında adres. Yazıya tıklama oturuma geçer;
+         × etiketi yalnız bu oturumda kapatır. -->
+    <Panel x:Name="InfoOverlay" Classes="info-overlay">
+      <Panel.IsVisible>
+        <MultiBinding Converter="{x:Static BoolConverters.And}">
+          <Binding Path="Server.ShowInfoOverlay" />
+          <Binding Path="!IsInfoOverlayClosed" />
+        </MultiBinding>
+      </Panel.IsVisible>
+      <Border Classes="info-overlay-back" IsHitTestVisible="False" />
+      <StackPanel Orientation="Horizontal" Spacing="10" Margin="18,8,8,8">
+        <StackPanel Spacing="2" IsHitTestVisible="False">
+          <TextBlock HorizontalAlignment="Center" FontSize="15" FontWeight="SemiBold" Text="{Binding Server.Name}" />
+          <TextBlock HorizontalAlignment="Center" Opacity="0.75" Text="{Binding Server.Host}" />
+        </StackPanel>
+        <Button Classes="overlay-close" Content="×" Command="{Binding CloseInfoOverlayCommand}" />
       </StackPanel>
-    </Border>
+    </Panel>
 
     <!-- Sertifika sorusu: oturumun üstünde, arka plan karartılır (docs/tasarim/rdp-oturumu.png, a). -->
     <Panel IsVisible="{Binding CertificatePrompt, Converter={x:Static ObjectConverters.IsNotNull}}">
