@@ -50,8 +50,9 @@ RN_API void rn_abort(rdpContext* ctx);
 RN_API void rn_mouse(rdpContext* ctx, uint16_t flags, uint16_t x, uint16_t y);
 /* 1: istek gönderildi, 0: sunucu dinamik çözünürlüğü desteklemiyor. */
 RN_API int rn_resize(rdpContext* ctx, int width, int height);
-/* Mac panosundaki metin; sunucuya "panoda metin var" diye duyurulur, sunucu isteyince gönderilir. */
-RN_API void rn_set_clipboard_text(rdpContext* ctx, const char* text);
+/* Mac panosundaki metin ve dosyalar ("file:///..." satırları, text/uri-list); sunucuya duyurulur,
+   sunucu yapıştırınca gönderilir. İkisi de NULL olabilir. */
+RN_API void rn_set_clipboard(rdpContext* ctx, const char* text, const char* uri_list);
 RN_API void rn_key(rdpContext* ctx, uint16_t code, int extended, int down);
 RN_API void rn_unicode(rdpContext* ctx, uint16_t code, int down);
 RN_API void rn_free(rdpContext* ctx);

@@ -13,6 +13,9 @@
 #include <freerdp/client/cliprdr.h>
 #include <freerdp/channels/cliprdr.h>
 #include <winpr/string.h>
+#include <winpr/clipboard.h>
+#include <freerdp/client/client_cliprdr_file.h>
+#include <freerdp/utils/cliprdr_utils.h>
 #include <string.h>
 #include <winpr/synch.h>
 #include <stdatomic.h>
@@ -36,28 +39,56 @@ typedef struct
 	atomic_llong pending_size;
 	CliprdrClientContext* clip;
 	char* local_text;
+	/* Mac'te kopyalanan dosyalar, "file:///..." satırları (text/uri-list); NULL ise yok. */
+	char* local_files;
+	wClipboard* system;
+	CliprdrFileContext* file;
 } rnContext;
 
-/* ---- Metin panosu (cliprdr, CF_UNICODETEXT) ---- */
+/* ---- Pano (cliprdr): metin (CF_UNICODETEXT) ve Mac'ten sunucuya dosya (FileGroupDescriptorW) ---- */
+
+static const char rn_format_files[] = "FileGroupDescriptorW";
+static const char rn_mime_uri_list[] = "text/uri-list";
+
+/* FreeRDP'nin dosya bağlamı cliprdr->custom'ı kendine alıyor; bizim bağlam onun içinden okunur. */
+static rnContext* rn_clip_owner(CliprdrClientContext* clip)
+{
+	return (rnContext*)cliprdr_file_context_get_context((CliprdrFileContext*)clip->custom);
+}
 
 static UINT rn_clip_send_format_list(rnContext* rc)
 {
-	CLIPRDR_FORMAT format = { CF_UNICODETEXT, NULL };
+	CLIPRDR_FORMAT formats[2] = { 0 };
+	UINT32 count = 0;
+	if (rc->local_files)
+	{
+		formats[count].formatId = ClipboardGetFormatId(rc->system, rn_format_files);
+		formats[count].formatName = (char*)rn_format_files;
+		count++;
+	}
+	if (rc->local_text)
+	{
+		formats[count].formatId = CF_UNICODETEXT;
+		count++;
+	}
 	CLIPRDR_FORMAT_LIST list = { 0 };
 	list.common.msgType = CB_FORMAT_LIST;
-	list.numFormats = rc->local_text ? 1 : 0;
-	list.formats = rc->local_text ? &format : NULL;
-	return rc->clip->ClientFormatList(rc->clip, &list);
+	list.numFormats = count;
+	list.formats = count ? formats : NULL;
+	UINT rv = rc->clip->ClientFormatList(rc->clip, &list);
+	if (rv == CHANNEL_RC_OK)
+		rv = cliprdr_file_context_notify_new_client_format_list(rc->file);
+	return rv;
 }
 
 static UINT rn_clip_monitor_ready(CliprdrClientContext* clip, const CLIPRDR_MONITOR_READY* ready)
 {
-	rnContext* rc = (rnContext*)clip->custom;
+	rnContext* rc = rn_clip_owner(clip);
 	CLIPRDR_GENERAL_CAPABILITY_SET general = { 0 };
 	general.capabilitySetType = CB_CAPSTYPE_GENERAL;
 	general.capabilitySetLength = CB_CAPSTYPE_GENERAL_LEN;
 	general.version = CB_CAPS_VERSION_2;
-	general.generalFlags = CB_USE_LONG_FORMAT_NAMES;
+	general.generalFlags = CB_USE_LONG_FORMAT_NAMES | cliprdr_file_context_current_flags(rc->file);
 	CLIPRDR_CAPABILITIES caps = { 0 };
 	caps.common.msgType = CB_CLIP_CAPS;
 	caps.cCapabilitiesSets = 1;
@@ -66,8 +97,21 @@ static UINT rn_clip_monitor_ready(CliprdrClientContext* clip, const CLIPRDR_MONI
 	return rv == CHANNEL_RC_OK ? rn_clip_send_format_list(rc) : rv;
 }
 
+/* Sunucunun dosya aktarım yetenekleri FreeRDP'nin dosya bağlamına verilir. */
 static UINT rn_clip_server_capabilities(CliprdrClientContext* clip, const CLIPRDR_CAPABILITIES* caps)
 {
+	rnContext* rc = rn_clip_owner(clip);
+	if (!cliprdr_file_context_remote_set_flags(rc->file, 0))
+		return ERROR_INTERNAL_ERROR;
+	const BYTE* ptr = (const BYTE*)caps->capabilitySets;
+	for (UINT32 i = 0; i < caps->cCapabilitiesSets; i++)
+	{
+		const CLIPRDR_CAPABILITY_SET* set = (const CLIPRDR_CAPABILITY_SET*)ptr;
+		if (set->capabilitySetType == CB_CAPSTYPE_GENERAL
+		    && !cliprdr_file_context_remote_set_flags(rc->file, ((const CLIPRDR_GENERAL_CAPABILITY_SET*)set)->generalFlags))
+			return ERROR_INTERNAL_ERROR;
+		ptr += set->capabilitySetLength;
+	}
 	return CHANNEL_RC_OK;
 }
 
@@ -89,7 +133,7 @@ static UINT rn_clip_server_format_list(CliprdrClientContext* clip, const CLIPRDR
 		request.requestedFormatId = CF_UNICODETEXT;
 		return clip->ClientFormatDataRequest(clip, &request);
 	}
-	rnContext* rc = (rnContext*)clip->custom;
+	rnContext* rc = rn_clip_owner(clip);
 	if (rc->callbacks.clipboard_text)
 		rc->callbacks.clipboard_text(rc->user, NULL);
 	return CHANNEL_RC_OK;
@@ -102,7 +146,7 @@ static UINT rn_clip_server_format_list_response(CliprdrClientContext* clip, cons
 
 static UINT rn_clip_server_format_data_response(CliprdrClientContext* clip, const CLIPRDR_FORMAT_DATA_RESPONSE* response)
 {
-	rnContext* rc = (rnContext*)clip->custom;
+	rnContext* rc = rn_clip_owner(clip);
 	if (response->common.msgFlags != CB_RESPONSE_OK || !response->requestedFormatData || !rc->callbacks.clipboard_text)
 		return CHANNEL_RC_OK;
 	char* text = ConvertWCharNToUtf8Alloc((const WCHAR*)response->requestedFormatData, response->common.dataLen / sizeof(WCHAR), NULL);
@@ -114,24 +158,57 @@ static UINT rn_clip_server_format_data_response(CliprdrClientContext* clip, cons
 	return CHANNEL_RC_OK;
 }
 
-/* Sunucuda yapıştırıldı: Mac'teki metin gönderilir. */
+/* Mac'teki dosyaların listesi sunucunun anladığı paketlenmiş dosya listesine (CLIPRDR_FILELIST) çevrilir.
+   Dosya içerikleri sonra sunucu isteyince FreeRDP'nin dosya bağlamı tarafından okunup gönderilir. */
+static BYTE* rn_clip_file_list(rnContext* rc, UINT32* length)
+{
+	*length = 0;
+	size_t uri_len = strlen(rc->local_files);
+	if (!cliprdr_file_context_update_client_data(rc->file, rc->local_files, uri_len))
+		return NULL;
+	UINT32 uri_id = ClipboardGetFormatId(rc->system, rn_mime_uri_list);
+	UINT32 files_id = ClipboardGetFormatId(rc->system, rn_format_files);
+	BYTE* result = NULL;
+	ClipboardLock(rc->system);
+	if (ClipboardSetData(rc->system, uri_id, rc->local_files, (UINT32)uri_len))
+	{
+		UINT32 size = 0;
+		FILEDESCRIPTORW* descriptors = (FILEDESCRIPTORW*)ClipboardGetData(rc->system, files_id, &size);
+		if (descriptors)
+		{
+			if (cliprdr_serialize_file_list_ex(cliprdr_file_context_remote_get_flags(rc->file), descriptors,
+			                                   size / sizeof(FILEDESCRIPTORW), &result, length) != 0)
+			{
+				result = NULL;
+				*length = 0;
+			}
+			free(descriptors);
+		}
+	}
+	ClipboardEmpty(rc->system);
+	ClipboardUnlock(rc->system);
+	return result;
+}
+
+/* Sunucuda yapıştırıldı: Mac'teki metin ya da dosya listesi gönderilir. */
 static UINT rn_clip_server_format_data_request(CliprdrClientContext* clip, const CLIPRDR_FORMAT_DATA_REQUEST* request)
 {
-	rnContext* rc = (rnContext*)clip->custom;
+	rnContext* rc = rn_clip_owner(clip);
 	CLIPRDR_FORMAT_DATA_RESPONSE response = { 0 };
 	response.common.msgType = CB_FORMAT_DATA_RESPONSE;
-	size_t size = 0;
-	WCHAR* data = NULL;
+	BYTE* data = NULL;
+	UINT32 length = 0;
 	if (request->requestedFormatId == CF_UNICODETEXT && rc->local_text)
-		data = ConvertUtf8ToWCharAlloc(rc->local_text, &size);
-	if (data)
 	{
-		response.common.msgFlags = CB_RESPONSE_OK;
-		response.common.dataLen = (UINT32)((size + 1) * sizeof(WCHAR));
-		response.requestedFormatData = (const BYTE*)data;
+		size_t size = 0;
+		data = (BYTE*)ConvertUtf8ToWCharAlloc(rc->local_text, &size);
+		length = data ? (UINT32)((size + 1) * sizeof(WCHAR)) : 0;
 	}
-	else
-		response.common.msgFlags = CB_RESPONSE_FAIL;
+	else if (rc->local_files && request->requestedFormatId == ClipboardGetFormatId(rc->system, rn_format_files))
+		data = rn_clip_file_list(rc, &length);
+	response.common.msgFlags = data ? CB_RESPONSE_OK : CB_RESPONSE_FAIL;
+	response.common.dataLen = length;
+	response.requestedFormatData = data;
 	UINT rv = clip->ClientFormatDataResponse(clip, &response);
 	free(data);
 	return rv;
@@ -140,13 +217,14 @@ static UINT rn_clip_server_format_data_request(CliprdrClientContext* clip, const
 static void rn_clip_init(rnContext* rc, CliprdrClientContext* clip)
 {
 	rc->clip = clip;
-	clip->custom = rc;
 	clip->MonitorReady = rn_clip_monitor_ready;
 	clip->ServerCapabilities = rn_clip_server_capabilities;
 	clip->ServerFormatList = rn_clip_server_format_list;
 	clip->ServerFormatListResponse = rn_clip_server_format_list_response;
 	clip->ServerFormatDataResponse = rn_clip_server_format_data_response;
 	clip->ServerFormatDataRequest = rn_clip_server_format_data_request;
+	/* Dosya içeriği istekleri (FileContentsRequest) ve kilitleme FreeRDP'nin dosya bağlamında; custom'ı o alır. */
+	cliprdr_file_context_init(rc->file, clip);
 }
 
 static BOOL rn_send_layout(rnContext* rc, UINT32 width, UINT32 height)
@@ -201,7 +279,10 @@ static void rn_channel_disconnected(void* context, const ChannelDisconnectedEven
 		atomic_store(&rc->disp_ready, 0);
 	}
 	else if (strcmp(e->name, CLIPRDR_SVC_CHANNEL_NAME) == 0)
+	{
+		cliprdr_file_context_uninit(rc->file, rc->clip);
 		rc->clip = NULL;
+	}
 	else
 		freerdp_client_OnChannelDisconnectedEventHandler(context, e);
 }
@@ -373,6 +454,10 @@ rdpContext* rn_create(const rn_callbacks* callbacks, void* user)
 	if (callbacks)
 		rc->callbacks = *callbacks;
 	rc->user = user;
+	rc->system = ClipboardCreate();
+	rc->file = cliprdr_file_context_new(rc);
+	/* Dosya aktarım yeteneği sunucuya bildirilsin (Mac'ten sunucuya dosya). */
+	cliprdr_file_context_set_locally_available(rc->file, TRUE);
 	return context;
 }
 
@@ -447,11 +532,13 @@ int rn_resize(rdpContext* ctx, int width, int height)
 	return 1;
 }
 
-void rn_set_clipboard_text(rdpContext* ctx, const char* text)
+void rn_set_clipboard(rdpContext* ctx, const char* text, const char* uri_list)
 {
 	rnContext* rc = (rnContext*)ctx;
 	free(rc->local_text);
+	free(rc->local_files);
 	rc->local_text = text && *text ? _strdup(text) : NULL;
+	rc->local_files = uri_list && *uri_list ? _strdup(uri_list) : NULL;
 	if (rc->clip)
 		rn_clip_send_format_list(rc);
 }
@@ -468,7 +555,13 @@ void rn_unicode(rdpContext* ctx, uint16_t code, int down)
 
 void rn_free(rdpContext* ctx)
 {
-	free(((rnContext*)ctx)->local_text);
+	rnContext* rc = (rnContext*)ctx;
+	free(rc->local_text);
+	free(rc->local_files);
+	CliprdrFileContext* file = rc->file;
+	wClipboard* system = rc->system;
 	freerdp_disconnect(ctx->instance);
 	freerdp_client_context_free(ctx);
+	cliprdr_file_context_free(file);
+	ClipboardDestroy(system);
 }

@@ -64,7 +64,15 @@ public sealed unsafe class RdpSession : IRdpSession
         return (horizontal ? RdpMouseFlags.HWheel : RdpMouseFlags.Wheel) | (RdpMouseFlags)(value & 0x1FF);
     }
 
-    public void SetLocalClipboardText(string text) => _requests.Enqueue(ctx => NativeMethods.SetClipboardText(ctx, text));
+    public void SetLocalClipboard(string? text, IReadOnlyList<string> files)
+    {
+        var uriList = UriList(files);
+        _requests.Enqueue(ctx => NativeMethods.SetClipboard(ctx, text, uriList));
+    }
+
+    // Dosya yolları "file:///" satırlarına (text/uri-list, RFC 2483); dosya yoksa null.
+    internal static string? UriList(IReadOnlyList<string> files) =>
+        files.Count == 0 ? null : string.Concat(files.Select(f => new Uri(f).AbsoluteUri + "\r\n"));
 
     public void Resize(int width, int height) => _requests.Enqueue(ctx => NativeMethods.Resize(ctx, width, height));
 

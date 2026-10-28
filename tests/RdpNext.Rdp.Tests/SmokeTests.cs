@@ -116,7 +116,7 @@ public class SmokeTests
         session.Start(options!);
         await connected.Task.WaitAsync(TimeSpan.FromSeconds(20), ct);
         await Task.Delay(3000, ct);
-        session.SetLocalClipboardText(token);
+        session.SetLocalClipboard(token, []);
         await Task.Delay(500, ct);
         session.SendKey(0x5B, true, true);
         Tap(0x13);

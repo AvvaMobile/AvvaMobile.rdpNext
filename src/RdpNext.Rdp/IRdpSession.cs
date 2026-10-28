@@ -65,8 +65,8 @@ public interface IRdpSession : IDisposable
 
     void SendKey(ushort code, bool extended, bool down);
 
-    // Bu bilgisayarın panosundaki metin; sunucuda yapıştırılınca bu gider.
-    void SetLocalClipboardText(string text);
+    // Bu bilgisayarın panosundaki metin ve dosyalar (tam yol); sunucuda yapıştırılınca bunlar gider.
+    void SetLocalClipboard(string? text, IReadOnlyList<string> files);
 
     // Sunucudan yeni çözünürlük ister (disp kanalı). Sunucu desteklemiyorsa görüntü aynı kalır.
     void Resize(int width, int height);
