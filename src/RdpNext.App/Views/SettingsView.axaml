@@ -20,8 +20,8 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Panel>
-          <StackPanel Classes="form" IsVisible="{Binding ShowGeneral}">
-            <Grid ColumnDefinitions="*,20,*">
+          <StackPanel Classes="form" Spacing="24" IsVisible="{Binding ShowGeneral}">
+            <Grid ColumnDefinitions="*,30,*">
               <StackPanel>
                 <TextBlock Classes="label" Text="{x:Static s:Strings.Theme}" />
                 <ComboBox x:Name="ThemeBox" Classes="field" SelectedIndex="{Binding ThemeIndex}">
