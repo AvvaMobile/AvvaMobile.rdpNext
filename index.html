@@ -106,6 +106,8 @@
     .lead { position: relative; max-width: 640px; margin: 0 auto; color: var(--text-2); font-size: 20px; }
     .cta { position: relative; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 34px 0 14px; }
     .fine { position: relative; color: var(--text-2); font-size: 14px; }
+    .trust { position: relative; display: flex; gap: 10px 22px; justify-content: center; flex-wrap: wrap; margin-top: 18px; font-size: 15px; font-weight: 600; }
+    .trust span::before { content: "✓"; margin-right: 6px; color: #2e9e5b; font-weight: 800; }
 
     /* Uygulama penceresi çerçevesi; trafik ışıkları görüntünün boş başlık alanına oturur. */
     .window {
@@ -230,6 +232,7 @@
         </a>
       </div>
       <div class="fine">macOS (Apple Silicon) and Windows (x64)</div>
+      <div class="trust"><span>No telemetry</span><span>No analytics</span><span>No account needed</span><span>Connects only to your servers</span></div>
       <div class="window">
         <picture>
           <source srcset="images/main-dark.png" media="(prefers-color-scheme: dark)">
@@ -334,6 +337,7 @@
         <h2>Your passwords stay in your keychain.</h2>
         <p>rdpNext never writes passwords into its own files. They live in the macOS Keychain or the Windows Credential Manager.</p>
         <ul class="points">
+          <li><b>No telemetry, no analytics, no crash reporting.</b> rdpNext talks only to the servers you add.</li>
           <li>Unknown server certificates are shown before you connect, fingerprint included.</li>
           <li>Trust once; you are asked again only if the certificate changes.</li>
           <li>SSH host keys are verified and remembered the same way.</li>
