@@ -10,6 +10,11 @@
 </p>
 
 <p align="center">
+  🔒 <b>No telemetry. No analytics. No accounts.</b><br>
+  rdpNext only connects to the servers you add; nothing about you or your servers is sent anywhere else.
+</p>
+
+<p align="center">
   <a href="https://avvamobile.github.io/AvvaMobile.rdpNext/">Website</a> ·
   <a href="https://github.com/AvvaMobile/AvvaMobile.rdpNext/releases/latest">Download</a> ·
   <a href="https://github.com/AvvaMobile/AvvaMobile.rdpNext/issues">Issues</a>
@@ -19,6 +24,7 @@
   <img src="https://img.shields.io/badge/license-MIT-5b5bd6" alt="MIT license">
   <img src="https://img.shields.io/badge/macOS-Apple%20Silicon-1b1e2b" alt="macOS Apple Silicon">
   <img src="https://img.shields.io/badge/Windows-x64-3d6dfd" alt="Windows x64">
+  <img src="https://img.shields.io/badge/telemetry-none-2e9e5b" alt="No telemetry">
 </p>
 
 <picture>
@@ -49,7 +55,8 @@
 - Import your mRemoteNG `confCons.xml` with folders and passwords, master password supported.
 - Export your list to a single file and import it on another machine (passwords are left out).
 
-**Security**
+**Security and privacy**
+- No telemetry, no analytics, no crash reporting: rdpNext talks only to the servers you add.
 - Passwords are stored in the macOS Keychain or the Windows Credential Manager, never in rdpNext's own files.
 - Unknown RDP certificates and SSH host keys are shown with their fingerprint and remembered once trusted.
 
