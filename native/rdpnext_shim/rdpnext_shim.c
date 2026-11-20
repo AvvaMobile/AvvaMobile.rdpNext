@@ -19,6 +19,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <direct.h>
+#define rn_mkdir(p) _mkdir(p)
+#else
+#define rn_mkdir(p) mkdir((p), 0700)
+#endif
 #include <winpr/interlocked.h>
 #include <winpr/shell.h>
 #include <winpr/synch.h>
@@ -191,10 +197,10 @@ static void rn_mkdirs(const char* path)
 		if (*p != '/')
 			continue;
 		*p = '\0';
-		mkdir(copy, 0700);
+		rn_mkdir(copy);
 		*p = '/';
 	}
-	mkdir(copy, 0700);
+	rn_mkdir(copy);
 	free(copy);
 }
 

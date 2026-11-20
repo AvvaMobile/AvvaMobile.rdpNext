@@ -32,4 +32,8 @@
     <ProjectReference Include="..\RdpNext.Rdp\RdpNext.Rdp.csproj" />
     <ProjectReference Include="..\RdpNext.Ssh\RdpNext.Ssh.csproj" />
   </ItemGroup>
+  <!-- Windows için C katmanı ve FreeRDP DLL'leri native/build-win.sh ile hazırlanır, win-x64 publish'inde kopyalanır. -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <None Include="..\..\native\out\win-x64\*.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
 </Project>
