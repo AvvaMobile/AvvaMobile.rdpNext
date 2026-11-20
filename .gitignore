@@ -6,3 +6,4 @@ obj/
 .vs/
 .idea/
 native/out/
+dist/
